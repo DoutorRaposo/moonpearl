@@ -163,5 +163,19 @@
     <string name="licenses_title">Licenças de código aberto</string>
     <string name="game_error_title">O jogo parou</string>
     <string name="game_error_message">O jogo fechou por causa de um erro:\n\n%1$s\n\nSe acontecer de novo, por favor informe esta mensagem.</string>
+    <string name="settings_title">Configurações</string>
+    <string name="back">Voltar</string>
+    <string name="settings_display_summary">Proporção, preencher a tela, filtros</string>
+    <string name="settings_controls_summary">Controles na tela, atalhos do menu, controles físicos</string>
+    <string name="settings_game_summary">Continuar de onde parou, pisca-pisca de sprites</string>
+    <string name="settings_enhancements_summary">Mudanças opcionais de jogabilidade e correções</string>
+    <string name="settings_language_summary">Idioma do app</string>
+    <string name="settings_about">Sobre</string>
+    <string name="settings_about_summary">Versão, aviso legal, licenças de código aberto</string>
+    <string name="settings_version">Versão %1$s</string>
+    <string name="settings_touch">Controles na tela</string>
+    <string name="settings_menu">Menu do jogo</string>
+    <string name="settings_controller">Controles físicos</string>
+    <string name="launcher_saves_summary">Fichas, save states, backup</string>
     <string name="legal_notice">Este app não contém nenhum dado do jogo. Você precisa fornecer uma ROM de um cartucho que possua. Baseado em snesrev/zelda3 (MIT).</string>
 </resources>

@@ -37,6 +37,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".LicensesActivity"
             android:exported="false" />
 

@@ -163,5 +163,19 @@
     <string name="licenses_title">Open source licenses</string>
     <string name="game_error_title">The game stopped</string>
     <string name="game_error_message">The game closed because of an error:\n\n%1$s\n\nIf it happens again, please report it with this message.</string>
+    <string name="settings_title">Settings</string>
+    <string name="back">Back</string>
+    <string name="settings_display_summary">Aspect ratio, fill the screen, filters</string>
+    <string name="settings_controls_summary">On-screen controls, menu shortcuts, controllers</string>
+    <string name="settings_game_summary">Resume where you left off, sprite flicker</string>
+    <string name="settings_enhancements_summary">Optional gameplay changes and bug fixes</string>
+    <string name="settings_language_summary">Language of the app</string>
+    <string name="settings_about">About</string>
+    <string name="settings_about_summary">Version, legal notice, open source licenses</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_touch">On-screen controls</string>
+    <string name="settings_menu">In-game menu</string>
+    <string name="settings_controller">Controllers</string>
+    <string name="launcher_saves_summary">Game files, save states, backup</string>
     <string name="legal_notice">This app contains no game data. You must supply a ROM from a cartridge you own. Based on snesrev/zelda3 (MIT).</string>
 </resources>
