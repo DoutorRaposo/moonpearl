@@ -99,6 +99,8 @@ private fun LauncherScreen(data: GameData, prefs: AppPrefs, onPlay: () -> Unit) 
     var touchControls by remember { mutableStateOf(prefs.touchControls) }
     var touchOpacity by remember { mutableFloatStateOf(prefs.touchOpacity) }
     var fillScreen by remember { mutableStateOf(prefs.fillScreen) }
+    var menuButton by remember { mutableStateOf(prefs.menuButton) }
+    var doubleTapMenu by remember { mutableStateOf(prefs.doubleTapMenu) }
     val screenRatio = remember { AspectRatio.screenRatio(context) }
 
     fun editIni(block: Ini.() -> Unit) {
@@ -222,6 +224,20 @@ private fun LauncherScreen(data: GameData, prefs: AppPrefs, onPlay: () -> Unit) 
                         )
                     }
                 }
+                SwitchRow(stringResource(R.string.menu_button), menuButton) {
+                    menuButton = it
+                    prefs.menuButton = it
+                }
+                SwitchRow(stringResource(R.string.double_tap_menu), doubleTapMenu) {
+                    doubleTapMenu = it
+                    prefs.doubleTapMenu = it
+                }
+                Text(
+                    stringResource(R.string.menu_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+                )
                 Text(
                     stringResource(R.string.controller_hint),
                     style = MaterialTheme.typography.bodySmall,

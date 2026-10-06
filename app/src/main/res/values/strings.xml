@@ -51,8 +51,29 @@
     <string name="feature_game_changing_bug_fixes">Bug fixes that change gameplay</string>
     <string name="feature_cancel_bird_travel">Cancel bird travel with X</string>
 
-    <string name="quit_game_message">Quit the game? Your progress is saved automatically.</string>
-    <string name="quit_game_confirm">Quit</string>
+
+    <string name="menu_button">Menu button (⋯) on screen</string>
+    <string name="double_tap_menu">Double-tap the screen to open the menu</string>
+    <string name="menu_hint">The back button and, on a controller, Select+Start or the right stick button also open the menu.</string>
+
+    <string name="menu_title">Paused</string>
+    <string name="menu_resume">Resume</string>
+    <string name="menu_fast_forward">Fast-forward</string>
+    <string name="menu_reset">Reset</string>
+    <string name="menu_reset_confirm">Reset the game? Progress since your last save will be lost.</string>
+    <string name="menu_quit">Quit</string>
+    <string name="menu_quit_hint">Your progress is saved automatically when you quit.</string>
+    <string name="menu_tab_states">Save states</string>
+    <string name="menu_tab_chapters">Chapters</string>
+    <string name="menu_slot">Slot %1$d</string>
+    <string name="menu_slot_auto">Auto (resume point)</string>
+    <string name="menu_slot_empty">Empty</string>
+    <string name="menu_slot_no_preview">No preview</string>
+    <string name="menu_save">Save</string>
+    <string name="menu_load">Load</string>
+    <string name="menu_chapters_hint">Jump to the start of a chapter with the reference saves from upstream.</string>
+    <string name="menu_chapter">Chapter %1$d: %2$s</string>
+    <string name="menu_chapter_confirm">Load this chapter? Progress since your last save will be lost.</string>
 
     <string name="legal_notice">This app contains no game data. You must supply a ROM from a cartridge you own. Based on snesrev/zelda3 (MIT).</string>
 </resources>

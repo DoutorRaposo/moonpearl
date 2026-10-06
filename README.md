@@ -18,6 +18,11 @@ on-screen controls and the build.
   lines at the top and bottom on screens wider than 2:1).
 - **Touch controls** with multi-touch, 8-way d-pad, sliding between face buttons, haptic
   feedback and adjustable opacity. They hide while a controller is in use.
+- **In-game menu** with save states (9 slots plus the resume point, each with a screenshot
+  and time), fast-forward, jump to any chapter (upstream's reference saves), reset and quit.
+  It opens from an on-screen "⋯" button, an optional double tap, the back button, or
+  Select+Start / the right stick button on a controller, and is fully usable with a
+  controller. Under the hood it drives upstream's own save state and turbo shortcuts.
 - **Controllers** through SDL2 (Xbox, PlayStation, Switch Pro and generic pads).
 - **Resume where you left off.** A save state is written whenever the app goes to the
   background or you quit, and loaded on the next start, so nothing is lost if Android

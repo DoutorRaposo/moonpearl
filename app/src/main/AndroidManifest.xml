@@ -37,5 +37,13 @@
             android:process=":game"
             android:screenOrientation="sensorLandscape"
             android:theme="@style/Theme.Game" />
+
+        <activity
+            android:name=".GameMenuActivity"
+            android:configChanges="layoutDirection|locale|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation|density"
+            android:exported="false"
+            android:process=":game"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.GameMenu" />
     </application>
 </manifest>

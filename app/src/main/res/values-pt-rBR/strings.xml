@@ -50,8 +50,29 @@
     <string name="feature_game_changing_bug_fixes">Correções que mudam a jogabilidade</string>
     <string name="feature_cancel_bird_travel">Cancelar a viagem de pássaro com X</string>
 
-    <string name="quit_game_message">Sair do jogo? Seu progresso é salvo automaticamente.</string>
-    <string name="quit_game_confirm">Sair</string>
+
+    <string name="menu_button">Botão de menu (⋯) na tela</string>
+    <string name="double_tap_menu">Toque duplo na tela abre o menu</string>
+    <string name="menu_hint">O botão voltar e, no controle, Select+Start ou o clique do analógico direito também abrem o menu.</string>
+
+    <string name="menu_title">Pausado</string>
+    <string name="menu_resume">Continuar</string>
+    <string name="menu_fast_forward">Avanço rápido</string>
+    <string name="menu_reset">Reiniciar</string>
+    <string name="menu_reset_confirm">Reiniciar o jogo? O progresso desde o último save será perdido.</string>
+    <string name="menu_quit">Sair</string>
+    <string name="menu_quit_hint">Seu progresso é salvo automaticamente ao sair.</string>
+    <string name="menu_tab_states">Save states</string>
+    <string name="menu_tab_chapters">Capítulos</string>
+    <string name="menu_slot">Slot %1$d</string>
+    <string name="menu_slot_auto">Automático (onde parou)</string>
+    <string name="menu_slot_empty">Vazio</string>
+    <string name="menu_slot_no_preview">Sem prévia</string>
+    <string name="menu_save">Salvar</string>
+    <string name="menu_load">Carregar</string>
+    <string name="menu_chapters_hint">Vá para o início de um capítulo usando os saves de referência do upstream.</string>
+    <string name="menu_chapter">Capítulo %1$d: %2$s</string>
+    <string name="menu_chapter_confirm">Carregar este capítulo? O progresso desde o último save será perdido.</string>
 
     <string name="legal_notice">Este app não contém nenhum dado do jogo. Você precisa fornecer uma ROM de um cartucho que possua. Baseado em snesrev/zelda3 (MIT).</string>
 </resources>

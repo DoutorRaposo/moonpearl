@@ -86,7 +86,7 @@ class TouchControlsView(
     private fun relayout(w: Int, h: Int) {
         if (w == 0 || h == 0) return
         val unit = minOf(w, h) / 100f
-        val margin = 6 * unit
+        val margin = MARGIN * unit
         dpadRadius = 17 * unit
         dpadX = safeLeft + margin + dpadRadius
         dpadY = h - margin - dpadRadius
@@ -100,8 +100,8 @@ class TouchControlsView(
         buttonCenters[Button.Y] = faceX - d to faceY
         buttonCenters[Button.A] = faceX + d to faceY
 
-        val shoulderW = 22 * unit
-        val shoulderH = 10 * unit
+        val shoulderW = SHOULDER_WIDTH * unit
+        val shoulderH = SHOULDER_HEIGHT * unit
         buttonRects[Button.L] = RectF(safeLeft + margin, margin, safeLeft + margin + shoulderW, margin + shoulderH)
         buttonRects[Button.R] = RectF(w - safeRight - margin - shoulderW, margin, w - safeRight - margin, margin + shoulderH)
 
@@ -159,6 +159,10 @@ class TouchControlsView(
         sync()
         return true
     }
+
+    /** Whether a touch at (x, y) would land on one of the pad's controls. */
+    fun isOverControl(x: Float, y: Float) =
+        visibility == VISIBLE && (hypot(x - dpadX, y - dpadY) <= dpadRadius * 1.4f || hitButton(x, y) != null)
 
     /** Releases everything, e.g. when the overlay is hidden or the game is paused. */
     fun releaseAll() {
@@ -270,6 +274,11 @@ class TouchControlsView(
     }
 
     companion object {
+        // Layout in units of 1% of the screen's short side; MenuButtonView sits next to R.
+        const val MARGIN = 6f
+        const val SHOULDER_WIDTH = 22f
+        const val SHOULDER_HEIGHT = 10f
+
         /**
          * Value written to [KeyMap] Controls (order: Up, Down, Left, Right, Select, Start, A, B, X, Y, L, R).
          * Must match the key codes in [Button] and [dpadDirection]. Upstream binds Select to Right Shift,

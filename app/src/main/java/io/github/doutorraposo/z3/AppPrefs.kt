@@ -16,6 +16,14 @@ class AppPrefs(context: Context) {
         get() = prefs.getBoolean("fill_screen", true)
         set(value) { prefs.edit().putBoolean("fill_screen", value).commit() }
 
+    var menuButton: Boolean
+        get() = prefs.getBoolean("menu_button", true)
+        set(value) { prefs.edit().putBoolean("menu_button", value).commit() }
+
+    var doubleTapMenu: Boolean
+        get() = prefs.getBoolean("double_tap_menu", false)
+        set(value) { prefs.edit().putBoolean("double_tap_menu", value).commit() }
+
     var touchOpacity: Float
         get() = prefs.getFloat("touch_opacity", 0.5f)
         set(value) { prefs.edit().putFloat("touch_opacity", value).commit() }

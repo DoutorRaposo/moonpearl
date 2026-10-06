@@ -63,6 +63,7 @@ class GameData(private val context: Context) {
         }
         // The touch overlay depends on this mapping, so keep it in place even if the file was edited.
         ini["KeyMap", "Controls"] = TouchControlsView.KEYMAP_CONTROLS
+        for ((key, value) in GameKeys.bindings) ini["KeyMap", key] = value
         if (ini.text != existing) writeIni(ini)
         val refs = context.assets.list("saves/ref").orEmpty()
         for (name in refs) {
