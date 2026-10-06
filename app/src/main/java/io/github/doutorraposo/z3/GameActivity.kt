@@ -32,9 +32,6 @@ class GameActivity : SDLActivity() {
     /** See [GameKeys.speeds]. */
     private var speed = 1
     private var menuOpen = false
-    private var selectHeld = false
-    /** Start went down while Select was held: the release opens the menu. */
-    private var startChord = false
     /** Controller buttons whose press opened nothing yet; the menu opens on their release. */
     private val menuButtonsDown = HashSet<Int>()
     /** LT and RT, as buttons and as analog axes (controllers report either or both). */
@@ -256,30 +253,15 @@ class GameActivity : SDLActivity() {
     }
 
     /**
-     * Controllers open the menu with the guide button, the right stick button, or Select+Start.
-     * It opens on release: opened on press, the release would land in the menu and close it, and
-     * an unhandled guide button falls back to Home and leaves the app.
+     * Controllers open the menu with the guide button or the right stick button. It opens on
+     * release: opened on press, the release would land in the menu and close it, and an
+     * unhandled guide button falls back to Home and leaves the app.
      */
     private fun handleMenuShortcut(event: KeyEvent): Boolean {
-        val down = event.action == KeyEvent.ACTION_DOWN
-        when (event.keyCode) {
-            KeyEvent.KEYCODE_BUTTON_SELECT -> selectHeld = down
-            KeyEvent.KEYCODE_BUTTON_MODE, KeyEvent.KEYCODE_BUTTON_THUMBR -> {
-                if (down) menuButtonsDown += event.keyCode
-                else if (menuButtonsDown.remove(event.keyCode) && !event.isCanceled) openMenu()
-                return true
-            }
-            KeyEvent.KEYCODE_BUTTON_START -> {
-                if (down && selectHeld) startChord = true
-                if (!startChord) return false
-                if (!down) {
-                    startChord = false
-                    if (!event.isCanceled) openMenu()
-                }
-                return true
-            }
-        }
-        return false
+        if (event.keyCode != KeyEvent.KEYCODE_BUTTON_MODE && event.keyCode != KeyEvent.KEYCODE_BUTTON_THUMBR) return false
+        if (event.action == KeyEvent.ACTION_DOWN) menuButtonsDown += event.keyCode
+        else if (menuButtonsDown.remove(event.keyCode) && !event.isCanceled) openMenu()
+        return true
     }
 
     /** RT raises the fast-forward rate one step, LT lowers it. The game does not use them. */

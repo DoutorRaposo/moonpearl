@@ -4,7 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
+import android.view.InputDevice
 import android.view.KeyEvent
+import android.view.MotionEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.StringRes
@@ -78,6 +80,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.libsdl.app.SDLControllerManager
 
 /**
  * In-game menu, shown as a translucent activity over [GameActivity]. While it is open SDL
@@ -133,7 +136,23 @@ class GameMenuActivity : ComponentActivity() {
         setResult(RESULT_OK, result)
     }
 
+    /**
+     * The game saw the presses made before the menu opened but not their releases, so a held
+     * direction would stay held when it resumes. Hand releases (never presses, so navigating
+     * the menu does not move Link) and stick/d-pad motion to SDL; it applies them on resume.
+     */
+    private fun forwardToGame(event: KeyEvent) {
+        val fromController = event.isFromSource(InputDevice.SOURCE_GAMEPAD) || event.isFromSource(InputDevice.SOURCE_JOYSTICK)
+        if (fromController && event.action == KeyEvent.ACTION_UP) SDLControllerManager.onNativePadUp(event.deviceId, event.keyCode)
+    }
+
+    override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
+        if (event.isFromSource(InputDevice.SOURCE_JOYSTICK)) SDLControllerManager.handleJoystickMotionEvent(event)
+        return super.dispatchGenericMotionEvent(event)
+    }
+
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        forwardToGame(event)
         // Controllers: A activates the focused item, B/Start/guide/R3 go back to the game.
         when (event.keyCode) {
             KeyEvent.KEYCODE_BUTTON_A -> return super.dispatchKeyEvent(

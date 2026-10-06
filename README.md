@@ -22,7 +22,7 @@ and the build. The few changes the game code needs are kept as small patches in
 - **In-game menu** with save states (9 slots plus the resume point, each with a screenshot
   and time), fast-forward at 2x, 3x or maximum speed, jump to any chapter (upstream's reference saves), reset and quit.
   It opens from an on-screen "⋯" button, an optional double tap, the back button, or the
-  guide button, Select+Start or the right stick button on a controller, and is fully usable
+  guide button or the right stick button on a controller, and is fully usable
   with a controller. On a controller, RT and LT step the speed up and down. Under the hood it drives upstream's own save state and turbo shortcuts.
 - **Cheats**: infinite health, magic, bombs, arrows and small keys, a full wallet, walking
   through walls, and Pro Action Replay RAM codes (`7Exxxx:yy`). The game RAM keeps the SNES
