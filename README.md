@@ -93,16 +93,19 @@ expected one. A ready-made `zelda3_assets.dat` from the PC version also works.
 | A, B, X, Y | Face buttons by position, as on the SNES: right, bottom, top, left (B, A, Y, X on an Xbox pad) | As on the SNES |
 | Start, Select | Start, Back/View | As on the SNES |
 | ⋯ button (or double tap, if enabled) | Guide button or R3 | Open the menu |
-| | RT / LT | Speed up / slow down |
+| Rewind button (optional) | LT+RT | Rewind |
+| Fast-forward button (optional, hold) | L3 | Fast-forward (L3 cycles 1×, 2×, 3×, max) |
 | Back button | | Open the menu |
 
-In the menu, use the d-pad and A with a controller; B or the guide button closes it.
+In the menu, use the d-pad and A with a controller; B or the guide button closes it. The SNES
+buttons can be remapped to any controller button (*Settings → Controls*), and the on-screen
+buttons moved and resized (*Customize layout*).
 
 ## Questions
 
 **The game resumed somewhere I did not expect.** With *Resume where you left off* on
 (default), the game reopens exactly where you were, not at the file select screen. Use
-*Reset* in the menu to go back to the title screen, or turn the option off in the launcher.
+*Reset* in the menu to go back to the title screen, or turn the option off in *Settings → Game*.
 
 **Can I use my saves from an emulator?** Yes. In *Manage saves*, *Import .srm* takes the
 save file from Snes9x, RetroArch and similar emulators, and *Export .srm* goes the other way.
@@ -112,14 +115,23 @@ Save states are specific to this app.
 reimplementation does not run. Pro Action Replay codes that change RAM (`7Exxxx:yy`) work.
 
 **The picture is cut at the top and bottom.** That is *Fill the screen* on a phone wider
-than 2:1. Turn it off in the launcher to see the whole picture with bars at the sides.
+than 2:1. Turn it off in *Settings → Display* to see the whole picture with bars at the sides.
 
 **I moved from the old "Z3" app.** Moon Pearl is a separate app. In the old one, use
 *Manage saves → Export backup*; in Moon Pearl, select your ROM and then *Restore backup*.
 
-**Something went wrong.** If the game closes on an error, the launcher shows the message.
-Please [open an issue](https://github.com/DoutorRaposo/moonpearl/issues) with it, your
-device, Android version and controller.
+**My MSU-1 pack is not found.** Pick the folder that holds the tracks themselves
+(`name-1.pcm`, `name-2.pcm`… or `.opuz`), in *Settings → Audio*. Packs for the US version of
+*A Link to the Past* work; MSU Deluxe tracks (37 and up) are used when *MSU Deluxe* is on.
+
+**The game slows down or the screen goes black with a filter.** Shaders run on the GPU and
+some are heavy for a phone. Pick a lighter one in the menu's *Image* tab or in *Settings →
+Display → Image filter*. If a shader freezes the game, the app switches it off on its own and
+tells you which one.
+
+**Something went wrong.** If the game closes on an error, the home screen shows the message.
+Please [open an issue](https://github.com/DoutorRaposo/moonpearl/issues/new/choose) with it,
+your device, Android version and controller.
 
 ## Building
 
@@ -164,7 +176,7 @@ are small patches in `patches/zelda3`, applied to a copy at build time (see
 | Native entry point: runs the game from the app's data folder, logs to logcat, reports fatal errors | `app/src/main/cpp/android_main.c` |
 | Cheats, applied before every frame | `app/src/main/cpp/cheats.c` |
 | ROM import: applies upstream's `zelda3_assets.bps` to the ROM | `GameData.kt`, `Bps.kt` |
-| Launcher and settings (stored in the stock `zelda3.ini`) | `LauncherActivity.kt` |
+| Home screen; settings (stored in the stock `zelda3.ini`) | `LauncherActivity.kt`, `SettingsActivity.kt` |
 | Game host, in its own `:game` process since upstream keeps its state in C globals | `GameActivity.kt` |
 | In-game menu; drives upstream's own pause, save state and turbo shortcuts | `GameMenuActivity.kt` |
 | Save files and backups | `SaveManager.kt`, `Sram.kt`, `SavesActivity.kt` |

@@ -1,0 +1,20 @@
+name: Suggestion
+description: An idea for the app.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Moon Pearl runs [zelda3](https://github.com/snesrev/zelda3) unchanged except for a few small patches. Changes to the game itself (new items, rebalancing, randomizers) belong upstream rather than here.
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What you would like, and how you would use it.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: The problem it solves, or what it would make better.

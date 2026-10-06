@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and setup help
+    url: https://github.com/DoutorRaposo/moonpearl#questions
+    about: How to import the ROM, controllers, MSU-1 packs, shaders and other common questions.
+  - name: Problems in the game itself
+    url: https://github.com/snesrev/zelda3/issues
+    about: If it also happens in zelda3 on PC, report it to zelda3.

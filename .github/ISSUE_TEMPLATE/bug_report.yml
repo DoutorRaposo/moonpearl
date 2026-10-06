@@ -1,0 +1,66 @@
+name: Bug report
+description: Something does not work as it should.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. Please check the [Questions](https://github.com/DoutorRaposo/moonpearl#questions) section of the README first.
+
+        Do not attach or link a ROM, game data (`zelda3_assets.dat`) or any other copyrighted file. Issues that do will be closed.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to make it happen again
+      description: Where in the game (area, dungeon, chapter), and the steps. "Every time" or "once" helps too.
+      placeholder: |
+        1. Load chapter 4
+        2. Walk onto the bridge
+        3. ...
+  - type: textarea
+    id: error
+    attributes:
+      label: Error message
+      description: If the game closed and the app showed "The game stopped", paste the message here.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Moon Pearl version
+      description: Settings > App > About.
+      placeholder: "0.6.0"
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      placeholder: "Samsung Galaxy S26 Ultra, Android 16"
+    validations:
+      required: true
+  - type: dropdown
+    id: input
+    attributes:
+      label: How you play
+      multiple: true
+      options:
+        - Touch controls
+        - Controller (which one? write it below)
+        - Keyboard
+  - type: textarea
+    id: settings
+    attributes:
+      label: Settings that may matter
+      description: Anything you changed, for example the aspect ratio, Fill the screen, the video output and image filter, MSU-1, cheats, Link's look, rewind, the widescreen HUD.
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshots or video
+      description: A screenshot or a short video usually explains it best. You can drag files here.
