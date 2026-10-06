@@ -152,3 +152,11 @@ val Gear: ImageVector = ImageVector.Builder("Gear", 24.dp, 24.dp, 24f, 24f).appl
         fill = androidx.compose.ui.graphics.SolidColor(androidx.compose.ui.graphics.Color.White),
     )
 }.build()
+
+/** "Just now", or how long ago (in minutes or more) a save was written. */
+@Composable
+fun savedAgo(time: Long): String {
+    val now = System.currentTimeMillis()
+    return if (now - time < android.text.format.DateUtils.MINUTE_IN_MILLIS) stringResource(R.string.launcher_just_now)
+    else android.text.format.DateUtils.getRelativeTimeSpanString(time, now, android.text.format.DateUtils.MINUTE_IN_MILLIS).toString()
+}

@@ -282,4 +282,5 @@
     <string name="launcher_chapter_confirm">O jogo começa no início deste capítulo. O ponto onde você parou é substituído quando você sair do jogo.</string>
     <string name="section_app">App</string>
     <string name="settings_app_summary">Idioma, dados do jogo, sobre</string>
+    <string name="launcher_just_now">Agora há pouco</string>
 </resources>

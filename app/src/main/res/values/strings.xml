@@ -282,4 +282,5 @@
     <string name="launcher_chapter_confirm">The game starts at the beginning of this chapter. Your resume point is replaced when you leave the game.</string>
     <string name="section_app">App</string>
     <string name="settings_app_summary">Language, game data, about</string>
+    <string name="launcher_just_now">Just now</string>
 </resources>

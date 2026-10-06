@@ -3,7 +3,6 @@ package io.github.doutorraposo.moonpearl
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.text.format.DateUtils
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -371,7 +370,7 @@ private fun SlotCard(slot: SaveStates.Slot, onSave: () -> Unit, onLoad: () -> Un
                 style = MaterialTheme.typography.titleSmall,
             )
             Text(
-                slot.modified?.let { DateUtils.getRelativeTimeSpanString(it).toString() } ?: "—",
+                slot.modified?.let { savedAgo(it) } ?: "—",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,

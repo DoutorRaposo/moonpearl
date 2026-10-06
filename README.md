@@ -10,7 +10,7 @@ own ROM; the app sets everything up on the device.
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/launcher.webp" alt="Launcher" width="200">
+  <img src="docs/screenshots/launcher.webp" alt="Home screen" width="200">
   <img src="docs/screenshots/saves.webp" alt="Manage saves" width="200">
 </p>
 

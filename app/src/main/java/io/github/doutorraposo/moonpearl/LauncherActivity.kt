@@ -3,7 +3,6 @@ package io.github.doutorraposo.moonpearl
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.text.format.DateUtils
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -284,7 +283,7 @@ private fun ContinueCard(resume: SaveStates.Slot?, modifier: Modifier, onClick: 
                 )
                 resume?.modified?.let { time ->
                     Text(
-                        DateUtils.getRelativeTimeSpanString(time, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString(),
+                        savedAgo(time),
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White.copy(alpha = 0.8f),
                     )

@@ -3,7 +3,6 @@ package io.github.doutorraposo.moonpearl
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import android.text.format.DateUtils
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -216,7 +215,7 @@ private fun SavesScreen(manager: SaveManager, states: SaveStates) {
                                 style = MaterialTheme.typography.bodyLarge,
                             )
                             Text(
-                                slot.modified?.let { DateUtils.getRelativeTimeSpanString(it).toString() }.orEmpty(),
+                                slot.modified?.let { savedAgo(it) }.orEmpty(),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
