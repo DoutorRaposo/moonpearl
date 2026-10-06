@@ -4,3 +4,4 @@ gradlew text eol=lf
 *.bps binary
 *.jar binary
 *.patch text eol=lf
+app/src/main/assets/shaders/** text eol=lf
