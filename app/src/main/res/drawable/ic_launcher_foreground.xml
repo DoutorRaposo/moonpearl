@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A plain sword, drawn inside the 66dp adaptive icon safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:rotation="45">
+        <path
+            android:fillColor="@color/icon_foreground"
+            android:pathData="M51,26 L54,22 L57,26 L57,62 L51,62 Z" />
+        <path
+            android:fillColor="@color/icon_foreground"
+            android:pathData="M42,62 L66,62 L66,67 L42,67 Z" />
+        <path
+            android:fillColor="@color/icon_foreground"
+            android:pathData="M51.5,67 L56.5,67 L56.5,79 L51.5,79 Z" />
+        <path
+            android:fillColor="@color/icon_foreground"
+            android:pathData="M49,79 L59,79 L59,85 L49,85 Z" />
+    </group>
+</vector>

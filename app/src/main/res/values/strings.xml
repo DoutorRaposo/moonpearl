@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">Z3</string>
+    <string name="tagline">Native Android port of the zelda3 PC reimplementation.</string>
+
+    <string name="section_game_data">Game data</string>
+    <string name="assets_missing">Select your own copy of the game: the US release ROM (.sfc or .smc, zipped or not). The game data is built on this device and the ROM is not kept.</string>
+    <string name="assets_ready">Game data installed.</string>
+    <string name="select_rom">Select ROM</string>
+    <string name="reimport_rom">Import again</string>
+    <string name="importing">Building game data…</string>
+    <string name="import_wrong_rom">This is not the expected ROM (CRC32 %1$s). Use the US release, CRC32 777AAC2F.</string>
+    <string name="import_not_recognized">File not recognized. Pick a .sfc, .smc, .zip or zelda3_assets.dat file.</string>
+    <string name="import_failed">Import failed: %1$s</string>
+
+    <string name="play">Play</string>
+
+    <string name="section_display">Display</string>
+    <string name="aspect_ratio">Aspect ratio</string>
+    <string name="aspect_ratio_hint">Widescreen modes show more of the world instead of stretching the picture.</string>
+    <string name="fill_screen">Fill the screen</string>
+    <string name="fill_screen_off">The picture keeps its proportions, with bars where it does not reach the edges.</string>
+    <string name="fill_screen_crops_lines">Covers the whole screen, hiding about %1$d lines of the game at the top and at the bottom.</string>
+    <string name="fill_screen_crops_columns">Covers the whole screen, hiding about %1$d columns of the game at each side.</string>
+    <string name="fill_screen_exact">This mode matches the screen exactly.</string>
+    <string name="enhanced_mode7">High resolution world map</string>
+    <string name="linear_filtering">Smooth pixels (linear filtering)</string>
+    <string name="dim_flashes">Reduce flashing effects</string>
+
+    <string name="section_controls">Controls</string>
+    <string name="touch_controls">On-screen controls</string>
+    <string name="touch_opacity">Opacity</string>
+    <string name="controller_hint">Controllers are detected automatically. The on-screen controls hide while one is in use and come back when you touch the screen.</string>
+
+    <string name="section_game">Game</string>
+    <string name="autosave">Resume where you left off</string>
+    <string name="no_sprite_limits">Remove sprite flicker</string>
+
+    <string name="section_enhancements">Enhancements</string>
+    <string name="feature_item_switch_lr">Switch items with L/R</string>
+    <string name="feature_turn_while_dashing">Turn while dashing</string>
+    <string name="feature_mirror_to_darkworld">Mirror warps to the Dark World</string>
+    <string name="feature_collect_items_with_sword">Collect items with the sword</string>
+    <string name="feature_break_pots_with_sword">Break pots with level 2–4 sword</string>
+    <string name="feature_disable_low_health_beep">Disable low health beep</string>
+    <string name="feature_skip_intro">Skip intro on keypress</string>
+    <string name="feature_show_max_items_in_yellow">Show maxed items in yellow</string>
+    <string name="feature_more_active_bombs">Up to four active bombs</string>
+    <string name="feature_carry_more_rupees">Carry up to 9999 rupees</string>
+    <string name="feature_misc_bug_fixes">Bug fixes</string>
+    <string name="feature_game_changing_bug_fixes">Bug fixes that change gameplay</string>
+    <string name="feature_cancel_bird_travel">Cancel bird travel with X</string>
+
+    <string name="quit_game_message">Quit the game? Your progress is saved automatically.</string>
+    <string name="quit_game_confirm">Quit</string>
+
+    <string name="legal_notice">This app contains no game data. You must supply a ROM from a cartridge you own. Based on snesrev/zelda3 (MIT).</string>
+</resources>

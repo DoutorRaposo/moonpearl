@@ -1,0 +1,6 @@
+[submodule "external/zelda3"]
+	path = external/zelda3
+	url = https://github.com/snesrev/zelda3.git
+[submodule "external/SDL"]
+	path = external/SDL
+	url = https://github.com/libsdl-org/SDL.git

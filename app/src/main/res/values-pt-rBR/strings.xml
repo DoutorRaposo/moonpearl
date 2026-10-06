@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tagline">Port Android nativo da reimplementação zelda3 para PC.</string>
+
+    <string name="section_game_data">Dados do jogo</string>
+    <string name="assets_missing">Selecione a sua cópia do jogo: a ROM da versão americana (.sfc ou .smc, compactada ou não). Os dados do jogo são gerados neste aparelho e a ROM não é guardada.</string>
+    <string name="assets_ready">Dados do jogo instalados.</string>
+    <string name="select_rom">Selecionar ROM</string>
+    <string name="reimport_rom">Importar de novo</string>
+    <string name="importing">Gerando os dados do jogo…</string>
+    <string name="import_wrong_rom">Esta não é a ROM esperada (CRC32 %1$s). Use a versão americana, CRC32 777AAC2F.</string>
+    <string name="import_not_recognized">Arquivo não reconhecido. Escolha um arquivo .sfc, .smc, .zip ou zelda3_assets.dat.</string>
+    <string name="import_failed">Falha ao importar: %1$s</string>
+
+    <string name="play">Jogar</string>
+
+    <string name="section_display">Tela</string>
+    <string name="aspect_ratio">Proporção</string>
+    <string name="aspect_ratio_hint">Os modos widescreen mostram mais do mapa em vez de esticar a imagem.</string>
+    <string name="fill_screen">Preencher a tela</string>
+    <string name="fill_screen_off">A imagem mantém a proporção, com faixas onde não alcança as bordas.</string>
+    <string name="fill_screen_crops_lines">Cobre a tela inteira, escondendo cerca de %1$d linhas do jogo em cima e embaixo.</string>
+    <string name="fill_screen_crops_columns">Cobre a tela inteira, escondendo cerca de %1$d colunas do jogo de cada lado.</string>
+    <string name="fill_screen_exact">Este modo coincide exatamente com a tela.</string>
+    <string name="enhanced_mode7">Mapa-múndi em alta resolução</string>
+    <string name="linear_filtering">Suavizar pixels (filtro linear)</string>
+    <string name="dim_flashes">Reduzir efeitos de flash</string>
+
+    <string name="section_controls">Controles</string>
+    <string name="touch_controls">Controles na tela</string>
+    <string name="touch_opacity">Opacidade</string>
+    <string name="controller_hint">Controles são detectados automaticamente. Os botões na tela somem enquanto um controle está em uso e voltam quando você toca na tela.</string>
+
+    <string name="section_game">Jogo</string>
+    <string name="autosave">Continuar de onde parou</string>
+    <string name="no_sprite_limits">Remover o pisca-pisca de sprites</string>
+
+    <string name="section_enhancements">Melhorias</string>
+    <string name="feature_item_switch_lr">Trocar itens com L/R</string>
+    <string name="feature_turn_while_dashing">Virar durante a corrida</string>
+    <string name="feature_mirror_to_darkworld">Espelho leva ao Dark World</string>
+    <string name="feature_collect_items_with_sword">Pegar itens com a espada</string>
+    <string name="feature_break_pots_with_sword">Quebrar potes com espada nível 2–4</string>
+    <string name="feature_disable_low_health_beep">Desativar o bipe de vida baixa</string>
+    <string name="feature_skip_intro">Pular a introdução ao apertar um botão</string>
+    <string name="feature_show_max_items_in_yellow">Mostrar itens no máximo em amarelo</string>
+    <string name="feature_more_active_bombs">Até quatro bombas ativas</string>
+    <string name="feature_carry_more_rupees">Carregar até 9999 rupias</string>
+    <string name="feature_misc_bug_fixes">Correções de bugs</string>
+    <string name="feature_game_changing_bug_fixes">Correções que mudam a jogabilidade</string>
+    <string name="feature_cancel_bird_travel">Cancelar a viagem de pássaro com X</string>
+
+    <string name="quit_game_message">Sair do jogo? Seu progresso é salvo automaticamente.</string>
+    <string name="quit_game_confirm">Sair</string>
+
+    <string name="legal_notice">Este app não contém nenhum dado do jogo. Você precisa fornecer uma ROM de um cartucho que possua. Baseado em snesrev/zelda3 (MIT).</string>
+</resources>

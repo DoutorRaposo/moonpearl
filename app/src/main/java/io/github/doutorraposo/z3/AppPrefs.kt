@@ -1,0 +1,22 @@
+package io.github.doutorraposo.z3
+
+import android.content.Context
+
+/** App-side options that zelda3.ini knows nothing about. */
+class AppPrefs(context: Context) {
+    private val prefs = context.getSharedPreferences("app", Context.MODE_PRIVATE)
+
+    var touchControls: Boolean
+        get() = prefs.getBoolean("touch_controls", true)
+        // commit(): the game runs in its own process and reads these right after launch.
+        set(value) { prefs.edit().putBoolean("touch_controls", value).commit() }
+
+    /** Scale the picture until it covers the whole screen, cropping what does not fit. */
+    var fillScreen: Boolean
+        get() = prefs.getBoolean("fill_screen", true)
+        set(value) { prefs.edit().putBoolean("fill_screen", value).commit() }
+
+    var touchOpacity: Float
+        get() = prefs.getFloat("touch_opacity", 0.5f)
+        set(value) { prefs.edit().putFloat("touch_opacity", value).commit() }
+}
