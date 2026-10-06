@@ -41,7 +41,8 @@ own ROM; the app sets everything up on the device.
   CD-quality and others, in PCM or OPUZ, including MSU Deluxe). Pick the pack's folder; the
   files are read in place, not copied.
 - **Image filters**: sharp or smooth pixels, CRT scanlines, an LCD grid and pixel art
-  smoothing (xBR, OmniScale), or your own RetroArch GLSL shaders.
+  smoothing (xBR, OmniScale), or your own RetroArch GLSL shaders. Switch them from the in-game
+  menu and see the result right away.
 - **Cheats**: infinite health, magic, bombs, arrows and small keys, a full wallet, walking
   through walls, and Pro Action Replay codes.
 - **Save management**: see your three game files, erase them, export or restore a backup,

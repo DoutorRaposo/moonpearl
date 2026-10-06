@@ -58,9 +58,11 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.material3.RadioButton
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -301,7 +303,8 @@ private fun GameMenu(
                         }
                     }
                     MenuTab.CHEATS -> CheatsTab(prefs)
-                    MenuTab.IMAGE -> ImageTab()
+                    // At the right edge, so the middle of the game (where Link is) stays in view.
+                    MenuTab.IMAGE -> Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopEnd) { ImageTab() }
                     MenuTab.CHAPTERS -> Column(Modifier.verticalScroll(rememberScrollState())) {
                         Text(
                             stringResource(R.string.menu_chapters_hint),
@@ -390,8 +393,9 @@ private fun SlotCard(slot: SaveStates.Slot, onSave: () -> Unit, onLoad: () -> Un
 
 /**
  * Image filters, applied to the running game at once (it redraws while paused), so the effect
- * shows behind the menu. Saved like the setting in Display. A filter that hangs the game is
- * caught the same way as at startup (Shaders.markGameStart).
+ * shows behind the menu. Only within the video output the game started with: every filter with
+ * OpenGL, sharp or smooth with SDL. Saved like the setting in Display. A filter that hangs the
+ * game is caught the same way as at startup (Shaders.markGameStart).
  */
 @Composable
 private fun ImageTab() {
@@ -401,33 +405,50 @@ private fun ImageTab() {
     var imported by remember { mutableStateOf<List<String>>(emptyList()) }
     LaunchedEffect(Unit) { imported = withContext(Dispatchers.IO) { Shaders.imported(data.dir) } }
     val current = Shaders.current(ini)
-    // The game picked its output at startup; without OpenGL only a restart could switch.
-    val live = Shaders.usesOpenGl(ini)
+    // The game picked its output at startup; switching it takes a restart.
+    val openGl = Shaders.usesOpenGl(ini)
 
     fun choose(choice: Shaders.Choice) {
-        val updated = Ini(ini.text).apply { Shaders.apply(this, choice) }
+        val updated = Ini(ini.text).apply { Shaders.apply(this, choice, openGl) }
         data.writeIni(updated)
         ini = updated
         Shaders.markGameStart(updated, data.dir)
         GameActivity.nativeSetImageFilter((choice as? Shaders.Choice.Shader)?.path.orEmpty(), choice == Shaders.Choice.Smooth)
     }
 
-    val panel = Color(0xE60B0F0C)
-    Column(Modifier.widthIn(max = 420.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        if (!live) {
+    // Narrow, compact rows leave most of the game visible next to the list.
+    val panel = Color(0xD90B0F0C)
+    Column(Modifier.width(280.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        val shape = RoundedCornerShape(12.dp)
+        @Composable
+        fun row(label: String, choice: Shaders.Choice) {
+            val selected = current == choice
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 44.dp)
+                    .clip(shape)
+                    .background(panel)
+                    .focusRing(shape)
+                    .selectable(selected = selected, role = Role.RadioButton, onClick = { choose(choice) })
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                RadioButton(selected = selected, onClick = null)
+                Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+        row(stringResource(R.string.filter_sharp), Shaders.Choice.Sharp)
+        row(stringResource(R.string.filter_smooth), Shaders.Choice.Smooth)
+        if (!openGl) {
             Text(
-                stringResource(R.string.menu_image_unavailable),
+                stringResource(R.string.menu_image_sdl),
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.background(panel, RoundedCornerShape(12.dp)).padding(12.dp),
+                modifier = Modifier.background(panel, shape).padding(12.dp),
             )
             return@Column
         }
-        val shape = RoundedCornerShape(12.dp)
-        @Composable
-        fun row(label: String, choice: Shaders.Choice) =
-            ChoiceRow(label, null, current == choice, Modifier.clip(shape).focusRing(shape), container = panel) { choose(choice) }
-        row(stringResource(R.string.filter_sharp), Shaders.Choice.Sharp)
-        row(stringResource(R.string.filter_smooth), Shaders.Choice.Smooth)
         for (b in Shaders.Builtin.entries) row(stringResource(b.label), Shaders.Choice.Shader(b.path))
         for (path in imported) row(Shaders.displayName(path), Shaders.Choice.Shader(path))
     }

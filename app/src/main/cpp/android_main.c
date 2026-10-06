@@ -20,6 +20,7 @@ void ZeldaSetSpeed(int speed);    // patches/zelda3/0001-fixed-rate-fast-forward
 void ZeldaSetDieHook(void (*hook)(const char *error));  // patches/zelda3/0003-die-hook.patch
 void ZeldaSetMsuOpenHook(FILE *(*hook)(const char *name));  // patches/zelda3/0006-msu-open-hook.patch
 void ZeldaSetImageFilter(const char *shader, bool linear_filtering);  // patches/zelda3/0008-live-image-filter.patch
+uint32_t ZeldaMainLoopCount(void);                                     // patches/zelda3/0008-live-image-filter.patch
 
 static const char kTag[] = "moonpearl";
 
@@ -71,29 +72,28 @@ Java_io_github_doutorraposo_moonpearl_GameActivity_nativeSetSpeed(JNIEnv *env, j
   ZeldaSetSpeed(speed);
 }
 
-extern unsigned char g_ram[];  // src/zelda_rtl.c; 0x1A is the game's frame counter
-
 // GameActivity writes this file when the game starts with OpenGL output or a shader, and the
-// in-game menu when it switches filters (Shaders.markGameStart). It is removed once the game has
-// run kShaderCheckFrames frames since; if the output or a shader hangs or crashes the game
-// first, the file stays and the launcher switches back (GameData.takeShaderFailure).
+// in-game menu when it switches filters (Shaders.markGameStart). It is removed once the main loop
+// has turned kShaderCheckTurns times since (about a second; it keeps turning while paused, and a
+// filter switched while paused is drawn once right away). If the output or a shader hangs or
+// crashes the game first, the file stays and the launcher switches back
+// (GameData.takeShaderFailure).
 static const char kShaderCheckFile[] = "shader_check";
-enum { kShaderCheckFrames = 30 };
+enum { kShaderCheckTurns = 60 };
 static volatile int g_check_generation, g_check_running;
 
 static void *ClearShaderCheck(void *arg) {
   (void)arg;
-  int generation = -1, frames = 0;
-  unsigned char last = g_ram[0x1A];
-  while (frames < kShaderCheckFrames) {
+  int generation = -1;
+  uint32_t start = 0;
+  for (;;) {
     usleep(50 * 1000);
     if (generation != g_check_generation) {  // the filter changed: count again
       generation = g_check_generation;
-      frames = 0;
+      start = ZeldaMainLoopCount();
     }
-    unsigned char now = g_ram[0x1A];
-    frames += (unsigned char)(now - last);
-    last = now;
+    if (ZeldaMainLoopCount() - start >= kShaderCheckTurns)
+      break;
   }
   unlink(kShaderCheckFile);
   __sync_lock_release(&g_check_running);
@@ -120,6 +120,7 @@ Java_io_github_doutorraposo_moonpearl_GameActivity_nativeSetImageFilter(JNIEnv *
 }
 
 #ifndef NDEBUG
+extern unsigned char g_ram[];  // src/zelda_rtl.c; 0x1A is the game's frame counter
 
 // Debug builds log how many game frames run per second, to check fast-forward rates.
 static void *LogGameSpeed(void *arg) {

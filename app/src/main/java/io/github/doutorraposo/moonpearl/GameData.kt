@@ -66,7 +66,7 @@ class GameData(private val context: Context) {
         val installed = context.packageManager.getPackageInfo(context.packageName, 0).lastUpdateTime
         Shaders.installBuiltins(context, dir, "${BuildConfig.VERSION_CODE}-$installed")
         Shaders.validate(ini, dir)
-        Shaders.useOpenGl(ini, Shaders.openGlAvailable(context))
+        Shaders.useOpenGl(ini, Shaders.openGlEnabled(context))
         // The touch overlay depends on this mapping, so keep it in place even if the file was edited.
         ini["KeyMap", "Controls"] = TouchControlsView.KEYMAP_CONTROLS
         for ((key, value) in GameKeys.bindings) ini["KeyMap", key] = value
@@ -81,7 +81,7 @@ class GameData(private val context: Context) {
 
     /**
      * See [Shaders.takeFailure]. A failed shader is switched off and returned. If the plain
-     * OpenGL output failed without a reported error, the game goes back to SDL for good.
+     * OpenGL output failed without a reported error, the video output goes to SDL.
      */
     fun takeShaderFailure(hadError: Boolean): Shaders.Failure? {
         if (!File(dir, "shader_check").isFile) return null
@@ -90,7 +90,7 @@ class GameData(private val context: Context) {
         val failure = Shaders.takeFailure(ini, dir)
         if (failure == Shaders.Failure.OpenGl) {
             if (hadError) return null
-            AppPrefs(context).openGlFailed = true
+            AppPrefs(context).useOpenGl = false
             Shaders.useOpenGl(ini, false)
         }
         if (ini.text != before) writeIni(ini)

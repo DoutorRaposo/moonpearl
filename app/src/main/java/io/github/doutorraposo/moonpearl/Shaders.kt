@@ -8,11 +8,11 @@ import java.io.File
 
 /**
  * How the picture is scaled to the screen: plain (sharp or linear) or through a GLSL shader
- * preset. Everything goes through upstream's OpenGL output, which runs on OpenGL ES here (patches
- * 0007 and 0008), so the in-game menu can switch filters while the game runs. Devices without
- * OpenGL ES 3, or where the OpenGL output failed to start, use upstream's SDL renderer and get
- * only the plain options. Presets are run from the game folder: the bundled ones under
- * shaders/builtin, the player's own (copied from a folder they pick) under shaders/custom.
+ * preset. The player picks the video output: upstream's OpenGL output, which runs on OpenGL ES
+ * here (patches 0007 and 0008) and takes shaders, or its SDL renderer, with the plain options
+ * only. Either way the in-game menu switches filters within that output while the game runs.
+ * Presets are run from the game folder: the bundled ones under shaders/builtin, the player's
+ * own (copied from a folder they pick) under shaders/custom.
  */
 object Shaders {
     enum class Builtin(val id: String, @StringRes val label: Int, @StringRes val description: Int) {
@@ -49,11 +49,14 @@ object Shaders {
 
     fun usesOpenGl(ini: Ini) = ini["Graphics", "OutputMethod"].orEmpty().startsWith("OpenGL", ignoreCase = true)
 
-    /** OpenGL ES 3 (upstream's minimum), unless the OpenGL output already failed here. */
-    fun openGlAvailable(context: Context): Boolean {
+    /** OpenGL ES 3, upstream's minimum for its OpenGL ES output. */
+    fun deviceSupportsOpenGl(context: Context): Boolean {
         val am = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
-        return am.deviceConfigurationInfo.reqGlEsVersion >= 0x30000 && !AppPrefs(context).openGlFailed
+        return am.deviceConfigurationInfo.reqGlEsVersion >= 0x30000
     }
+
+    /** The output the game should start with: OpenGL if chosen and supported. */
+    fun openGlEnabled(context: Context) = AppPrefs(context).useOpenGl && deviceSupportsOpenGl(context)
 
     fun current(ini: Ini): Choice {
         val shader = ini["Graphics", "Shader"].orEmpty()

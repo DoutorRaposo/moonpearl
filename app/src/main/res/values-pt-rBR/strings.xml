@@ -239,8 +239,13 @@
     <string name="shader_failed_title">Filtro de imagem desligado</string>
     <string name="shader_failed_message">O jogo não conseguiu rodar com o shader “%1$s”: travou ou fechou logo depois de abrir. O filtro de imagem voltou para Pixels nítidos.</string>
     <string name="menu_tab_image">Imagem</string>
-    <string name="menu_image_unavailable">Neste aparelho o filtro de imagem não pode ser trocado com o jogo rodando. Mude em Configurações > Tela.</string>
-    <string name="shaders_unavailable">Os shaders precisam de OpenGL ES 3, que este aparelho não oferece ao jogo. As opções sem shader continuam funcionando.</string>
-    <string name="opengl_retry">Tentar OpenGL de novo</string>
-    <string name="opengl_failed_message">O jogo não conseguiu rodar com a saída OpenGL neste aparelho: travou ou fechou logo depois de abrir. Agora ele usa a saída compatível; os shaders ficam indisponíveis.</string>
+    <string name="video_output">Saída de vídeo</string>
+    <string name="output_opengl">OpenGL</string>
+    <string name="output_sdl">SDL</string>
+    <string name="output_opengl_desc">Necessária para os shaders. No menu do jogo (aba Imagem), todos os filtros trocam na hora.</string>
+    <string name="output_sdl_desc">O renderizador original, o mais compatível: só pixels nítidos ou suaves, que também trocam no menu do jogo.</string>
+    <string name="output_restart">A troca de saída vale a partir da próxima vez que o jogo abrir.</string>
+    <string name="output_unsupported">Este aparelho não tem OpenGL ES 3, então só a saída SDL está disponível.</string>
+    <string name="menu_image_sdl">Os shaders precisam da saída OpenGL (Configurações > Tela > Filtro de imagem).</string>
+    <string name="opengl_failed_message">O jogo não conseguiu rodar com a saída OpenGL neste aparelho: travou ou fechou logo depois de abrir. Agora ele usa a saída SDL; dá para voltar em Configurações > Tela > Filtro de imagem.</string>
 </resources>

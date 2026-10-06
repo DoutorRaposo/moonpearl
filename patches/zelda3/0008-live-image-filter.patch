@@ -1,8 +1,8 @@
 diff --git a/src/main.c b/src/main.c
-index 70267b0..11457bc 100644
+index 70267b0..7a2462e 100644
 --- a/src/main.c
 +++ b/src/main.c
-@@ -297,6 +297,34 @@ static const struct RendererFuncs kSdlRendererFuncs  = {
+@@ -297,6 +297,44 @@ static const struct RendererFuncs kSdlRendererFuncs  = {
  };
  
  void OpenGLRenderer_Create(struct RendererFuncs *funcs, bool use_opengl_es);
@@ -12,13 +12,21 @@ index 70267b0..11457bc 100644
 +static bool g_filter_pending, g_filter_linear;
 +static char g_filter_shader[256];
 +
-+// Changes the image filter while the game runs. Only the OpenGL output methods support shaders.
++// Changes the image filter while the game runs. Only the OpenGL output methods support shaders;
++// the SDL renderer switches between sharp and linear filtering.
 +void ZeldaSetImageFilter(const char *shader, bool linear_filtering) {
 +  SDL_AtomicLock(&g_filter_lock);
 +  snprintf(g_filter_shader, sizeof(g_filter_shader), "%s", shader ? shader : "");
 +  g_filter_linear = linear_filtering;
 +  g_filter_pending = true;
 +  SDL_AtomicUnlock(&g_filter_lock);
++}
++
++static volatile uint32 g_main_loop_count;
++
++// Turns of the main loop, paused or not. A shader that hangs the GPU stops it.
++uint32 ZeldaMainLoopCount(void) {
++  return g_main_loop_count;
 +}
 +
 +static bool ApplyPendingImageFilter(void) {
@@ -32,12 +40,22 @@ index 70267b0..11457bc 100644
 +  SDL_AtomicUnlock(&g_filter_lock);
 +  if (g_config.output_method == kOutputMethod_OpenGL || g_config.output_method == kOutputMethod_OpenGL_ES)
 +    OpenGLRenderer_SetShader(shader);
++  else if (g_texture != NULL)  // SDL renderer: no shaders, but the filtering can change
++    SDL_SetTextureScaleMode(g_texture, g_config.linear_filtering ? SDL_ScaleModeLinear : SDL_ScaleModeNearest);
 +  return true;
 +}
  
  #undef main
  int main(int argc, char** argv) {
-@@ -468,6 +496,9 @@ int main(int argc, char** argv) {
+@@ -423,6 +461,7 @@ int main(int argc, char** argv) {
+     HandleCommand(kKeys_Load + 0, true);
+ 
+   while(running) {
++    g_main_loop_count++;
+     while(SDL_PollEvent(&event)) {
+       switch(event.type) {
+       case SDL_CONTROLLERDEVICEADDED:
+@@ -468,6 +507,9 @@ int main(int argc, char** argv) {
          SDL_PauseAudioDevice(device, audiopaused);
      }
  
