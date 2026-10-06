@@ -22,6 +22,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -169,7 +170,7 @@ private fun LayoutEditor(prefs: AppPrefs, background: androidx.compose.ui.graphi
                     .align(Alignment.Center)
                     .offset { IntOffset(panelOffset.x.roundToInt(), panelOffset.y.roundToInt()) }
                     .onSizeChanged { panelSize = it }
-                    .width(380.dp),
+                    .width(420.dp),
             ) {
                 Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
                     // The handle and title row moves the panel.
@@ -219,34 +220,47 @@ private fun LayoutEditor(prefs: AppPrefs, background: androidx.compose.ui.graphi
                     } else {
                         Text(stringResource(R.string.layout_hint), style = MaterialTheme.typography.bodyMedium)
                     }
-                    Text(stringResource(R.string.layout_opacity), style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        stringResource(R.string.layout_opacity),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
                     Slider(value = opacity, onValueChange = { opacity = it }, valueRange = 0.15f..1f)
                     Text(
                         stringResource(R.string.layout_panel_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Row(
+                    // Two groups that sit on one line when they fit and wrap (never squeeze) when
+                    // the labels are long, e.g. in Portuguese or with a large font.
+                    FlowRow(
                         Modifier.fillMaxWidth().padding(top = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
-                        TextButton(onClick = {
-                            if (layout != TouchLayout.DEFAULT) history += layout
-                            layout = TouchLayout.DEFAULT
-                            selected = null
-                        }) { Text(stringResource(R.string.layout_reset)) }
-                        TextButton(
-                            enabled = history.isNotEmpty(),
-                            onClick = { layout = history.removeAt(history.lastIndex) },
-                        ) { Text(stringResource(R.string.layout_undo)) }
-                        Spacer(Modifier.weight(1f))
-                        OutlinedButton(onClick = onDone) { Text(stringResource(R.string.layout_cancel)) }
-                        Button(onClick = {
-                            prefs.touchLayout = layout
-                            prefs.touchOpacity = opacity
-                            onDone()
-                        }) { Text(stringResource(R.string.layout_save)) }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            TextButton(onClick = {
+                                if (layout != TouchLayout.DEFAULT) history += layout
+                                layout = TouchLayout.DEFAULT
+                                selected = null
+                            }) { Text(stringResource(R.string.layout_reset), maxLines = 1) }
+                            TextButton(
+                                enabled = history.isNotEmpty(),
+                                onClick = { layout = history.removeAt(history.lastIndex) },
+                            ) { Text(stringResource(R.string.layout_undo), maxLines = 1) }
+                        }
+                        Row(
+                            Modifier.weight(1f),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            OutlinedButton(onClick = onDone) { Text(stringResource(R.string.layout_cancel), maxLines = 1) }
+                            Button(onClick = {
+                                prefs.touchLayout = layout
+                                prefs.touchOpacity = opacity
+                                onDone()
+                            }) { Text(stringResource(R.string.layout_save), maxLines = 1) }
+                        }
                     }
                 }
             }
