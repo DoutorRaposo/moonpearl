@@ -11,6 +11,16 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -94,7 +104,24 @@ private fun LayoutEditor(prefs: AppPrefs, background: androidx.compose.ui.graphi
     var holding by remember { mutableStateOf(false) }
     val elements = remember { TouchControlsView.elementsFor(prefs).ifEmpty { Element.entries.toSet() } }
 
-    Box(Modifier.fillMaxSize().background(Color.Black)) {
+    // Undo: the layout before each drag, size change or reset.
+    val history = remember { mutableStateListOf<TouchLayout>() }
+    var before by remember { mutableStateOf<TouchLayout?>(null) }
+    fun begin() {
+        if (before == null) before = layout
+    }
+    fun finish() {
+        before?.let { if (it != layout) history += it }
+        before = null
+    }
+
+    // The panel can be dragged by its top, e.g. off a control that ended up under it.
+    var panelOffset by remember { mutableStateOf(Offset.Zero) }
+    var panelSize by remember { mutableStateOf(IntSize.Zero) }
+
+    BoxWithConstraints(Modifier.fillMaxSize().background(Color.Black)) {
+        val maxX = ((constraints.maxWidth - panelSize.width) / 2f).coerceAtLeast(0f)
+        val maxY = ((constraints.maxHeight - panelSize.height) / 2f).coerceAtLeast(0f)
         if (background != null) {
             Image(
                 background,
@@ -110,9 +137,20 @@ private fun LayoutEditor(prefs: AppPrefs, background: androidx.compose.ui.graphi
                     editMode = true
                     this.elements = elements
                     onSelect = { e ->
-                        if (e == null) panelVisible = !panelVisible else { selected = e; holding = true; panelVisible = true }
+                        if (e == null) {
+                            panelVisible = !panelVisible
+                        } else {
+                            selected = e
+                            holding = true
+                            panelVisible = true
+                            begin()
+                        }
                     }
-                    onLayoutChange = { layout = it; holding = false }
+                    onLayoutChange = {
+                        layout = it
+                        holding = false
+                        finish()
+                    }
                 }
             },
             update = { view ->
@@ -127,42 +165,81 @@ private fun LayoutEditor(prefs: AppPrefs, background: androidx.compose.ui.graphi
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.92f),
                 contentColor = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.align(Alignment.Center).width(340.dp),
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .offset { IntOffset(panelOffset.x.roundToInt(), panelOffset.y.roundToInt()) }
+                    .onSizeChanged { panelSize = it }
+                    .width(380.dp),
             ) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
+                    // The handle and title row moves the panel.
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .pointerInput(maxX, maxY) {
+                                detectDragGestures { change, drag ->
+                                    change.consume()
+                                    panelOffset = Offset(
+                                        (panelOffset.x + drag.x).coerceIn(-maxX, maxX),
+                                        (panelOffset.y + drag.y).coerceIn(-maxY, maxY),
+                                    )
+                                }
+                            }
+                            .padding(top = 8.dp, bottom = 4.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Box(
+                            Modifier
+                                .size(width = 36.dp, height = 4.dp)
+                                .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), RoundedCornerShape(2.dp)),
+                        )
+                        Text(
+                            stringResource(R.string.layout_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        )
+                    }
                     val current = selected
-                    Text(
-                        if (current != null) stringResource(R.string.layout_selected, elementName(current))
-                        else stringResource(R.string.layout_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                    )
                     if (current != null) {
                         val scale = layout[current].scale
                         Text(
-                            stringResource(R.string.layout_size, (scale * 100).roundToInt()),
+                            stringResource(R.string.layout_size, elementName(current), (scale * 100).roundToInt()),
                             style = MaterialTheme.typography.bodyMedium,
                         )
                         Slider(
                             value = scale,
-                            onValueChange = { layout = layout.scaled(current, it) },
+                            onValueChange = {
+                                begin()
+                                layout = layout.scaled(current, it)
+                            },
+                            onValueChangeFinished = { finish() },
                             valueRange = TouchLayout.MIN_SCALE..TouchLayout.MAX_SCALE,
                         )
                     } else {
                         Text(stringResource(R.string.layout_hint), style = MaterialTheme.typography.bodyMedium)
                     }
-                    Text(stringResource(R.string.touch_opacity), style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.layout_opacity), style = MaterialTheme.typography.bodyMedium)
                     Slider(value = opacity, onValueChange = { opacity = it }, valueRange = 0.15f..1f)
                     Text(
                         stringResource(R.string.layout_panel_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         TextButton(onClick = {
+                            if (layout != TouchLayout.DEFAULT) history += layout
                             layout = TouchLayout.DEFAULT
                             selected = null
                         }) { Text(stringResource(R.string.layout_reset)) }
+                        TextButton(
+                            enabled = history.isNotEmpty(),
+                            onClick = { layout = history.removeAt(history.lastIndex) },
+                        ) { Text(stringResource(R.string.layout_undo)) }
                         Spacer(Modifier.weight(1f))
                         OutlinedButton(onClick = onDone) { Text(stringResource(R.string.layout_cancel)) }
                         Button(onClick = {

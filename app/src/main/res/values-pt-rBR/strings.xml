@@ -44,10 +44,11 @@
     <string name="turbo_button">Botão de avanço rápido</string>
     <string name="turbo_button_desc">Acelera o jogo ao máximo enquanto estiver pressionado</string>
     <string name="layout_title">Personalizar layout</string>
-    <string name="layout_hint">Arraste um controle para movê-lo. Selecione um para mudar o tamanho.</string>
-    <string name="layout_panel_hint">Toque numa área vazia para esconder ou mostrar este painel.</string>
-    <string name="layout_selected">Selecionado: %1$s</string>
-    <string name="layout_size">Tamanho: %1$d%%</string>
+    <string name="layout_hint">Arraste um controle para movê-lo. Toque num deles para mudar o tamanho.</string>
+    <string name="layout_panel_hint">Arraste este painel pelo topo para tirá-lo da frente. Toque numa área vazia para esconder ou mostrar.</string>
+    <string name="layout_size">Tamanho de %1$s: %2$d%%</string>
+    <string name="layout_opacity">Opacidade (todos os controles)</string>
+    <string name="layout_undo">Desfazer</string>
     <string name="layout_reset">Restaurar</string>
     <string name="layout_cancel">Cancelar</string>
     <string name="layout_save">Salvar</string>
