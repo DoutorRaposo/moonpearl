@@ -18,23 +18,17 @@ add_subdirectory(${SDL_DIR} SDL2 EXCLUDE_FROM_ALL)
 set(ZELDA3_PATCHED ${CMAKE_CURRENT_BINARY_DIR}/zelda3-patched)
 file(REMOVE_RECURSE ${ZELDA3_PATCHED})
 file(COPY ${ZELDA3_DIR}/src ${ZELDA3_DIR}/snes DESTINATION ${ZELDA3_PATCHED})
-# Line endings depend on the checkout (core.autocrlf), so normalize the copy to LF, the
-# form the patches are kept in.
-file(GLOB_RECURSE ZELDA3_COPIED ${ZELDA3_PATCHED}/*.c ${ZELDA3_PATCHED}/*.h)
-foreach(f ${ZELDA3_COPIED})
-  file(READ ${f} content)
-  string(REPLACE "\r\n" "\n" content "${content}")
-  file(WRITE ${f} "${content}")
-endforeach()
 file(GLOB ZELDA3_PATCHES ${ZELDA3_PATCHES_DIR}/*.patch)
 list(SORT ZELDA3_PATCHES)
 find_package(Git REQUIRED)
 foreach(patch ${ZELDA3_PATCHES})
   # Stop git from finding the enclosing repository; inside one, apply would silently
-  # skip paths outside the current directory.
+  # skip paths outside the current directory. Upstream files are CRLF in its repository
+  # while patches are LF, and checkouts may convert either way (core.autocrlf), so line
+  # endings are ignored when matching.
   execute_process(
     COMMAND ${CMAKE_COMMAND} -E env GIT_CEILING_DIRECTORIES=${CMAKE_CURRENT_BINARY_DIR}
-            ${GIT_EXECUTABLE} apply --verbose ${patch}
+            ${GIT_EXECUTABLE} apply --verbose --ignore-whitespace ${patch}
     WORKING_DIRECTORY ${ZELDA3_PATCHED}
     RESULT_VARIABLE result
     ERROR_VARIABLE output)
