@@ -1,9 +1,11 @@
 name: Release
 
 # Push a tag like v0.2.0 to build a signed APK and publish it as a GitHub release.
+# Running it by hand from a branch only builds the APK and keeps it as an artifact.
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -34,6 +36,11 @@ jobs:
       - name: Version from tag
         id: version
         run: |
+          if [ "$GITHUB_REF_TYPE" != tag ]; then
+            echo "name=0.0.0-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+            echo "code=1" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           name="${GITHUB_REF_NAME#v}"
           IFS=. read -r major minor patch <<< "${name%%-*}"
           echo "name=$name" >> "$GITHUB_OUTPUT"
@@ -55,7 +62,13 @@ jobs:
           # Only signed builds are named app-release.apk, so this also fails on a signing problem.
           cp app/build/outputs/apk/release/app-release.apk "zelda3-android-${{ steps.version.outputs.name }}.apk"
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zelda3-android-${{ steps.version.outputs.name }}
+          path: zelda3-android-*.apk
+
       - name: Publish release
+        if: github.ref_type == 'tag'
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" zelda3-android-*.apk --generate-notes --title "$GITHUB_REF_NAME"
