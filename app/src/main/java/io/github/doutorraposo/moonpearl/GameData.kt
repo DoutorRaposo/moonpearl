@@ -66,6 +66,7 @@ class GameData(private val context: Context) {
         val installed = context.packageManager.getPackageInfo(context.packageName, 0).lastUpdateTime
         Shaders.installBuiltins(context, dir, "${BuildConfig.VERSION_CODE}-$installed")
         Shaders.validate(ini, dir)
+        Shaders.useOpenGl(ini, Shaders.openGlAvailable(context))
         // The touch overlay depends on this mapping, so keep it in place even if the file was edited.
         ini["KeyMap", "Controls"] = TouchControlsView.KEYMAP_CONTROLS
         for ((key, value) in GameKeys.bindings) ini["KeyMap", key] = value
@@ -78,14 +79,22 @@ class GameData(private val context: Context) {
         }
     }
 
-    /** See [Shaders.takeFailure]: the shader that kept the last session from running, switched off. */
-    fun takeShaderFailure(): String? {
+    /**
+     * See [Shaders.takeFailure]. A failed shader is switched off and returned. If the plain
+     * OpenGL output failed without a reported error, the game goes back to SDL for good.
+     */
+    fun takeShaderFailure(hadError: Boolean): Shaders.Failure? {
         if (!File(dir, "shader_check").isFile) return null
         val ini = readIni()
         val before = ini.text
-        val path = Shaders.takeFailure(ini, dir)
+        val failure = Shaders.takeFailure(ini, dir)
+        if (failure == Shaders.Failure.OpenGl) {
+            if (hadError) return null
+            AppPrefs(context).openGlFailed = true
+            Shaders.useOpenGl(ini, false)
+        }
         if (ini.text != before) writeIni(ini)
-        return path
+        return failure
     }
 
     /** The message of the last fatal game error (written by android_main.c), consumed once. */

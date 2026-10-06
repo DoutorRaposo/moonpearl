@@ -59,6 +59,11 @@ class AppPrefs(context: Context) {
         get() = TouchLayout.decode(prefs.getString("touch_layout", null))
         set(value) { prefs.edit().putString("touch_layout", value.encode()).commit() }
 
+    /** The OpenGL output kept the game from starting on this device; use SDL (Shaders.kt). */
+    var openGlFailed: Boolean
+        get() = prefs.getBoolean("opengl_failed", false)
+        set(value) { prefs.edit().putBoolean("opengl_failed", value).commit() }
+
     var touchOpacity: Float
         get() = prefs.getFloat("touch_opacity", 0.5f)
         set(value) { prefs.edit().putFloat("touch_opacity", value).commit() }

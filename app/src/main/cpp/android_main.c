@@ -19,6 +19,7 @@ int main(int argc, char **argv);  // src/main.c
 void ZeldaSetSpeed(int speed);    // patches/zelda3/0001-fixed-rate-fast-forward.patch
 void ZeldaSetDieHook(void (*hook)(const char *error));  // patches/zelda3/0003-die-hook.patch
 void ZeldaSetMsuOpenHook(FILE *(*hook)(const char *name));  // patches/zelda3/0006-msu-open-hook.patch
+void ZeldaSetImageFilter(const char *shader, bool linear_filtering);  // patches/zelda3/0008-live-image-filter.patch
 
 static const char kTag[] = "moonpearl";
 
@@ -72,23 +73,50 @@ Java_io_github_doutorraposo_moonpearl_GameActivity_nativeSetSpeed(JNIEnv *env, j
 
 extern unsigned char g_ram[];  // src/zelda_rtl.c; 0x1A is the game's frame counter
 
-// GameActivity writes this file when the game starts with a shader (Shaders.kt). It is removed
-// once the game has run about two seconds; if a shader hangs or crashes the game first, the file
-// stays and the launcher switches the shader off (GameData.takeShaderFailure).
+// GameActivity writes this file when the game starts with OpenGL output or a shader, and the
+// in-game menu when it switches filters (Shaders.markGameStart). It is removed once the game has
+// run kShaderCheckFrames frames since; if the output or a shader hangs or crashes the game
+// first, the file stays and the launcher switches back (GameData.takeShaderFailure).
 static const char kShaderCheckFile[] = "shader_check";
+enum { kShaderCheckFrames = 30 };
+static volatile int g_check_generation, g_check_running;
 
 static void *ClearShaderCheck(void *arg) {
   (void)arg;
+  int generation = -1, frames = 0;
   unsigned char last = g_ram[0x1A];
-  int frames = 0;
-  while (frames < 120) {
+  while (frames < kShaderCheckFrames) {
     usleep(50 * 1000);
+    if (generation != g_check_generation) {  // the filter changed: count again
+      generation = g_check_generation;
+      frames = 0;
+    }
     unsigned char now = g_ram[0x1A];
     frames += (unsigned char)(now - last);
     last = now;
   }
   unlink(kShaderCheckFile);
+  __sync_lock_release(&g_check_running);
   return NULL;
+}
+
+static void StartShaderCheck(void) {
+  __sync_fetch_and_add(&g_check_generation, 1);
+  if (access(kShaderCheckFile, F_OK) != 0 || __sync_lock_test_and_set(&g_check_running, 1))
+    return;
+  pthread_t thread;
+  if (pthread_create(&thread, NULL, ClearShaderCheck, NULL) == 0)
+    pthread_detach(thread);
+  else
+    __sync_lock_release(&g_check_running);
+}
+
+JNIEXPORT void JNICALL
+Java_io_github_doutorraposo_moonpearl_GameActivity_nativeSetImageFilter(JNIEnv *env, jclass cls, jstring shader, jboolean linear) {
+  const char *path = (*env)->GetStringUTFChars(env, shader, NULL);
+  ZeldaSetImageFilter(path, linear);
+  (*env)->ReleaseStringUTFChars(env, shader, path);
+  StartShaderCheck();
 }
 
 #ifndef NDEBUG
@@ -177,11 +205,7 @@ int SDL_main(int argc, char *argv[]) {
   // Fatal errors go through Die(); main() itself returns 1 when SDL cannot start.
   ZeldaSetDieHook(OnDie);
   ZeldaSetMsuOpenHook(OpenMsuTrack);
-  if (access(kShaderCheckFile, F_OK) == 0) {
-    pthread_t check_thread;
-    if (pthread_create(&check_thread, NULL, ClearShaderCheck, NULL) == 0)
-      pthread_detach(check_thread);
-  }
+  StartShaderCheck();
   int result = main(argc, argv);
   if (result != 0 && access(kLastErrorFile, F_OK) != 0) {
     char message[512];

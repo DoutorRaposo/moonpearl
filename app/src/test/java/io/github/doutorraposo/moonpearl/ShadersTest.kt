@@ -13,11 +13,27 @@ class ShadersTest {
     private fun ini() = Ini("[Graphics]\nOutputMethod = SDL\nLinearFiltering = 0\nShader =\n")
 
     @Test
-    fun plainOptionsUseTheSdlRenderer() {
+    fun plainOptionsUseOpenGlSoTheMenuCanSwitchLive() {
         val ini = ini()
         assertEquals(Shaders.Choice.Sharp, Shaders.current(ini))
         Shaders.apply(ini, Shaders.Choice.Smooth)
+        assertEquals("OpenGL ES", ini["Graphics", "OutputMethod"])
+        assertEquals("1", ini["Graphics", "LinearFiltering"])
+        assertEquals(Shaders.Choice.Smooth, Shaders.current(ini))
+    }
+
+    @Test
+    fun withoutOpenGlOnlyPlainOptionsRemain() {
+        val ini = ini()
+        Shaders.apply(ini, Shaders.Choice.Shader(Shaders.Builtin.CRT.path))
+        Shaders.useOpenGl(ini, false)
         assertEquals("SDL", ini["Graphics", "OutputMethod"])
+        assertEquals(Shaders.Choice.Sharp, Shaders.current(ini))
+        Shaders.apply(ini, Shaders.Choice.Smooth, openGl = false)
+        assertEquals(Shaders.Choice.Smooth, Shaders.current(ini))
+        // Older installs (SDL) move to OpenGL keeping their choice.
+        Shaders.useOpenGl(ini, true)
+        assertEquals("OpenGL ES", ini["Graphics", "OutputMethod"])
         assertEquals(Shaders.Choice.Smooth, Shaders.current(ini))
     }
 
@@ -77,7 +93,7 @@ class ShadersTest {
         Shaders.apply(ini, crt)
         Shaders.markGameStart(ini, tmp.root)
         // The game hung before android_main.c removed the marker.
-        assertEquals(crt.path, Shaders.takeFailure(ini, tmp.root))
+        assertEquals(Shaders.Failure.Shader(crt.path), Shaders.takeFailure(ini, tmp.root))
         assertEquals(Shaders.Choice.Sharp, Shaders.current(ini))
         assertEquals(null, Shaders.takeFailure(ini, tmp.root))
     }
@@ -90,5 +106,17 @@ class ShadersTest {
         File(tmp.root, "shader_check").delete() // what android_main.c does after ~2 s
         assertEquals(null, Shaders.takeFailure(ini, tmp.root))
         assertEquals(Shaders.Choice.Shader(Shaders.Builtin.LCD.path), Shaders.current(ini))
+    }
+
+    @Test
+    fun plainOpenGlOutputIsCheckedToo() {
+        val ini = ini()
+        Shaders.apply(ini, Shaders.Choice.Sharp)
+        Shaders.markGameStart(ini, tmp.root)
+        assertEquals(Shaders.Failure.OpenGl, Shaders.takeFailure(ini, tmp.root))
+
+        Shaders.apply(ini, Shaders.Choice.Sharp, openGl = false)
+        Shaders.markGameStart(ini, tmp.root)
+        assertEquals(null, Shaders.takeFailure(ini, tmp.root))
     }
 }

@@ -238,4 +238,9 @@
     <string name="shaders_import_failed">Não foi possível copiar os shaders.</string>
     <string name="shader_failed_title">Filtro de imagem desligado</string>
     <string name="shader_failed_message">O jogo não conseguiu rodar com o shader “%1$s”: travou ou fechou logo depois de abrir. O filtro de imagem voltou para Pixels nítidos.</string>
+    <string name="menu_tab_image">Imagem</string>
+    <string name="menu_image_unavailable">Neste aparelho o filtro de imagem não pode ser trocado com o jogo rodando. Mude em Configurações > Tela.</string>
+    <string name="shaders_unavailable">Os shaders precisam de OpenGL ES 3, que este aparelho não oferece ao jogo. As opções sem shader continuam funcionando.</string>
+    <string name="opengl_retry">Tentar OpenGL de novo</string>
+    <string name="opengl_failed_message">O jogo não conseguiu rodar com a saída OpenGL neste aparelho: travou ou fechou logo depois de abrir. Agora ele usa a saída compatível; os shaders ficam indisponíveis.</string>
 </resources>

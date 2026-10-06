@@ -238,4 +238,9 @@
     <string name="shaders_import_failed">The shaders could not be copied.</string>
     <string name="shader_failed_title">Image filter switched off</string>
     <string name="shader_failed_message">The game did not get going with the shader “%1$s”: it froze or closed right after starting. The image filter is back to Sharp pixels.</string>
+    <string name="menu_tab_image">Image</string>
+    <string name="menu_image_unavailable">Image filters cannot be switched while the game runs on this device. Change them in Settings > Display.</string>
+    <string name="shaders_unavailable">Shaders need OpenGL ES 3, which this device does not offer to the game. The plain options above still work.</string>
+    <string name="opengl_retry">Try OpenGL again</string>
+    <string name="opengl_failed_message">The game did not get going with its OpenGL output on this device: it froze or closed right after starting. It now uses the compatible output; shaders are unavailable.</string>
 </resources>

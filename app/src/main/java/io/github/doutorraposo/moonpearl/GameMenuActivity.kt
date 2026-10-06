@@ -58,6 +58,10 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -185,6 +189,7 @@ private enum class MenuTab(@StringRes val label: Int) {
     STATES(R.string.menu_tab_states),
     CHAPTERS(R.string.menu_tab_chapters),
     CHEATS(R.string.menu_tab_cheats),
+    IMAGE(R.string.menu_tab_image),
 }
 
 @Composable
@@ -214,7 +219,9 @@ private fun GameMenu(
     val resumeFocus = remember { FocusRequester() }
     LaunchedEffect(Unit) { resumeFocus.requestFocus() }
 
-    Surface(color = Color(0xE60B0F0C), contentColor = MaterialTheme.colorScheme.onSurface) {
+    // The image tab shows its effect on the paused game, so the scrim gets out of the way there.
+    val scrim by animateColorAsState(if (tab == MenuTab.IMAGE) Color(0x660B0F0C) else Color(0xE60B0F0C), label = "scrim")
+    Surface(color = scrim, contentColor = MaterialTheme.colorScheme.onSurface) {
         Row(
             Modifier
                 .fillMaxSize()
@@ -266,7 +273,7 @@ private fun GameMenu(
             }
 
             Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                SingleChoiceSegmentedButtonRow(Modifier.width(480.dp)) {
+                SingleChoiceSegmentedButtonRow(Modifier.width(560.dp)) {
                     MenuTab.entries.forEachIndexed { i, t ->
                         SegmentedButton(
                             selected = tab == t,
@@ -294,6 +301,7 @@ private fun GameMenu(
                         }
                     }
                     MenuTab.CHEATS -> CheatsTab(prefs)
+                    MenuTab.IMAGE -> ImageTab()
                     MenuTab.CHAPTERS -> Column(Modifier.verticalScroll(rememberScrollState())) {
                         Text(
                             stringResource(R.string.menu_chapters_hint),
@@ -377,6 +385,51 @@ private fun SlotCard(slot: SaveStates.Slot, onSave: () -> Unit, onLoad: () -> Un
                 }
             }
         }
+    }
+}
+
+/**
+ * Image filters, applied to the running game at once (it redraws while paused), so the effect
+ * shows behind the menu. Saved like the setting in Display. A filter that hangs the game is
+ * caught the same way as at startup (Shaders.markGameStart).
+ */
+@Composable
+private fun ImageTab() {
+    val context = LocalContext.current
+    val data = remember { GameData(context) }
+    var ini by remember { mutableStateOf(data.readIni()) }
+    var imported by remember { mutableStateOf<List<String>>(emptyList()) }
+    LaunchedEffect(Unit) { imported = withContext(Dispatchers.IO) { Shaders.imported(data.dir) } }
+    val current = Shaders.current(ini)
+    // The game picked its output at startup; without OpenGL only a restart could switch.
+    val live = Shaders.usesOpenGl(ini)
+
+    fun choose(choice: Shaders.Choice) {
+        val updated = Ini(ini.text).apply { Shaders.apply(this, choice) }
+        data.writeIni(updated)
+        ini = updated
+        Shaders.markGameStart(updated, data.dir)
+        GameActivity.nativeSetImageFilter((choice as? Shaders.Choice.Shader)?.path.orEmpty(), choice == Shaders.Choice.Smooth)
+    }
+
+    val panel = Color(0xE60B0F0C)
+    Column(Modifier.widthIn(max = 420.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        if (!live) {
+            Text(
+                stringResource(R.string.menu_image_unavailable),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.background(panel, RoundedCornerShape(12.dp)).padding(12.dp),
+            )
+            return@Column
+        }
+        val shape = RoundedCornerShape(12.dp)
+        @Composable
+        fun row(label: String, choice: Shaders.Choice) =
+            ChoiceRow(label, null, current == choice, Modifier.clip(shape).focusRing(shape), container = panel) { choose(choice) }
+        row(stringResource(R.string.filter_sharp), Shaders.Choice.Sharp)
+        row(stringResource(R.string.filter_smooth), Shaders.Choice.Smooth)
+        for (b in Shaders.Builtin.entries) row(stringResource(b.label), Shaders.Choice.Shader(b.path))
+        for (path in imported) row(Shaders.displayName(path), Shaders.Choice.Shader(path))
     }
 }
 

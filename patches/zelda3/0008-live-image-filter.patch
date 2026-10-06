@@ -1,0 +1,70 @@
+diff --git a/src/main.c b/src/main.c
+index 70267b0..11457bc 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -297,6 +297,34 @@ static const struct RendererFuncs kSdlRendererFuncs  = {
+ };
+ 
+ void OpenGLRenderer_Create(struct RendererFuncs *funcs, bool use_opengl_es);
++void OpenGLRenderer_SetShader(const char *filename);
++
++static SDL_SpinLock g_filter_lock;
++static bool g_filter_pending, g_filter_linear;
++static char g_filter_shader[256];
++
++// Changes the image filter while the game runs. Only the OpenGL output methods support shaders.
++void ZeldaSetImageFilter(const char *shader, bool linear_filtering) {
++  SDL_AtomicLock(&g_filter_lock);
++  snprintf(g_filter_shader, sizeof(g_filter_shader), "%s", shader ? shader : "");
++  g_filter_linear = linear_filtering;
++  g_filter_pending = true;
++  SDL_AtomicUnlock(&g_filter_lock);
++}
++
++static bool ApplyPendingImageFilter(void) {
++  char shader[sizeof(g_filter_shader)];
++  if (!g_filter_pending)
++    return false;
++  SDL_AtomicLock(&g_filter_lock);
++  g_filter_pending = false;
++  memcpy(shader, g_filter_shader, sizeof(shader));
++  g_config.linear_filtering = g_filter_linear;
++  SDL_AtomicUnlock(&g_filter_lock);
++  if (g_config.output_method == kOutputMethod_OpenGL || g_config.output_method == kOutputMethod_OpenGL_ES)
++    OpenGLRenderer_SetShader(shader);
++  return true;
++}
+ 
+ #undef main
+ int main(int argc, char** argv) {
+@@ -468,6 +496,9 @@ int main(int argc, char** argv) {
+         SDL_PauseAudioDevice(device, audiopaused);
+     }
+ 
++    if (ApplyPendingImageFilter() && g_paused)
++      DrawPpuFrameWithPerf();
++
+     if (g_paused) {
+       SDL_Delay(16);
+       continue;
+diff --git a/src/opengl.c b/src/opengl.c
+index dd291ec..9e01e87 100644
+--- a/src/opengl.c
++++ b/src/opengl.c
+@@ -255,6 +255,16 @@ static void OpenGLRenderer_EndDraw() {
+   SDL_GL_SwapWindow(g_window);
+ }
+ 
++// Replaces the shader; NULL or "" draws without one (sharp or linear, per LinearFiltering).
++void OpenGLRenderer_SetShader(const char *filename) {
++  if (g_glsl_shader != NULL) {
++    GlslShader_Destroy(g_glsl_shader);
++    g_glsl_shader = NULL;
++  }
++  if (filename != NULL && filename[0] != 0)
++    g_glsl_shader = GlslShader_CreateFromFile(filename, g_opengl_es);
++}
++
+ static const struct RendererFuncs kOpenGLRendererFuncs = {
+   &OpenGLRenderer_Init,
+   &OpenGLRenderer_Destroy,

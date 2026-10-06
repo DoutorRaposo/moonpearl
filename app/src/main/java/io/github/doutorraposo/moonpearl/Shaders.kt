@@ -7,11 +7,12 @@ import androidx.annotation.StringRes
 import java.io.File
 
 /**
- * How the picture is scaled to the screen: upstream's plain output (sharp or linear) or a GLSL
- * shader preset. Shaders only work with upstream's OpenGL output, which runs on OpenGL ES here
- * (fixed up by patches/zelda3/0007-opengl-es-output.patch); the plain options keep the SDL
- * renderer. Presets are run from the game folder: the bundled ones under shaders/builtin, the
- * player's own (copied from a folder they pick) under shaders/custom.
+ * How the picture is scaled to the screen: plain (sharp or linear) or through a GLSL shader
+ * preset. Everything goes through upstream's OpenGL output, which runs on OpenGL ES here (patches
+ * 0007 and 0008), so the in-game menu can switch filters while the game runs. Devices without
+ * OpenGL ES 3, or where the OpenGL output failed to start, use upstream's SDL renderer and get
+ * only the plain options. Presets are run from the game folder: the bundled ones under
+ * shaders/builtin, the player's own (copied from a folder they pick) under shaders/custom.
  */
 object Shaders {
     enum class Builtin(val id: String, @StringRes val label: Int, @StringRes val description: Int) {
@@ -31,65 +32,88 @@ object Shaders {
         data class Shader(val path: String) : Choice
     }
 
+    /** What kept the last session from running: a shader, or the OpenGL output itself. */
+    sealed interface Failure {
+        data class Shader(val path: String) : Failure
+        data object OpenGl : Failure
+    }
+
     const val DIR = "shaders"
     private const val BUILTIN = "builtin"
     private const val CUSTOM = "custom"
     private const val VERSION_FILE = ".version"
+    private const val CHECK_FILE = "shader_check"
+    private const val CHECK_OPENGL = "opengl"
     private val SHADER_FILES = setOf("glsl", "glslp", "png", "inc", "h")
     private const val MAX_IMPORT_BYTES = 64L * 1024 * 1024
 
+    fun usesOpenGl(ini: Ini) = ini["Graphics", "OutputMethod"].orEmpty().startsWith("OpenGL", ignoreCase = true)
+
+    /** OpenGL ES 3 (upstream's minimum), unless the OpenGL output already failed here. */
+    fun openGlAvailable(context: Context): Boolean {
+        val am = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+        return am.deviceConfigurationInfo.reqGlEsVersion >= 0x30000 && !AppPrefs(context).openGlFailed
+    }
+
     fun current(ini: Ini): Choice {
         val shader = ini["Graphics", "Shader"].orEmpty()
-        val opengl = ini["Graphics", "OutputMethod"].orEmpty().startsWith("OpenGL", ignoreCase = true)
         return when {
-            shader.isNotEmpty() && opengl -> Choice.Shader(shader)
+            shader.isNotEmpty() && usesOpenGl(ini) -> Choice.Shader(shader)
             ini.getBool("Graphics", "LinearFiltering") -> Choice.Smooth
             else -> Choice.Sharp
         }
     }
 
-    fun apply(ini: Ini, choice: Choice) {
-        when (choice) {
-            Choice.Sharp, Choice.Smooth -> {
-                ini["Graphics", "OutputMethod"] = "SDL"
-                ini["Graphics", "Shader"] = ""
-                ini.setBool("Graphics", "LinearFiltering", choice == Choice.Smooth)
-            }
-            is Choice.Shader -> {
-                ini["Graphics", "OutputMethod"] = "OpenGL ES"
-                ini["Graphics", "Shader"] = choice.path
-                ini.setBool("Graphics", "LinearFiltering", false)
-            }
-        }
+    fun apply(ini: Ini, choice: Choice, openGl: Boolean = true) {
+        val shader = (choice as? Choice.Shader)?.path?.takeIf { openGl }
+        ini["Graphics", "OutputMethod"] = if (openGl) "OpenGL ES" else "SDL"
+        ini["Graphics", "Shader"] = shader.orEmpty()
+        ini.setBool("Graphics", "LinearFiltering", choice == Choice.Smooth)
+    }
+
+    /** Moves the output to OpenGL where available (older installs used SDL), or off it. */
+    fun useOpenGl(ini: Ini, openGl: Boolean) {
+        if (usesOpenGl(ini) != openGl) apply(ini, current(ini), openGl)
     }
 
     /** Falls back to plain output when the chosen shader is gone, e.g. after removing imports. */
     fun validate(ini: Ini, gameDir: File) {
         val choice = current(ini)
-        if (choice is Choice.Shader && !File(gameDir, choice.path).isFile) apply(ini, Choice.Sharp)
-    }
-
-    private const val CHECK_FILE = "shader_check"
-
-    /** Called as the game starts; android_main.c removes the file after ~2 s of running. */
-    fun markGameStart(ini: Ini, gameDir: File) {
-        val file = File(gameDir, CHECK_FILE)
-        val choice = current(ini)
-        if (choice is Choice.Shader) file.writeText(choice.path) else file.delete()
+        if (choice is Choice.Shader && !File(gameDir, choice.path).isFile) apply(ini, Choice.Sharp, usesOpenGl(ini))
     }
 
     /**
-     * The shader the last game session started with, if the game never ran long enough to
-     * clear the marker (it hung or crashed). Switches it off; returns its path. Consumed once.
+     * Called as the game starts and when the menu switches filters: with OpenGL output, writes a
+     * marker that android_main.c removes once the game has run a moment (see takeFailure).
      */
-    fun takeFailure(ini: Ini, gameDir: File): String? {
+    fun markGameStart(ini: Ini, gameDir: File) {
+        val file = File(gameDir, CHECK_FILE)
+        val choice = current(ini)
+        when {
+            choice is Choice.Shader -> file.writeText(choice.path)
+            usesOpenGl(ini) -> file.writeText(CHECK_OPENGL)
+            else -> file.delete()
+        }
+    }
+
+    /**
+     * What the last game session was running when it hung or crashed before clearing the
+     * marker, if it did. A shader is switched off; for the OpenGL output itself the caller
+     * decides (see GameData.takeShaderFailure). Consumed once.
+     */
+    fun takeFailure(ini: Ini, gameDir: File): Failure? {
         val file = File(gameDir, CHECK_FILE)
         if (!file.isFile) return null
         val path = file.readText().trim()
         file.delete()
-        if (path.isEmpty()) return null
-        if (current(ini) == Choice.Shader(path)) apply(ini, Choice.Sharp)
-        return path
+        return when {
+            path.isEmpty() -> null
+            path == CHECK_OPENGL -> Failure.OpenGl
+            else -> {
+                if (current(ini) == Choice.Shader(path)) apply(ini, Choice.Sharp)
+                Failure.Shader(path)
+            }
+        }
     }
 
     fun builtin(path: String) = Builtin.entries.firstOrNull { it.path == path }

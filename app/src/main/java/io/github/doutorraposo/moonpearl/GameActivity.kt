@@ -349,15 +349,23 @@ class GameActivity : SDLActivity() {
         Process.killProcess(Process.myPid())
     }
 
-    private companion object {
-        const val REQUEST_MENU = 1
+    companion object {
+        private const val REQUEST_MENU = 1
 
         /** android_main.c, backed by patches/zelda3/0001-fixed-rate-fast-forward.patch. */
         @JvmStatic
-        external fun nativeSetSpeed(speed: Int)
+        private external fun nativeSetSpeed(speed: Int)
+
+        /**
+         * android_main.c, backed by patches/zelda3/0008-live-image-filter.patch: the game thread
+         * switches filters before its next frame and redraws a paused frame. [shader] is a path
+         * relative to the game folder, or "" for none.
+         */
+        @JvmStatic
+        external fun nativeSetImageFilter(shader: String, linear: Boolean)
 
         /** cheats.c, run each frame through patches/zelda3/0002-frame-hook.patch. */
         @JvmStatic
-        external fun nativeSetCheats(flags: Int, codes: IntArray)
+        private external fun nativeSetCheats(flags: Int, codes: IntArray)
     }
 }

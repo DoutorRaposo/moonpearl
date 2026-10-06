@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -45,7 +46,8 @@ fun ShaderSettings(ini: Ini, gameDir: File, edit: (Ini.() -> Unit) -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val current = Shaders.current(ini)
-    fun choose(choice: Shaders.Choice) = edit { Shaders.apply(this, choice) }
+    var openGl by remember { mutableStateOf(Shaders.openGlAvailable(context)) }
+    fun choose(choice: Shaders.Choice) = edit { Shaders.apply(this, choice, openGl) }
 
     var imported by remember { mutableStateOf<List<String>>(emptyList()) }
     var busy by remember { mutableStateOf(false) }
@@ -79,6 +81,19 @@ fun ShaderSettings(ini: Ini, gameDir: File, edit: (Ini.() -> Unit) -> Unit) {
         ChoiceRow(stringResource(R.string.filter_smooth), stringResource(R.string.filter_smooth_desc), current == Shaders.Choice.Smooth) {
             choose(Shaders.Choice.Smooth)
         }
+    }
+    if (!openGl) {
+        Section(R.string.filter_shaders) {
+            Hint(stringResource(R.string.shaders_unavailable), Modifier.padding(16.dp))
+            if (AppPrefs(context).openGlFailed) {
+                TextButton(onClick = {
+                    AppPrefs(context).openGlFailed = false
+                    openGl = Shaders.openGlAvailable(context)
+                    edit { Shaders.useOpenGl(this, openGl) }
+                }, modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)) { Text(stringResource(R.string.opengl_retry)) }
+            }
+        }
+        return
     }
     Section(R.string.filter_shaders) {
         for (b in Shaders.Builtin.entries) {
@@ -114,12 +129,19 @@ fun ShaderSettings(ini: Ini, gameDir: File, edit: (Ini.() -> Unit) -> Unit) {
 }
 
 @Composable
-private fun ChoiceRow(label: String, description: String?, selected: Boolean, onClick: () -> Unit) {
+fun ChoiceRow(
+    label: String,
+    description: String?,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    container: Color = MaterialTheme.colorScheme.surfaceContainer,
+    onClick: () -> Unit,
+) {
     ListItem(
         headlineContent = { Text(label) },
         supportingContent = description?.let { { Text(it) } },
         leadingContent = { RadioButton(selected = selected, onClick = null) },
-        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = Modifier.fillMaxWidth().selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
+        colors = ListItemDefaults.colors(containerColor = container),
+        modifier = modifier.fillMaxWidth().selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
     )
 }

@@ -56,15 +56,15 @@ class LauncherActivity : ComponentActivity() {
     /** Set when the game process ended with a fatal error; shown once. */
     private val gameError = mutableStateOf<String?>(null)
     /** A shader that hung or crashed the last session and was switched off; shown once. */
-    private val failedShader = mutableStateOf<String?>(null)
+    private val failedShader = mutableStateOf<Shaders.Failure?>(null)
 
     override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguage.wrap(newBase))
 
     override fun onResume() {
         super.onResume()
         val data = GameData(this)
-        data.takeLastError()?.let { gameError.value = it }
-        data.takeShaderFailure()?.let { failedShader.value = it }
+        val error = data.takeLastError()?.also { gameError.value = it }
+        data.takeShaderFailure(hadError = error != null)?.let { failedShader.value = it }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,11 +76,21 @@ class LauncherActivity : ComponentActivity() {
             AppTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     LauncherScreen(data, onPlay = { startActivity(Intent(this, GameActivity::class.java)) })
-                    failedShader.value?.takeIf { gameError.value == null }?.let { path ->
+                    failedShader.value?.takeIf { gameError.value == null }?.let { failure ->
                         AlertDialog(
                             onDismissRequest = { failedShader.value = null },
                             title = { Text(stringResource(R.string.shader_failed_title)) },
-                            text = { Text(stringResource(R.string.shader_failed_message, shaderChoiceLabel(Shaders.Choice.Shader(path)))) },
+                            text = {
+                                Text(
+                                    when (failure) {
+                                        is Shaders.Failure.Shader -> stringResource(
+                                            R.string.shader_failed_message,
+                                            shaderChoiceLabel(Shaders.Choice.Shader(failure.path)),
+                                        )
+                                        Shaders.Failure.OpenGl -> stringResource(R.string.opengl_failed_message)
+                                    },
+                                )
+                            },
                             confirmButton = {
                                 TextButton(onClick = { failedShader.value = null }) { Text(stringResource(android.R.string.ok)) }
                             },
