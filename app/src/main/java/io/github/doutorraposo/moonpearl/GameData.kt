@@ -73,6 +73,13 @@ class GameData(private val context: Context) {
         }
     }
 
+    /** The message of the last fatal game error (written by android_main.c), consumed once. */
+    fun takeLastError(): String? {
+        val file = File(dir, "last_error.txt")
+        if (!file.isFile) return null
+        return file.readText().trim().also { file.delete() }.ifEmpty { null }
+    }
+
     fun readIni(): Ini {
         prepare()
         return Ini(iniFile.readText())

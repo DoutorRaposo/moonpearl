@@ -16,6 +16,7 @@
 #undef main
 int main(int argc, char **argv);  // src/main.c
 void ZeldaSetSpeed(int speed);    // patches/zelda3/0001-fixed-rate-fast-forward.patch
+void ZeldaSetDieHook(void (*hook)(const char *error));  // patches/zelda3/0003-die-hook.patch
 
 static const char kTag[] = "moonpearl";
 
@@ -89,6 +90,21 @@ static void *LogGameSpeed(void *arg) {
 }
 #endif
 
+// The launcher shows this file (GameData.takeLastError) once the game process is gone.
+static const char kLastErrorFile[] = "last_error.txt";
+
+static void WriteLastError(const char *message) {
+  FILE *f = fopen(kLastErrorFile, "w");
+  if (f) {
+    fputs(message, f);
+    fclose(f);
+  }
+}
+
+static void OnDie(const char *error) {
+  WriteLastError(error);
+}
+
 __attribute__((visibility("default")))
 int SDL_main(int argc, char *argv[]) {
   RedirectStdioToLogcat();
@@ -109,5 +125,14 @@ int SDL_main(int argc, char *argv[]) {
   // Upstream creates a resizable window, which makes SDL unlock rotation and
   // override the manifest. Keep the game in landscape.
   SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
-  return main(argc, argv);
+
+  // Fatal errors go through Die(); main() itself returns 1 when SDL cannot start.
+  ZeldaSetDieHook(OnDie);
+  int result = main(argc, argv);
+  if (result != 0 && access(kLastErrorFile, F_OK) != 0) {
+    char message[512];
+    snprintf(message, sizeof(message), "SDL: %s", SDL_GetError());
+    WriteLastError(message);
+  }
+  return result;
 }

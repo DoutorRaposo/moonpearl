@@ -1,0 +1,24 @@
+diff --git a/src/main.c b/src/main.c
+index 8917a81..70267b0 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -81,10 +81,19 @@ static struct RendererFuncs g_renderer_funcs;
+ static uint32 g_gamepad_modifiers;
+ static uint16 g_gamepad_last_cmd[kGamepadBtn_Count];
+ 
++// Called with the message before Die() exits, so the host can tell the player what happened.
++static void (*g_die_hook)(const char *error);
++
++void ZeldaSetDieHook(void (*hook)(const char *error)) {
++  g_die_hook = hook;
++}
++
+ void NORETURN Die(const char *error) {
+ #if defined(NDEBUG) && defined(_WIN32)
+   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, kWindowTitle, error, NULL);
+ #endif
++  if (g_die_hook)
++    g_die_hook(error);
+   fprintf(stderr, "Error: %s\n", error);
+   exit(1);
+ }

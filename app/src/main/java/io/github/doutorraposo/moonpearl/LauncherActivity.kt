@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -38,6 +39,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -56,7 +58,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class LauncherActivity : ComponentActivity() {
+    /** Set when the game process ended with a fatal error; shown once. */
+    private val gameError = mutableStateOf<String?>(null)
+
     override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguage.wrap(newBase))
+
+    override fun onResume() {
+        super.onResume()
+        GameData(this).takeLastError()?.let { gameError.value = it }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +78,16 @@ class LauncherActivity : ComponentActivity() {
             AppTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     LauncherScreen(data, prefs, onPlay = { startActivity(Intent(this, GameActivity::class.java)) })
+                    gameError.value?.let { message ->
+                        AlertDialog(
+                            onDismissRequest = { gameError.value = null },
+                            title = { Text(stringResource(R.string.game_error_title)) },
+                            text = { Text(stringResource(R.string.game_error_message, message)) },
+                            confirmButton = {
+                                TextButton(onClick = { gameError.value = null }) { Text(stringResource(android.R.string.ok)) }
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -303,6 +323,9 @@ private fun LauncherScreen(data: GameData, prefs: AppPrefs, onPlay: () -> Unit) 
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            TextButton(onClick = { context.startActivity(Intent(context, LicensesActivity::class.java)) }) {
+                Text(stringResource(R.string.licenses_title))
+            }
             Spacer(Modifier.height(8.dp))
         }
     }

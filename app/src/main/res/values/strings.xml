@@ -151,5 +151,8 @@
     <string name="section_language">App language</string>
     <string name="language_system">System</string>
 
+    <string name="licenses_title">Open source licenses</string>
+    <string name="game_error_title">The game stopped</string>
+    <string name="game_error_message">The game closed because of an error:\n\n%1$s\n\nIf it happens again, please report it with this message.</string>
     <string name="legal_notice">This app contains no game data. You must supply a ROM from a cartridge you own. Based on snesrev/zelda3 (MIT).</string>
 </resources>

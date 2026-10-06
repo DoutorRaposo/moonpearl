@@ -112,7 +112,10 @@ android {
     }
 }
 
-/** Copies the stock config and the reference saves from the upstream checkout into the APK assets. */
+/**
+ * Copies the stock config and the reference saves from the upstream checkout, plus the license
+ * files from the repository root (shown in the app's licenses screen), into the APK assets.
+ */
 abstract class SyncUpstreamFiles : DefaultTask() {
     @get:InputFile
     @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -121,6 +124,10 @@ abstract class SyncUpstreamFiles : DefaultTask() {
     @get:InputDirectory
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val refSaves: DirectoryProperty
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val licenseFiles: ConfigurableFileCollection
 
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
@@ -133,6 +140,7 @@ abstract class SyncUpstreamFiles : DefaultTask() {
         fs.sync {
             from(iniFile)
             from(refSaves) { into("saves/ref") }
+            from(licenseFiles) { into("licenses") }
             into(outputDir)
         }
     }
@@ -141,6 +149,7 @@ abstract class SyncUpstreamFiles : DefaultTask() {
 val syncUpstreamFiles = tasks.register<SyncUpstreamFiles>("syncUpstreamFiles") {
     iniFile.set(upstreamDir.file("zelda3.ini"))
     refSaves.set(upstreamDir.dir("saves/ref"))
+    licenseFiles.from(rootProject.file("LICENSE"), rootProject.file("THIRD_PARTY_NOTICES.txt"))
 }
 
 androidComponents {
