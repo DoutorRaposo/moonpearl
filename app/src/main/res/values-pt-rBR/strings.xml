@@ -177,5 +177,21 @@
     <string name="settings_menu">Menu do jogo</string>
     <string name="settings_controller">Controles físicos</string>
     <string name="launcher_saves_summary">Fichas, save states, backup</string>
+    <string name="settings_audio">Áudio</string>
+    <string name="settings_audio_summary">Trilhas sonoras MSU-1</string>
+    <string name="msu_title">Trilha sonora MSU-1</string>
+    <string name="msu_hint">Troque a música por um pack MSU-1, como uma trilha orquestrada ou em qualidade de CD. Coloque os arquivos do pack (nome-1.pcm, nome-2.pcm, … ou .opuz) numa pasta deste aparelho e escolha a pasta aqui. Os arquivos são lidos de onde estão, sem cópia.</string>
+    <string name="msu_enable">Usar trilha MSU-1</string>
+    <string name="msu_no_folder">Nenhuma pasta de pack escolhida.</string>
+    <string name="msu_scanning">Procurando faixas…</string>
+    <string name="msu_not_found">Nenhuma faixa MSU-1 nesta pasta. Os arquivos das faixas têm nomes como nome-1.pcm ou nome-1.opuz.</string>
+    <string name="msu_found">%1$d faixas encontradas (%2$s, %3$s).</string>
+    <string name="msu_choose_folder">Escolher pasta do pack</string>
+    <string name="msu_change_folder">Trocar pasta</string>
+    <string name="msu_deluxe">MSU Deluxe</string>
+    <string name="msu_deluxe_desc">Este pack tem as faixas extras do Deluxe: um tema para cada região e para vários interiores.</string>
+    <string name="msu_volume">Volume da trilha: %1$d%%</string>
+    <string name="msu_resume">Retomar a música</string>
+    <string name="msu_resume_desc">Continua a música de onde parou quando você volta para a mesma área.</string>
     <string name="legal_notice">Este app não contém nenhum dado do jogo. Você precisa fornecer uma ROM de um cartucho que possua. Baseado em snesrev/zelda3 (MIT).</string>
 </resources>

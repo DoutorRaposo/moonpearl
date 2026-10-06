@@ -36,6 +36,9 @@ own ROM; the app sets everything up on the device.
 - **Link's look**: replace Link with any of the hundreds of community sprites (`.zspr` files
   from the [sprite gallery](https://snesrev.github.io/sprites-gfx/snes/zelda3/link/)), with a
   preview of each.
+- **MSU-1 soundtracks**: play the game with a replacement soundtrack pack (orchestral,
+  CD-quality and others, in PCM or OPUZ, including MSU Deluxe). Pick the pack's folder; the
+  files are read in place, not copied.
 - **Cheats**: infinite health, magic, bombs, arrows and small keys, a full wallet, walking
   through walls, and Pro Action Replay codes.
 - **Save management**: see your three game files, erase them, export or restore a backup,

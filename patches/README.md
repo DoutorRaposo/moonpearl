@@ -11,5 +11,6 @@ and `snes/` folders and applies these patches to the copy, in name order
 | `0003-die-hook.patch` | Adds `ZeldaSetDieHook()`, called with the message before `Die()` exits. Upstream only prints fatal errors; the app saves them and shows them in the launcher. |
 | `0004-widescreen-edge-sync.patch` | Fixes stale map columns at the left or right edge in widescreen. The original game streams BG2 columns with 16-pixel scroll counters that drift with the scroll history (they reset when the camera stops at an area edge); the 256-pixel view tolerates it, a 448-pixel one does not. Before each drawn frame outdoors, the widescreen-only side areas are rewritten from the map. |
 | `0005-sprite-palette-on-state-load.patch` | A save state keeps the palettes loaded when it was made, so after switching Link's sprite its colors only changed at the next palette reload. Re-applies Link's gear palettes (or the bunny palette) after loading a state during gameplay, as the game does after a transformation. |
+| `0006-msu-open-hook.patch` | Adds `ZeldaSetMsuOpenHook()` to replace the `fopen()` of MSU-1 track files. On Android the pack is in a folder picked with the system file picker, readable through open descriptors but not by path; the app opens tracks from those descriptors. |
 
 Keep them small and in upstream's style, so they can be offered upstream as is.

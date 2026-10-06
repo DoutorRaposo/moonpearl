@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -17,6 +18,7 @@
 int main(int argc, char **argv);  // src/main.c
 void ZeldaSetSpeed(int speed);    // patches/zelda3/0001-fixed-rate-fast-forward.patch
 void ZeldaSetDieHook(void (*hook)(const char *error));  // patches/zelda3/0003-die-hook.patch
+void ZeldaSetMsuOpenHook(FILE *(*hook)(const char *name));  // patches/zelda3/0006-msu-open-hook.patch
 
 static const char kTag[] = "moonpearl";
 
@@ -105,6 +107,32 @@ static void OnDie(const char *error) {
   WriteLastError(error);
 }
 
+// MSU-1 tracks are linked as msu/track-N.ext -> /proc/self/fd/<fd> by MsuPack.kt. Opening the
+// link would reopen the file by its shared-storage path, which scoped storage denies; use a
+// duplicate of the descriptor opened through the folder permission instead. Upstream keeps a
+// single MSU file open at a time, so the shared file position is not an issue.
+static FILE *OpenMsuTrack(const char *name) {
+  char target[64];
+  ssize_t n = readlink(name, target, sizeof(target) - 1);
+  static const char kFdPrefix[] = "/proc/self/fd/";
+  if (n > 0) {
+    target[n] = 0;
+    if (strncmp(target, kFdPrefix, sizeof(kFdPrefix) - 1) == 0) {
+      int fd = dup(atoi(target + sizeof(kFdPrefix) - 1));
+      if (fd < 0)
+        return NULL;
+      FILE *f = fdopen(fd, "rb");
+      if (f == NULL) {
+        close(fd);
+        return NULL;
+      }
+      fseek(f, 0, SEEK_SET);
+      return f;
+    }
+  }
+  return fopen(name, "rb");
+}
+
 __attribute__((visibility("default")))
 int SDL_main(int argc, char *argv[]) {
   RedirectStdioToLogcat();
@@ -128,6 +156,7 @@ int SDL_main(int argc, char *argv[]) {
 
   // Fatal errors go through Die(); main() itself returns 1 when SDL cannot start.
   ZeldaSetDieHook(OnDie);
+  ZeldaSetMsuOpenHook(OpenMsuTrack);
   int result = main(argc, argv);
   if (result != 0 && access(kLastErrorFile, F_OK) != 0) {
     char message[512];

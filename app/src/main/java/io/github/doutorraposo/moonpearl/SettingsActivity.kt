@@ -2,7 +2,13 @@ package io.github.doutorraposo.moonpearl
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
@@ -58,6 +64,7 @@ class SettingsActivity : ComponentActivity() {
 
 private enum class Category(@StringRes val title: Int, @StringRes val summary: Int) {
     DISPLAY(R.string.section_display, R.string.settings_display_summary),
+    AUDIO(R.string.settings_audio, R.string.settings_audio_summary),
     CONTROLS(R.string.section_controls, R.string.settings_controls_summary),
     GAME(R.string.section_game, R.string.settings_game_summary),
     ENHANCEMENTS(R.string.section_enhancements, R.string.settings_enhancements_summary),
@@ -115,6 +122,9 @@ private fun SettingsScreen(data: GameData, prefs: AppPrefs, onClose: () -> Unit)
         }
         Category.DISPLAY -> Page(stringResource(R.string.section_display), onBack = back) {
             DisplaySettings(ini, prefs, ::editIni)
+        }
+        Category.AUDIO -> Page(stringResource(R.string.settings_audio), onBack = back) {
+            AudioSettings(ini, prefs, ::editIni)
         }
         Category.CONTROLS -> Page(stringResource(R.string.section_controls), onBack = back) {
             ControlSettings(prefs)
@@ -185,6 +195,73 @@ private fun DisplaySettings(ini: Ini, prefs: AppPrefs, edit: (Ini.() -> Unit) ->
         IniSwitch(ini, "Graphics", "EnhancedMode7", R.string.enhanced_mode7, edit)
         IniSwitch(ini, "Graphics", "LinearFiltering", R.string.linear_filtering, edit)
         IniSwitch(ini, "Graphics", "DimFlashes", R.string.dim_flashes, edit, R.string.dim_flashes_desc)
+    }
+}
+
+@Composable
+private fun AudioSettings(ini: Ini, prefs: AppPrefs, edit: (Ini.() -> Unit) -> Unit) {
+    val context = LocalContext.current
+    var enabled by remember { mutableStateOf(prefs.msuEnabled) }
+    var folder by remember { mutableStateOf(prefs.msuFolder) }
+    var deluxe by remember { mutableStateOf(prefs.msuDeluxe) }
+    var volume by remember { mutableFloatStateOf(prefs.msuVolume.toFloat()) }
+    var pack by remember { mutableStateOf<MsuPack.Pack?>(null) }
+    var scanned by remember { mutableStateOf(false) }
+    LaunchedEffect(folder) {
+        scanned = false
+        pack = folder?.let { f -> withContext(Dispatchers.IO) { runCatching { MsuPack.scan(context, Uri.parse(f)) }.getOrNull() } }
+        scanned = true
+    }
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        // Keep access after the app restarts; release the previous folder.
+        folder?.let { old ->
+            runCatching { context.contentResolver.releasePersistableUriPermission(Uri.parse(old), Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+        }
+        context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        prefs.msuFolder = uri.toString()
+        folder = uri.toString()
+        enabled = true
+        prefs.msuEnabled = true
+    }
+
+    Section(R.string.msu_title) {
+        Hint(stringResource(R.string.msu_hint), Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp))
+        SwitchRow(stringResource(R.string.msu_enable), enabled && folder != null) {
+            if (folder == null) picker.launch(null) else { enabled = it; prefs.msuEnabled = it }
+        }
+        Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            val p = pack
+            Text(
+                when {
+                    folder == null -> stringResource(R.string.msu_no_folder)
+                    !scanned -> stringResource(R.string.msu_scanning)
+                    p == null -> stringResource(R.string.msu_not_found)
+                    else -> stringResource(R.string.msu_found, p.tracks.size, p.prefix, p.format.extension.uppercase())
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (folder != null && scanned && p == null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+            )
+            OutlinedButton(onClick = { picker.launch(null) }) {
+                Text(stringResource(if (folder == null) R.string.msu_choose_folder else R.string.msu_change_folder))
+            }
+        }
+        if (pack?.hasDeluxeTracks == true) {
+            SwitchRow(stringResource(R.string.msu_deluxe), deluxe, stringResource(R.string.msu_deluxe_desc)) {
+                deluxe = it
+                prefs.msuDeluxe = it
+            }
+        }
+        Column(Modifier.padding(horizontal = 16.dp)) {
+            Text(stringResource(R.string.msu_volume, volume.toInt()), style = MaterialTheme.typography.bodyMedium)
+            Slider(
+                value = volume,
+                onValueChange = { volume = it },
+                onValueChangeFinished = { prefs.msuVolume = volume.toInt() },
+                valueRange = 0f..100f,
+            )
+        }
+        IniSwitch(ini, "Sound", "ResumeMSU", R.string.msu_resume, edit, R.string.msu_resume_desc)
     }
 }
 

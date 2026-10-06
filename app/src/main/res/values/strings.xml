@@ -177,5 +177,21 @@
     <string name="settings_menu">In-game menu</string>
     <string name="settings_controller">Controllers</string>
     <string name="launcher_saves_summary">Game files, save states, backup</string>
+    <string name="settings_audio">Audio</string>
+    <string name="settings_audio_summary">MSU-1 soundtrack packs</string>
+    <string name="msu_title">MSU-1 soundtrack</string>
+    <string name="msu_hint">Replace the music with an MSU-1 pack, such as an orchestral or CD-quality soundtrack. Put the pack\'s files (name-1.pcm, name-2.pcm, … or .opuz) in a folder on this device and choose it here. The files are read in place, not copied.</string>
+    <string name="msu_enable">Use MSU-1 soundtrack</string>
+    <string name="msu_no_folder">No pack folder chosen.</string>
+    <string name="msu_scanning">Looking for tracks…</string>
+    <string name="msu_not_found">No MSU-1 tracks found in this folder. Track files are named like name-1.pcm or name-1.opuz.</string>
+    <string name="msu_found">%1$d tracks found (%2$s, %3$s).</string>
+    <string name="msu_choose_folder">Choose pack folder</string>
+    <string name="msu_change_folder">Change folder</string>
+    <string name="msu_deluxe">MSU Deluxe</string>
+    <string name="msu_deluxe_desc">This pack has the extra Deluxe tracks: a theme for each region and many interiors.</string>
+    <string name="msu_volume">Soundtrack volume: %1$d%%</string>
+    <string name="msu_resume">Resume music</string>
+    <string name="msu_resume_desc">Continue a song where it stopped when you come back to the same area.</string>
     <string name="legal_notice">This app contains no game data. You must supply a ROM from a cartridge you own. Based on snesrev/zelda3 (MIT).</string>
 </resources>

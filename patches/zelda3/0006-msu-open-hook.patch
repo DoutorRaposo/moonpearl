@@ -1,0 +1,27 @@
+diff --git a/src/audio.c b/src/audio.c
+index 09f34a9..1073b32 100644
+--- a/src/audio.c
++++ b/src/audio.c
+@@ -43,6 +43,13 @@ typedef struct MsuPlayer {
+ 
+ static MsuPlayer g_msu_player;
+ 
++// Opens MSU track files; the host can replace it, e.g. where the pack has no file path.
++static FILE *(*g_msu_open)(const char *name) = NULL;
++
++void ZeldaSetMsuOpenHook(FILE *(*hook)(const char *name)) {
++  g_msu_open = hook;
++}
++
+ static void MsuPlayer_Open(MsuPlayer *mp, int orig_track, bool resume_from_snapshot);
+ 
+ static const uint8 kMsuTracksWithRepeat[48] = {
+@@ -195,7 +202,7 @@ static void MsuPlayer_Open(MsuPlayer *mp, int orig_track, bool resume_from_snaps
+   char fname[256], buf[8];
+   snprintf(fname, sizeof(fname), "%s%d.%s", g_config.msu_path ? g_config.msu_path : "", actual_track, mp->enabled & kMsuEnabled_Opuz ? "opuz" : "pcm");
+   printf("Loading MSU %s\n", fname);
+-  mp->f = fopen(fname, "rb");
++  mp->f = g_msu_open ? g_msu_open(fname) : fopen(fname, "rb");
+   if (mp->f == NULL)
+     goto READ_ERROR;
+   setvbuf(mp->f, NULL, _IOFBF, 16384);

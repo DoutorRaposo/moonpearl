@@ -33,6 +33,23 @@ class AppPrefs(context: Context) {
         get() = Cheats.decode(prefs.getString("cheat_codes", "").orEmpty())
         set(value) { prefs.edit().putString("cheat_codes", Cheats.encode(value)).commit() }
 
+    /** MSU-1 pack: on/off, the folder (a persisted document tree URI), Deluxe, volume in %. */
+    var msuEnabled: Boolean
+        get() = prefs.getBoolean("msu_enabled", false)
+        set(value) { prefs.edit().putBoolean("msu_enabled", value).commit() }
+
+    var msuFolder: String?
+        get() = prefs.getString("msu_folder", null)
+        set(value) { prefs.edit().putString("msu_folder", value).commit() }
+
+    var msuDeluxe: Boolean
+        get() = prefs.getBoolean("msu_deluxe", true)
+        set(value) { prefs.edit().putBoolean("msu_deluxe", value).commit() }
+
+    var msuVolume: Int
+        get() = prefs.getInt("msu_volume", 100)
+        set(value) { prefs.edit().putInt("msu_volume", value).commit() }
+
     var touchOpacity: Float
         get() = prefs.getFloat("touch_opacity", 0.5f)
         set(value) { prefs.edit().putFloat("touch_opacity", value).commit() }
