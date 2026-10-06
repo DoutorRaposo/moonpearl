@@ -1,0 +1,61 @@
+name: Release
+
+# Push a tag like v0.2.0 to build a signed APK and publish it as a GitHub release.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # See build.yml: SDL's sample project ships a wrapper jar that is never run.
+      - uses: gradle/actions/wrapper-validation@v4
+        with:
+          allow-checksums: 2c23278a62dc9f96ab11bee897d9f53e6479d6419135e4560ce822a6431df5e5
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          validate-wrappers: false
+          cache-read-only: true
+
+      - name: Version from tag
+        id: version
+        run: |
+          name="${GITHUB_REF_NAME#v}"
+          IFS=. read -r major minor patch <<< "${name%%-*}"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "code=$(( major * 10000 + minor * 100 + ${patch:-0} ))" >> "$GITHUB_OUTPUT"
+
+      - name: Build signed APK
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ZELDA3_KEYSTORE_BASE64 }}
+          ZELDA3_KEYSTORE_PASSWORD: ${{ secrets.ZELDA3_KEYSTORE_PASSWORD }}
+          ZELDA3_KEY_ALIAS: ${{ secrets.ZELDA3_KEY_ALIAS }}
+          ZELDA3_KEY_PASSWORD: ${{ secrets.ZELDA3_KEY_PASSWORD }}
+        run: |
+          export ZELDA3_KEYSTORE="$RUNNER_TEMP/release.jks"
+          echo "$KEYSTORE_BASE64" | base64 -d > "$ZELDA3_KEYSTORE"
+          ./gradlew testDebugUnitTest assembleRelease --console=plain \
+            -PversionName=${{ steps.version.outputs.name }} \
+            -PversionCode=${{ steps.version.outputs.code }}
+          rm "$ZELDA3_KEYSTORE"
+          # Only signed builds are named app-release.apk, so this also fails on a signing problem.
+          cp app/build/outputs/apk/release/app-release.apk "zelda3-android-${{ steps.version.outputs.name }}.apk"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" zelda3-android-*.apk --generate-notes --title "$GITHUB_REF_NAME"

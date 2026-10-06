@@ -18,10 +18,12 @@ import org.libsdl.app.SDLActivity
  */
 class GameActivity : SDLActivity() {
     private var touch: TouchControlsView? = null
+    private var autosave = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val data = GameData(this)
         data.prepare()
+        autosave = data.readIni().getBool("General", "Autosave")
         if (!data.hasAssets()) {
             super.onCreate(savedInstanceState)
             finish()
@@ -55,7 +57,22 @@ class GameActivity : SDLActivity() {
 
     override fun onPause() {
         touch?.releaseAll()
+        if (autosave && !isFinishing && !mBrokenLibraries) saveResumePoint()
         super.onPause()
+    }
+
+    /**
+     * Upstream only writes the autosave when main() returns, which never happens if Android
+     * kills the process in the background. Press upstream's "save state 1" shortcut instead
+     * (Shift+F1, the slot Autosave restores). SDL hands the game every event queued before a
+     * pause and only then blocks the game thread, so the save runs on the game thread before
+     * the app goes to the background.
+     */
+    private fun saveResumePoint() {
+        onNativeKeyDown(KeyEvent.KEYCODE_SHIFT_LEFT)
+        onNativeKeyDown(KeyEvent.KEYCODE_F1)
+        onNativeKeyUp(KeyEvent.KEYCODE_F1)
+        onNativeKeyUp(KeyEvent.KEYCODE_SHIFT_LEFT)
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {

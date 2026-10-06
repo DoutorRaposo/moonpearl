@@ -19,8 +19,9 @@ on-screen controls and the build.
 - **Touch controls** with multi-touch, 8-way d-pad, sliding between face buttons, haptic
   feedback and adjustable opacity. They hide while a controller is in use.
 - **Controllers** through SDL2 (Xbox, PlayStation, Switch Pro and generic pads).
-- **Resume where you left off.** Upstream's autosave writes a save state when you quit and
-  loads it on the next start.
+- **Resume where you left off.** A save state is written whenever the app goes to the
+  background or you quit, and loaded on the next start, so nothing is lost if Android
+  closes the app while it is in the background.
 - Settings screen for upstream's display options and gameplay enhancements (item switching
   on L/R, turning while dashing, bug fixes, and so on). Everything is stored in the stock
   `zelda3.ini`, so upstream's documentation still applies.
@@ -42,6 +43,24 @@ cd zelda3-android
 
 You need JDK 17+ and the Android SDK; Gradle installs the NDK and CMake versions it
 needs. The APK ends up in `app/build/outputs/apk/debug/`.
+
+### Release builds
+
+Release APKs are signed with the key named in `keystore.properties` at the repository root
+(not tracked by git):
+
+```properties
+storeFile=/path/to/release.jks
+storePassword=...
+keyAlias=...
+keyPassword=...
+```
+
+CI reads the same values from the `ZELDA3_KEYSTORE*` / `ZELDA3_KEY*` environment
+variables. Pushing a tag such as `v0.2.0` runs `.github/workflows/release.yml`, which
+builds the signed APK (version taken from the tag) and publishes a GitHub release. It needs
+the repository secrets `ZELDA3_KEYSTORE_BASE64`, `ZELDA3_KEYSTORE_PASSWORD`,
+`ZELDA3_KEY_ALIAS` and `ZELDA3_KEY_PASSWORD`.
 
 ## How it fits together
 

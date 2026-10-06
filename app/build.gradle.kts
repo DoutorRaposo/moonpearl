@@ -1,4 +1,5 @@
 import com.android.build.api.variant.ApplicationVariant
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -15,6 +16,14 @@ val assetsSignature: String = providers.fileContents(upstreamDir.file("src/asset
         ?: error("kAssets_Sig not found in external/zelda3/src/assets.h")
 }.get()
 
+// Release signing comes from keystore.properties (local, gitignored) or, in CI, from
+// ZELDA3_KEYSTORE* environment variables. Without either, release builds stay unsigned.
+val keystoreProperties = rootProject.file("keystore.properties").takeIf { it.isFile }?.let { file ->
+    Properties().apply { file.inputStream().use(::load) }
+}
+fun signingValue(env: String, key: String): String? =
+    providers.environmentVariable(env).orNull ?: keystoreProperties?.getProperty(key)
+
 android {
     namespace = "io.github.doutorraposo.z3"
     compileSdk = 37
@@ -24,8 +33,9 @@ android {
         applicationId = "io.github.doutorraposo.z3"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        // Release builds pass these from the git tag (see .github/workflows/release.yml).
+        versionCode = providers.gradleProperty("versionCode").orNull?.toInt() ?: 1
+        versionName = providers.gradleProperty("versionName").orNull ?: "0.1.0"
 
         buildConfigField("String", "ASSETS_SIG", "\"$assetsSignature\"")
 
@@ -57,8 +67,21 @@ android {
         }
     }
 
+    signingConfigs {
+        val storePath = signingValue("ZELDA3_KEYSTORE", "storeFile")
+        if (storePath != null) {
+            create("release") {
+                storeFile = file(storePath)
+                storePassword = signingValue("ZELDA3_KEYSTORE_PASSWORD", "storePassword")
+                keyAlias = signingValue("ZELDA3_KEY_ALIAS", "keyAlias")
+                keyPassword = signingValue("ZELDA3_KEY_PASSWORD", "keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
