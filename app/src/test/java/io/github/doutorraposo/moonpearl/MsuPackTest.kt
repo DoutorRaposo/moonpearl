@@ -30,6 +30,14 @@ class MsuPackTest {
     }
 
     @Test
+    fun standardPackWithTrack35IsNotDeluxe() {
+        // A real standard pack: tracks 1-35, no Deluxe themes (those start at 37).
+        val pack = MsuPack.detect((1..35).map { "psm-$it.pcm" to "id/$it" })!!
+        assertFalse(pack.hasDeluxeTracks)
+        assertTrue(MsuPack.detect((1..37).map { "psm-$it.pcm" to "id/$it" })!!.hasDeluxeTracks)
+    }
+
+    @Test
     fun nothingToDetect() {
         assertNull(MsuPack.detect(names("song.mp3", "pack.zip", "track1.pcm")))
     }

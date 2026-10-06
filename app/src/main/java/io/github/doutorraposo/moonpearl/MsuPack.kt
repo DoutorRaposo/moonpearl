@@ -20,11 +20,15 @@ object MsuPack {
     data class Track(val number: Int, val documentId: String)
 
     data class Pack(val prefix: String, val format: Format, val tracks: List<Track>) {
-        /** MSU Deluxe adds region and entrance themes from track 37 on. */
-        val hasDeluxeTracks get() = tracks.any { it.number > MAX_STANDARD_TRACK }
+        /**
+         * MSU Deluxe adds region and entrance themes. Upstream's Deluxe tables
+         * (kMsuDeluxe_OW_Songs, kMsuDeluxe_Entrance_Songs in audio.c) start at track 37;
+         * standard packs can go a little past 34, so lower numbers do not count.
+         */
+        val hasDeluxeTracks get() = tracks.any { it.number >= FIRST_DELUXE_TRACK }
     }
 
-    private const val MAX_STANDARD_TRACK = 34
+    private const val FIRST_DELUXE_TRACK = 37
     private val TRACK_NAME = Regex("""^(.*?)-(\d{1,3})\.(pcm|opuz)$""", RegexOption.IGNORE_CASE)
     private const val LINK_DIR = "msu"
 
