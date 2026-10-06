@@ -24,6 +24,9 @@ and the build. The few changes the game code needs are kept as small patches in
   It opens from an on-screen "⋯" button, an optional double tap, the back button, or
   Select+Start / the right stick button on a controller, and is fully usable with a
   controller. Under the hood it drives upstream's own save state and turbo shortcuts.
+- **Cheats**: infinite health, magic, bombs, arrows and small keys, a full wallet, walking
+  through walls, and Pro Action Replay RAM codes (`7Exxxx:yy`). The game RAM keeps the SNES
+  layout, so classic RAM codes work unchanged; ROM codes such as Game Genie do not apply.
 - **Enhancements** from upstream (item switching on L/R, turning while dashing, bug fixes and
   more), each with a short explanation of what it changes.
 - **Save management**: see the three game files (name and hearts) and every save state,

@@ -24,6 +24,15 @@ class AppPrefs(context: Context) {
         get() = prefs.getBoolean("double_tap_menu", false)
         set(value) { prefs.edit().putBoolean("double_tap_menu", value).commit() }
 
+    /** Cheats.BuiltIn bits that are switched on. */
+    var cheatFlags: Int
+        get() = prefs.getInt("cheat_flags", 0)
+        set(value) { prefs.edit().putInt("cheat_flags", value).commit() }
+
+    var cheatCodes: List<Cheats.Code>
+        get() = Cheats.decode(prefs.getString("cheat_codes", "").orEmpty())
+        set(value) { prefs.edit().putString("cheat_codes", Cheats.encode(value)).commit() }
+
     var touchOpacity: Float
         get() = prefs.getFloat("touch_opacity", 0.5f)
         set(value) { prefs.edit().putFloat("touch_opacity", value).commit() }

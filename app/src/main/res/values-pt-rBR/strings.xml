@@ -118,5 +118,28 @@
     <string name="saves_not_recognized">Este arquivo não foi reconhecido.</string>
     <string name="saves_failed">Falhou: %1$s</string>
 
+    <string name="menu_tab_cheats">Cheats</string>
+    <string name="cheats_hint">Os cheats valem na hora. O que eles alteram (rupias, itens) fica no seu save na próxima vez que o jogo salvar.</string>
+    <string name="cheat_health">Vida infinita</string>
+    <string name="cheat_health_desc">A vida volta ao máximo a cada quadro. Um único golpe maior que sua vida ainda pode derrotar você.</string>
+    <string name="cheat_magic">Magia infinita</string>
+    <string name="cheat_magic_desc">A barra de magia fica sempre cheia.</string>
+    <string name="cheat_bombs">Bombas infinitas</string>
+    <string name="cheat_bombs_desc">As bombas ficam sempre na capacidade da sua bolsa.</string>
+    <string name="cheat_arrows">Flechas infinitas</string>
+    <string name="cheat_arrows_desc">As flechas ficam sempre na capacidade da sua aljava.</string>
+    <string name="cheat_rupees">Carteira cheia</string>
+    <string name="cheat_rupees_desc">As rupias sobem até o máximo (999, ou 9999 com a melhoria de carteira maior).</string>
+    <string name="cheat_keys">Chaves pequenas infinitas</string>
+    <string name="cheat_keys_desc">Dentro das dungeons você sempre tem pelo menos uma chave pequena.</string>
+    <string name="cheat_walls">Atravessar paredes</string>
+    <string name="cheat_walls_desc">O Link ignora paredes e obstáculos. Desligue antes de sair de uma área, ou você pode cair fora do mapa.</string>
+    <string name="cheats_codes">Códigos Pro Action Replay</string>
+    <string name="cheats_codes_hint">Códigos de RAM da versão americana, como 7EF36D:A0, aplicados a cada quadro. Códigos que alteram a ROM (Game Genie, ou endereços fora de 7E/7F) não funcionam neste port.</string>
+    <string name="cheats_code">Código</string>
+    <string name="cheats_name">Nome (opcional)</string>
+    <string name="cheats_add">Adicionar</string>
+    <string name="cheats_invalid">Use 6 dígitos hexadecimais de endereço entre 7E0000 e 7FFFFF e 2 de valor, ex.: 7EF36D:A0.</string>
+
     <string name="legal_notice">Este app não contém nenhum dado do jogo. Você precisa fornecer uma ROM de um cartucho que possua. Baseado em snesrev/zelda3 (MIT).</string>
 </resources>

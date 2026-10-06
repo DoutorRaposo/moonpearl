@@ -118,5 +118,28 @@
     <string name="saves_not_recognized">This file was not recognized.</string>
     <string name="saves_failed">Failed: %1$s</string>
 
+    <string name="menu_tab_cheats">Cheats</string>
+    <string name="cheats_hint">Cheats take effect right away. Whatever they change (rupees, items) is kept in your save file the next time the game saves.</string>
+    <string name="cheat_health">Infinite health</string>
+    <string name="cheat_health_desc">Health refills to full every frame. A single hit bigger than your health can still defeat you.</string>
+    <string name="cheat_magic">Infinite magic</string>
+    <string name="cheat_magic_desc">The magic meter stays full.</string>
+    <string name="cheat_bombs">Infinite bombs</string>
+    <string name="cheat_bombs_desc">Bombs stay at your bag\'s capacity.</string>
+    <string name="cheat_arrows">Infinite arrows</string>
+    <string name="cheat_arrows_desc">Arrows stay at your quiver\'s capacity.</string>
+    <string name="cheat_rupees">Full wallet</string>
+    <string name="cheat_rupees_desc">Rupees count up to the maximum (999, or 9999 with the bigger wallet enhancement).</string>
+    <string name="cheat_keys">Infinite small keys</string>
+    <string name="cheat_keys_desc">Inside dungeons you always have at least one small key.</string>
+    <string name="cheat_walls">Walk through walls</string>
+    <string name="cheat_walls_desc">Link ignores walls and obstacles. Turn it off before leaving an area, or you may fall out of the map.</string>
+    <string name="cheats_codes">Pro Action Replay codes</string>
+    <string name="cheats_codes_hint">RAM codes for the US version, such as 7EF36D:A0, written every frame. Codes that patch the ROM (Game Genie, or addresses outside 7E/7F) do not apply to this port.</string>
+    <string name="cheats_code">Code</string>
+    <string name="cheats_name">Name (optional)</string>
+    <string name="cheats_add">Add</string>
+    <string name="cheats_invalid">Use 6 hex digits of address in 7E0000–7FFFFF and 2 of value, e.g. 7EF36D:A0.</string>
+
     <string name="legal_notice">This app contains no game data. You must supply a ROM from a cartridge you own. Based on snesrev/zelda3 (MIT).</string>
 </resources>

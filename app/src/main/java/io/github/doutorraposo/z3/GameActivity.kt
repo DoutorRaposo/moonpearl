@@ -69,6 +69,8 @@ class GameActivity : SDLActivity() {
         // to cover the screen instead. Read by SDL when main() creates the renderer.
         nativeSetenv("SDL_RENDER_LOGICAL_SIZE_MODE", if (prefs.fillScreen) "overscan" else "letterbox")
 
+        applyCheats()
+
         val fullScreen = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         if (prefs.touchControls) {
             touch = TouchControlsView(this) { code, down ->
@@ -181,6 +183,7 @@ class GameActivity : SDLActivity() {
         if (data == null) return
 
         setSpeed(data.getIntExtra(GameMenuActivity.EXTRA_SPEED, speed))
+        applyCheats()
         touch?.let {
             val visible = data.getBooleanExtra(GameMenuActivity.EXTRA_TOUCH_VISIBLE, true)
             // Only act on a change: a pad hidden because a controller is in use stays hidden.
@@ -213,6 +216,13 @@ class GameActivity : SDLActivity() {
             GameKeys.SPEED_MAX -> "»"
             else -> "$value×"
         }
+    }
+
+    /** The menu edits cheats in AppPrefs; hand the current set to cheats.c. */
+    private fun applyCheats() {
+        val prefs = AppPrefs(this)
+        val codes = prefs.cheatCodes.filter { it.enabled }.take(Cheats.MAX_CODES).map { it.packed }
+        nativeSetCheats(prefs.cheatFlags, codes.toIntArray())
     }
 
     // --- Input -----------------------------------------------------------------
@@ -283,5 +293,9 @@ class GameActivity : SDLActivity() {
         /** android_main.c, backed by patches/zelda3/0001-fixed-rate-fast-forward.patch. */
         @JvmStatic
         external fun nativeSetSpeed(speed: Int)
+
+        /** cheats.c, run each frame through patches/zelda3/0002-frame-hook.patch. */
+        @JvmStatic
+        external fun nativeSetCheats(flags: Int, codes: IntArray)
     }
 }

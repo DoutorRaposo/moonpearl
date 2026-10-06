@@ -1,0 +1,27 @@
+diff --git a/src/main.c b/src/main.c
+index 4813841..8917a81 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -62,6 +62,13 @@ static volatile int g_speed = 1;
+ void ZeldaSetSpeed(int speed) {
+   g_speed = speed < 1 ? 1 : speed;
+ }
++
++// Called on the game thread right before each frame runs, e.g. to apply cheats.
++static void (*g_frame_hook)(void);
++
++void ZeldaSetFrameHook(void (*hook)(void)) {
++  g_frame_hook = hook;
++}
+ static uint8 g_current_window_scale;
+ static uint8 g_gamepad_buttons;
+ static int g_input1_state;
+@@ -464,6 +471,8 @@ int main(int argc, char** argv) {
+     inputs |= g_gamepad_buttons;
+ 
+     SDL_LockMutex(g_audio_mutex);
++    if (g_frame_hook)
++      g_frame_hook();
+     bool is_replay = ZeldaRunFrame(inputs);
+     SDL_UnlockMutex(g_audio_mutex);
+ 

@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
@@ -46,6 +47,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -95,6 +97,7 @@ class GameMenuActivity : ComponentActivity() {
         }
 
         val states = SaveStates(filesDir)
+        val prefs = AppPrefs(this)
         var speed = intent.getIntExtra(EXTRA_SPEED, 1)
         var touch = intent.getBooleanExtra(EXTRA_TOUCH_VISIBLE, true)
         val hasTouch = intent.getBooleanExtra(EXTRA_HAS_TOUCH, false)
@@ -104,6 +107,7 @@ class GameMenuActivity : ComponentActivity() {
             AppTheme {
                 GameMenu(
                     states = states,
+                    prefs = prefs,
                     speed = speed,
                     onSpeed = { speed = it; publish(speed, touch) },
                     touchVisible = touch.takeIf { hasTouch },
@@ -148,11 +152,16 @@ class GameMenuActivity : ComponentActivity() {
     }
 }
 
-private enum class MenuTab(@StringRes val label: Int) { STATES(R.string.menu_tab_states), CHAPTERS(R.string.menu_tab_chapters) }
+private enum class MenuTab(@StringRes val label: Int) {
+    STATES(R.string.menu_tab_states),
+    CHAPTERS(R.string.menu_tab_chapters),
+    CHEATS(R.string.menu_tab_cheats),
+}
 
 @Composable
 private fun GameMenu(
     states: SaveStates,
+    prefs: AppPrefs,
     speed: Int,
     onSpeed: (Int) -> Unit,
     touchVisible: Boolean?,
@@ -181,6 +190,7 @@ private fun GameMenu(
             Modifier
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing)
+                .imePadding()
                 .padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -227,7 +237,7 @@ private fun GameMenu(
             }
 
             Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                SingleChoiceSegmentedButtonRow(Modifier.width(360.dp)) {
+                SingleChoiceSegmentedButtonRow(Modifier.width(480.dp)) {
                     MenuTab.entries.forEachIndexed { i, t ->
                         SegmentedButton(
                             selected = tab == t,
@@ -254,6 +264,7 @@ private fun GameMenu(
                             }
                         }
                     }
+                    MenuTab.CHEATS -> CheatsTab(prefs)
                     MenuTab.CHAPTERS -> Column(Modifier.verticalScroll(rememberScrollState())) {
                         Text(
                             stringResource(R.string.menu_chapters_hint),
@@ -340,11 +351,104 @@ private fun SlotCard(slot: SaveStates.Slot, onSave: () -> Unit, onLoad: () -> Un
     }
 }
 
+@Composable
+private fun CheatsTab(prefs: AppPrefs) {
+    var flags by remember { mutableIntStateOf(prefs.cheatFlags) }
+    var codes by remember { mutableStateOf(prefs.cheatCodes) }
+    var newCode by remember { mutableStateOf("") }
+    var newName by remember { mutableStateOf("") }
+    fun saveCodes(updated: List<Cheats.Code>) {
+        codes = updated
+        prefs.cheatCodes = updated
+    }
+
+    Column(Modifier.verticalScroll(rememberScrollState())) {
+        Text(
+            stringResource(R.string.cheats_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 8.dp),
+        )
+        for (cheat in Cheats.BuiltIn.entries) {
+            MenuSwitch(stringResource(cheat.label), flags and cheat.bit != 0, stringResource(cheat.description)) { on ->
+                flags = if (on) flags or cheat.bit else flags and cheat.bit.inv()
+                prefs.cheatFlags = flags
+            }
+        }
+
+        Text(
+            stringResource(R.string.cheats_codes),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(top = 16.dp, bottom = 4.dp),
+        )
+        Text(
+            stringResource(R.string.cheats_codes_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        codes.forEachIndexed { i, code ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.weight(1f)) {
+                    MenuSwitch(code.name.ifBlank { code.code }, code.enabled, code.code.takeIf { code.name.isNotBlank() }) { on ->
+                        saveCodes(codes.toMutableList().also { it[i] = code.copy(enabled = on) })
+                    }
+                }
+                TextButton(
+                    onClick = { saveCodes(codes.toMutableList().also { it.removeAt(i) }) },
+                    modifier = Modifier.focusRing(),
+                ) { Text(stringResource(R.string.saves_delete)) }
+            }
+        }
+
+        val normalized = Cheats.normalize(newCode)
+        Row(
+            Modifier.padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            OutlinedTextField(
+                value = newCode,
+                onValueChange = { newCode = it.take(16) },
+                label = { Text(stringResource(R.string.cheats_code)) },
+                placeholder = { Text("7EF36D:A0") },
+                isError = newCode.isNotBlank() && normalized == null,
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+            OutlinedTextField(
+                value = newName,
+                onValueChange = { newName = it.take(40) },
+                label = { Text(stringResource(R.string.cheats_name)) },
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+            Button(
+                onClick = {
+                    saveCodes(codes + Cheats.Code(normalized!!, newName.trim(), true))
+                    newCode = ""
+                    newName = ""
+                },
+                enabled = normalized != null && codes.size < Cheats.MAX_CODES,
+                modifier = Modifier.focusRing(),
+            ) { Text(stringResource(R.string.cheats_add)) }
+        }
+        if (newCode.isNotBlank() && normalized == null) {
+            Text(
+                stringResource(R.string.cheats_invalid),
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
+}
+
 /** The whole row toggles, so a controller can focus and flip it in one go. */
 @Composable
-private fun MenuSwitch(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+private fun MenuSwitch(label: String, checked: Boolean, description: String? = null, onChange: (Boolean) -> Unit) {
     ListItem(
         headlineContent = { Text(label) },
+        supportingContent = description?.let { { Text(it) } },
         trailingContent = { Switch(checked = checked, onCheckedChange = null) },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         modifier = Modifier
