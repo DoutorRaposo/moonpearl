@@ -248,4 +248,21 @@
     <string name="output_unsupported">This device has no OpenGL ES 3, so only SDL is available.</string>
     <string name="menu_image_sdl">Shaders need the OpenGL output (Settings > Display > Image filter).</string>
     <string name="opengl_failed_message">The game did not get going with its OpenGL output on this device: it froze or closed right after starting. It now uses the SDL output; you can switch back in Settings > Display > Image filter.</string>
+    <string name="remap_title">Remap buttons</string>
+    <string name="remap_desc">Choose which controller button does what</string>
+    <string name="remap_hint">Tap a SNES button, then press the controller button you want for it. A button already in use swaps places. The d-pad and left stick move Link; the guide button and R3 open the menu; LT and RT change the speed.</string>
+    <string name="remap_snes">SNES %1$s</string>
+    <string name="remap_by_position">SNES layout (default)</string>
+    <string name="remap_by_letter">By letter</string>
+    <string name="remap_press">Press a button…</string>
+    <string name="remap_press_hint">Press the controller button for it, or tap here to cancel. Buttons are named by position, as on an Xbox controller: A is the bottom one.</string>
+    <string name="pad_a">A (bottom)</string>
+    <string name="pad_b">B (right)</string>
+    <string name="pad_x">X (left)</string>
+    <string name="pad_y">Y (top)</string>
+    <string name="pad_lb">LB / L1</string>
+    <string name="pad_rb">RB / R1</string>
+    <string name="pad_back">Select / Back</string>
+    <string name="pad_start">Start / Menu</string>
+    <string name="pad_l3">L3 (left stick press)</string>
 </resources>

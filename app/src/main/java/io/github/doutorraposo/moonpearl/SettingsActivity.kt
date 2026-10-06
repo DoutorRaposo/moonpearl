@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.KeyEvent
+import android.view.InputDevice
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
@@ -45,7 +47,22 @@ import androidx.compose.ui.unit.dp
 
 /** Settings, grouped in categories; each category is its own page. */
 class SettingsActivity : ComponentActivity() {
+    /** Set while the remap screen waits for a controller button (see ControllerRemap). */
+    var padCapture: ((ControllerMap.Pad) -> Unit)? = null
+
     override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguage.wrap(newBase))
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        val capture = padCapture
+        val fromController = event.isFromSource(InputDevice.SOURCE_GAMEPAD) || event.isFromSource(InputDevice.SOURCE_JOYSTICK)
+        if (capture != null && fromController) {
+            // Taken on release, so the press does not also reach the screen behind.
+            val pad = ControllerMap.Pad.fromKeyCode(event.keyCode)
+            if (pad != null && event.action == KeyEvent.ACTION_UP) capture(pad)
+            if (pad != null) return true
+        }
+        return super.dispatchKeyEvent(event)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,6 +115,7 @@ private val features = listOf(
 private fun SettingsScreen(data: GameData, prefs: AppPrefs, onClose: () -> Unit) {
     var open by rememberSaveable { mutableStateOf<Category?>(null) }
     var filterOpen by rememberSaveable { mutableStateOf(false) }
+    var remapOpen by rememberSaveable { mutableStateOf(false) }
     var ini by remember { mutableStateOf(data.readIni()) }
     fun editIni(block: Ini.() -> Unit) {
         val updated = Ini(ini.text).apply(block)
@@ -105,11 +123,23 @@ private fun SettingsScreen(data: GameData, prefs: AppPrefs, onClose: () -> Unit)
         ini = updated
     }
 
-    BackHandler(enabled = open != null) { if (filterOpen) filterOpen = false else open = null }
+    BackHandler(enabled = open != null) {
+        when {
+            filterOpen -> filterOpen = false
+            remapOpen -> remapOpen = false
+            else -> open = null
+        }
+    }
     val back = { open = null }
     if (open == Category.DISPLAY && filterOpen) {
         Page(stringResource(R.string.image_filter), onBack = { filterOpen = false }) {
             ShaderSettings(ini, data.dir, ::editIni)
+        }
+        return
+    }
+    if (open == Category.CONTROLS && remapOpen) {
+        Page(stringResource(R.string.remap_title), onBack = { remapOpen = false }) {
+            ControllerRemap(ini, ::editIni)
         }
         return
     }
@@ -134,7 +164,7 @@ private fun SettingsScreen(data: GameData, prefs: AppPrefs, onClose: () -> Unit)
             AudioSettings(ini, prefs, ::editIni)
         }
         Category.CONTROLS -> Page(stringResource(R.string.section_controls), onBack = back) {
-            ControlSettings(prefs)
+            ControlSettings(prefs, onRemap = { remapOpen = true })
         }
         Category.GAME -> Page(stringResource(R.string.section_game), onBack = back) {
             Section(null) {
@@ -279,7 +309,7 @@ private fun AudioSettings(ini: Ini, prefs: AppPrefs, edit: (Ini.() -> Unit) -> U
 }
 
 @Composable
-private fun ControlSettings(prefs: AppPrefs) {
+private fun ControlSettings(prefs: AppPrefs, onRemap: () -> Unit) {
     var touchControls by remember { mutableStateOf(prefs.touchControls) }
     val context = LocalContext.current
     var turboButton by remember { mutableStateOf(prefs.turboButton) }
@@ -319,6 +349,13 @@ private fun ControlSettings(prefs: AppPrefs) {
     }
     Section(R.string.settings_controller) {
         Hint(stringResource(R.string.controller_hint), Modifier.padding(16.dp))
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.remap_title)) },
+            supportingContent = { Text(stringResource(R.string.remap_desc)) },
+            trailingContent = { Icon(ChevronRight, null) },
+            colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onRemap),
+        )
     }
 }
 

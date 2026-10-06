@@ -248,4 +248,21 @@
     <string name="output_unsupported">Este aparelho não tem OpenGL ES 3, então só a saída SDL está disponível.</string>
     <string name="menu_image_sdl">Os shaders precisam da saída OpenGL (Configurações > Tela > Filtro de imagem).</string>
     <string name="opengl_failed_message">O jogo não conseguiu rodar com a saída OpenGL neste aparelho: travou ou fechou logo depois de abrir. Agora ele usa a saída SDL; dá para voltar em Configurações > Tela > Filtro de imagem.</string>
+    <string name="remap_title">Remapear botões</string>
+    <string name="remap_desc">Escolha qual botão do controle faz o quê</string>
+    <string name="remap_hint">Toque num botão do SNES e aperte o botão do controle que você quer usar para ele. Se esse botão já estiver em uso, os dois trocam de lugar. O direcional e o analógico esquerdo movem o Link; o botão Guia e o R3 abrem o menu; LT e RT mudam a velocidade.</string>
+    <string name="remap_snes">%1$s do SNES</string>
+    <string name="remap_by_position">Posição do SNES (padrão)</string>
+    <string name="remap_by_letter">Pelas letras</string>
+    <string name="remap_press">Aperte um botão…</string>
+    <string name="remap_press_hint">Aperte o botão do controle para ele, ou toque aqui para cancelar. Os botões são nomeados pela posição, como num controle de Xbox: o A é o de baixo.</string>
+    <string name="pad_a">A (de baixo)</string>
+    <string name="pad_b">B (da direita)</string>
+    <string name="pad_x">X (da esquerda)</string>
+    <string name="pad_y">Y (de cima)</string>
+    <string name="pad_lb">LB / L1</string>
+    <string name="pad_rb">RB / R1</string>
+    <string name="pad_back">Select / Back</string>
+    <string name="pad_start">Start / Menu</string>
+    <string name="pad_l3">L3 (apertar o analógico esquerdo)</string>
 </resources>

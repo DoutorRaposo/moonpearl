@@ -33,7 +33,8 @@ own ROM; the app sets everything up on the device.
   feedback and adjustable opacity. Every button can be moved and resized, and an optional
   hold-to-fast-forward button can be added.
 - **Controllers** (Xbox, PlayStation, Switch Pro and most others) are detected
-  automatically; the touch controls hide while one is in use.
+  automatically; the touch controls hide while one is in use. The SNES buttons can be remapped
+  to any controller button.
 - **Link's look**: replace Link with any of the hundreds of community sprites (`.zspr` files
   from the [sprite gallery](https://snesrev.github.io/sprites-gfx/snes/zelda3/link/)), with a
   preview of each.
