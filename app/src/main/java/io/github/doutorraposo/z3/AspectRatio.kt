@@ -53,3 +53,9 @@ enum class AspectRatio(val iniValue: String, val ratio: Float) {
     fun croppedColumnsPerEdge(screenRatio: Float): Int =
         if (screenRatio >= ratio) 0 else (224 * (ratio - screenRatio) / 2).roundToInt()
 }
+
+/** Sets ExtendedAspectRatio to the widest mode that fits this device's screen. */
+fun Ini.useScreenAspectRatio(context: Context) {
+    this["General", "ExtendedAspectRatio"] =
+        AspectRatio.toIni(this["General", "ExtendedAspectRatio"], AspectRatio.forScreen(context))
+}

@@ -123,16 +123,17 @@ class GameData(private val context: Context) {
 
         fun hasAssetsSignature(data: ByteArray) =
             data.size >= SIG.size && data.copyOfRange(0, SIG.size).contentEquals(SIG)
-
-        private fun InputStream.readAtMost(limit: Int): ByteArray {
-            val out = java.io.ByteArrayOutputStream()
-            val buf = ByteArray(64 * 1024)
-            while (out.size() < limit) {
-                val n = read(buf, 0, minOf(buf.size, limit - out.size()))
-                if (n < 0) break
-                out.write(buf, 0, n)
-            }
-            return out.toByteArray()
-        }
     }
+}
+
+/** Reads up to [limit] bytes (InputStream.readNBytes needs API 33). */
+fun InputStream.readAtMost(limit: Int): ByteArray {
+    val out = java.io.ByteArrayOutputStream()
+    val buf = ByteArray(64 * 1024)
+    while (out.size() < limit) {
+        val n = read(buf, 0, minOf(buf.size, limit - out.size()))
+        if (n < 0) break
+        out.write(buf, 0, n)
+    }
+    return out.toByteArray()
 }

@@ -17,6 +17,7 @@
     <string name="section_display">Tela</string>
     <string name="aspect_ratio">Proporção</string>
     <string name="aspect_ratio_hint">Os modos widescreen mostram mais do mapa em vez de esticar a imagem.</string>
+    <string name="aspect_ratio_auto">Ajustada automaticamente para o modo mais largo que cabe nesta tela enquanto “Preencher a tela” estiver ligado.</string>
     <string name="fill_screen">Preencher a tela</string>
     <string name="fill_screen_off">A imagem mantém a proporção, com faixas onde não alcança as bordas.</string>
     <string name="fill_screen_crops_lines">Cobre a tela inteira, escondendo cerca de %1$d linhas do jogo em cima e embaixo.</string>
@@ -73,6 +74,31 @@
     <string name="menu_chapters_hint">Vá para o início de um capítulo usando os saves de referência do upstream.</string>
     <string name="menu_chapter">Capítulo %1$d: %2$s</string>
     <string name="menu_chapter_confirm">Carregar este capítulo? O progresso desde o último save será perdido.</string>
+
+    <string name="saves_title">Gerenciar saves</string>
+    <string name="saves_game_files">Fichas do jogo</string>
+    <string name="saves_file">Ficha %1$d</string>
+    <string name="saves_file_named">Ficha %1$d: %2$s</string>
+    <string name="saves_file_empty">Ficha %1$d: vazia</string>
+    <string name="saves_hearts">%1$d corações</string>
+    <string name="saves_srm_hint">São as três fichas do próprio jogo. Elas usam o formato do cartucho, então um .srm de emulador (Snes9x, RetroArch, …) funciona nos dois sentidos. Importar um substitui as três fichas e apaga o ponto de retomada.</string>
+    <string name="saves_import_srm">Importar .srm</string>
+    <string name="saves_export_srm">Exportar .srm</string>
+    <string name="saves_import_srm_confirm">Substituir as três fichas por este .srm? As atuais ficam guardadas como sram.bak, e o ponto de retomada é apagado para o jogo abrir na seleção de fichas.</string>
+    <string name="saves_no_states">Nenhum save state ainda. Crie pelo menu dentro do jogo.</string>
+    <string name="saves_delete">Apagar</string>
+    <string name="saves_delete_confirm">Apagar este save state?</string>
+    <string name="saves_backup">Backup</string>
+    <string name="saves_backup_hint">O backup é um .zip com as fichas e todos os save states, para guardar ou levar a outro aparelho.</string>
+    <string name="saves_export_backup">Exportar backup</string>
+    <string name="saves_restore_backup">Restaurar backup</string>
+    <string name="saves_restore_confirm">Restaurar este backup? Ele substitui as fichas e todos os save states deste aparelho.</string>
+    <string name="saves_exported">Salvo.</string>
+    <string name="saves_imported">Fichas importadas.</string>
+    <string name="saves_restored">Backup restaurado.</string>
+    <string name="saves_deleted">Save state apagado.</string>
+    <string name="saves_not_recognized">Este arquivo não foi reconhecido.</string>
+    <string name="saves_failed">Falhou: %1$s</string>
 
     <string name="legal_notice">Este app não contém nenhum dado do jogo. Você precisa fornecer uma ROM de um cartucho que possua. Baseado em snesrev/zelda3 (MIT).</string>
 </resources>

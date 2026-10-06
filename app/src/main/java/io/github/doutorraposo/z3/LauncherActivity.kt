@@ -163,15 +163,39 @@ private fun LauncherScreen(data: GameData, prefs: AppPrefs, onPlay: () -> Unit) 
                 enabled = hasAssets && !importing,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
             ) { Text(stringResource(R.string.play), style = MaterialTheme.typography.titleMedium) }
+            OutlinedButton(
+                onClick = { context.startActivity(Intent(context, SavesActivity::class.java)) },
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text(stringResource(R.string.saves_title)) }
 
             Section(R.string.section_display) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(R.string.aspect_ratio), style = MaterialTheme.typography.bodyMedium)
+                SwitchRow(stringResource(R.string.fill_screen), fillScreen) {
+                    fillScreen = it
+                    prefs.fillScreen = it
+                    if (it) editIni { useScreenAspectRatio(context) }
+                }
+                Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     val current = AspectRatio.fromIni(ini["General", "ExtendedAspectRatio"])
+                    val lines = current.croppedLinesPerEdge(screenRatio)
+                    val columns = current.croppedColumnsPerEdge(screenRatio)
+                    Text(
+                        when {
+                            !fillScreen -> stringResource(R.string.fill_screen_off)
+                            lines > 0 -> stringResource(R.string.fill_screen_crops_lines, lines)
+                            columns > 0 -> stringResource(R.string.fill_screen_crops_columns, columns)
+                            else -> stringResource(R.string.fill_screen_exact)
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(stringResource(R.string.aspect_ratio), style = MaterialTheme.typography.bodyMedium)
+                    // With fill on, the widest mode that fits is the only sensible one: anything
+                    // narrower is scaled up even more and loses more of the top and bottom.
                     SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                         AspectRatio.entries.forEachIndexed { i, ratio ->
                             SegmentedButton(
                                 selected = ratio == current,
+                                enabled = !fillScreen,
                                 onClick = {
                                     editIni { this["General", "ExtendedAspectRatio"] = AspectRatio.toIni(this["General", "ExtendedAspectRatio"], ratio) }
                                 },
@@ -180,29 +204,12 @@ private fun LauncherScreen(data: GameData, prefs: AppPrefs, onPlay: () -> Unit) 
                         }
                     }
                     Text(
-                        stringResource(R.string.aspect_ratio_hint),
+                        stringResource(if (fillScreen) R.string.aspect_ratio_auto else R.string.aspect_ratio_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp),
                     )
                 }
-                SwitchRow(stringResource(R.string.fill_screen), fillScreen) {
-                    fillScreen = it
-                    prefs.fillScreen = it
-                }
-                val ratio = AspectRatio.fromIni(ini["General", "ExtendedAspectRatio"])
-                val lines = ratio.croppedLinesPerEdge(screenRatio)
-                val columns = ratio.croppedColumnsPerEdge(screenRatio)
-                Text(
-                    when {
-                        !fillScreen -> stringResource(R.string.fill_screen_off)
-                        lines > 0 -> stringResource(R.string.fill_screen_crops_lines, lines)
-                        columns > 0 -> stringResource(R.string.fill_screen_crops_columns, columns)
-                        else -> stringResource(R.string.fill_screen_exact)
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
-                )
                 IniSwitch(ini, "Graphics", "EnhancedMode7", R.string.enhanced_mode7, ::editIni)
                 IniSwitch(ini, "Graphics", "LinearFiltering", R.string.linear_filtering, ::editIni)
                 IniSwitch(ini, "Graphics", "DimFlashes", R.string.dim_flashes, ::editIni)

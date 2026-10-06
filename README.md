@@ -13,9 +13,9 @@ on-screen controls and the build.
   picker. The app checks it and builds `zelda3_assets.dat` on the device by applying the
   `zelda3_assets.bps` patch published with upstream v0.3. No Python, no PC, no copying files
   into `Android/data`. The ROM itself is not kept.
-- **Widescreen** up to 18:9, picked automatically for the device, plus an optional
-  *fill the screen* mode that scales the picture to cover the whole display (it hides a few
-  lines at the top and bottom on screens wider than 2:1).
+- **Widescreen** up to 18:9, plus a *fill the screen* mode (on by default) that picks the
+  widest mode for the device and scales the picture to cover the whole display, hiding a few
+  lines at the top and bottom on screens wider than 2:1.
 - **Touch controls** with multi-touch, 8-way d-pad, sliding between face buttons, haptic
   feedback and adjustable opacity. They hide while a controller is in use.
 - **In-game menu** with save states (9 slots plus the resume point, each with a screenshot
@@ -23,6 +23,10 @@ on-screen controls and the build.
   It opens from an on-screen "⋯" button, an optional double tap, the back button, or
   Select+Start / the right stick button on a controller, and is fully usable with a
   controller. Under the hood it drives upstream's own save state and turbo shortcuts.
+- **Save management**: see the three game files (name and hearts) and every save state,
+  export or restore everything as a `.zip`, and import or export the game files as an `.srm`.
+  The save RAM uses the cartridge layout, so files move both ways between this app and SNES
+  emulators.
 - **Controllers** through SDL2 (Xbox, PlayStation, Switch Pro and generic pads).
 - **Resume where you left off.** A save state is written whenever the app goes to the
   background or you quit, and loaded on the next start, so nothing is lost if Android

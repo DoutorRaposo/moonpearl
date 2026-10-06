@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Z3</string>
     <string name="tagline">Native Android port of the zelda3 PC reimplementation.</string>
 
     <string name="section_game_data">Game data</string>
@@ -18,6 +17,7 @@
     <string name="section_display">Display</string>
     <string name="aspect_ratio">Aspect ratio</string>
     <string name="aspect_ratio_hint">Widescreen modes show more of the world instead of stretching the picture.</string>
+    <string name="aspect_ratio_auto">Set automatically to the widest mode that fits this screen while “Fill the screen” is on.</string>
     <string name="fill_screen">Fill the screen</string>
     <string name="fill_screen_off">The picture keeps its proportions, with bars where it does not reach the edges.</string>
     <string name="fill_screen_crops_lines">Covers the whole screen, hiding about %1$d lines of the game at the top and at the bottom.</string>
@@ -74,6 +74,31 @@
     <string name="menu_chapters_hint">Jump to the start of a chapter with the reference saves from upstream.</string>
     <string name="menu_chapter">Chapter %1$d: %2$s</string>
     <string name="menu_chapter_confirm">Load this chapter? Progress since your last save will be lost.</string>
+
+    <string name="saves_title">Manage saves</string>
+    <string name="saves_game_files">Game files</string>
+    <string name="saves_file">File %1$d</string>
+    <string name="saves_file_named">File %1$d: %2$s</string>
+    <string name="saves_file_empty">File %1$d: empty</string>
+    <string name="saves_hearts">%1$d hearts</string>
+    <string name="saves_srm_hint">These are the game’s own three files. They use the cartridge format, so an .srm from an emulator (Snes9x, RetroArch, …) works both ways. Importing one replaces all three files and clears the resume point.</string>
+    <string name="saves_import_srm">Import .srm</string>
+    <string name="saves_export_srm">Export .srm</string>
+    <string name="saves_import_srm_confirm">Replace the three game files with this .srm? The current ones are kept as sram.bak, and the resume point is cleared so the game starts at the file select screen.</string>
+    <string name="saves_no_states">No save states yet. Create them from the in-game menu.</string>
+    <string name="saves_delete">Delete</string>
+    <string name="saves_delete_confirm">Delete this save state?</string>
+    <string name="saves_backup">Backup</string>
+    <string name="saves_backup_hint">A backup is a .zip with the game files and every save state, ready to keep or move to another device.</string>
+    <string name="saves_export_backup">Export backup</string>
+    <string name="saves_restore_backup">Restore backup</string>
+    <string name="saves_restore_confirm">Restore this backup? It replaces the game files and all save states on this device.</string>
+    <string name="saves_exported">Saved.</string>
+    <string name="saves_imported">Game files imported.</string>
+    <string name="saves_restored">Backup restored.</string>
+    <string name="saves_deleted">Save state deleted.</string>
+    <string name="saves_not_recognized">This file was not recognized.</string>
+    <string name="saves_failed">Failed: %1$s</string>
 
     <string name="legal_notice">This app contains no game data. You must supply a ROM from a cartridge you own. Based on snesrev/zelda3 (MIT).</string>
 </resources>

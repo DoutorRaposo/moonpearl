@@ -39,7 +39,14 @@ class GameActivity : SDLActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val data = GameData(this)
         data.prepare()
-        autosave = data.readIni().getBool("General", "Autosave")
+        val ini = data.readIni()
+        autosave = ini.getBool("General", "Autosave")
+        // Keep "fill the screen" matched to the display, e.g. after moving the data to another device.
+        if (AppPrefs(this).fillScreen) {
+            val before = ini.text
+            ini.useScreenAspectRatio(this)
+            if (ini.text != before) data.writeIni(ini)
+        }
         if (!data.hasAssets()) {
             super.onCreate(savedInstanceState)
             finish()

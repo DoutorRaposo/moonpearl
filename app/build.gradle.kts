@@ -80,7 +80,13 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Installs next to the release build, so testing never wipes the real saves.
+            applicationIdSuffix = ".debug"
+            resValue("string", "app_name", "Z3 debug")
+        }
         release {
+            resValue("string", "app_name", "Z3")
             signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
@@ -96,6 +102,7 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        resValues = true
     }
 
     packaging {
