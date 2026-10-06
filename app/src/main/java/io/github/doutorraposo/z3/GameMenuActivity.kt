@@ -83,9 +83,9 @@ import kotlinx.coroutines.withContext
 import org.libsdl.app.SDLControllerManager
 
 /**
- * In-game menu, shown as a translucent activity over [GameActivity]. While it is open SDL
- * pauses the game; the chosen action goes back as the activity result and GameActivity
- * turns it into upstream key presses, which run as soon as the game resumes.
+ * In-game menu, shown as a translucent activity over [GameActivity], which pauses the game while
+ * it is open. The chosen action goes back as the activity result and GameActivity turns it into
+ * upstream key presses.
  */
 class GameMenuActivity : ComponentActivity() {
     enum class Action { SAVE, LOAD, CHAPTER, RESET, QUIT }
@@ -138,8 +138,9 @@ class GameMenuActivity : ComponentActivity() {
 
     /**
      * The game saw the presses made before the menu opened but not their releases, so a held
-     * direction would stay held when it resumes. Hand releases (never presses, so navigating
-     * the menu does not move Link) and stick/d-pad motion to SDL; it applies them on resume.
+     * direction would stay held when it resumes. Hand releases (never presses, so using the
+     * menu does not act in the game) and stick/d-pad motion to SDL; the paused game only
+     * records them, so it resumes with the controller's real state.
      */
     private fun forwardToGame(event: KeyEvent) {
         val fromController = event.isFromSource(InputDevice.SOURCE_GAMEPAD) || event.isFromSource(InputDevice.SOURCE_JOYSTICK)

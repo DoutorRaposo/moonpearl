@@ -32,6 +32,8 @@ class GameActivity : SDLActivity() {
     /** See [GameKeys.speeds]. */
     private var speed = 1
     private var menuOpen = false
+    /** The game was paused (upstream's pause toggle) when the menu opened. */
+    private var pausedForMenu = false
     /** Controller buttons whose press opened nothing yet; the menu opens on their release. */
     private val menuButtonsDown = HashSet<Int>()
     /** LT and RT, as buttons and as analog axes (controllers report either or both). */
@@ -149,6 +151,13 @@ class GameActivity : SDLActivity() {
         if (menuOpen || mBrokenLibraries) return
         menuOpen = true
         touch?.releaseAll()
+        // The menu is translucent, so the game stays visible and SDL (which pauses only in
+        // onStop on Android 7+) keeps it running. Pause it with upstream's own toggle, which
+        // stops frames and audio but still handles input, so releases keep the pad in sync.
+        if (!pausedForMenu) {
+            pressWith(GameKeys.SHIFT, GameKeys.PAUSE)
+            pausedForMenu = true
+        }
         captureScreen(menuShot) {
             @Suppress("DEPRECATION")
             startActivityForResult(
@@ -189,8 +198,14 @@ class GameActivity : SDLActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode != REQUEST_MENU) return
         menuOpen = false
-        if (data == null) return
+        if (data != null) applyMenuResult(data)
+        if (pausedForMenu) {
+            pressWith(GameKeys.SHIFT, GameKeys.PAUSE)
+            pausedForMenu = false
+        }
+    }
 
+    private fun applyMenuResult(data: Intent) {
         setSpeed(data.getIntExtra(GameMenuActivity.EXTRA_SPEED, speed))
         applyCheats()
         touch?.let {
@@ -200,7 +215,7 @@ class GameActivity : SDLActivity() {
             touchHiddenByUser = !visible
         }
 
-        // These key presses are queued now and run on the game thread as soon as SDL resumes.
+        // Queued key presses, run in order on the game thread before it is unpaused.
         val arg = data.getIntExtra(GameMenuActivity.EXTRA_ARG, 0)
         when (data.getStringExtra(GameMenuActivity.EXTRA_ACTION)?.let(GameMenuActivity.Action::valueOf)) {
             GameMenuActivity.Action.SAVE -> {

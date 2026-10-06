@@ -16,6 +16,7 @@ object GameKeys {
         "Save" to (1..STATE_SLOTS).joinToString(", ") { "Shift+F$it" },
         "Turbo" to "Tab",
         "Reset" to "Ctrl+r",
+        "Pause" to "Shift+p",
         "LoadRef" to "1, 2, 3, 4, 5, 6, 7, 8, 9, 0, -, =, Backspace",
     )
 
@@ -41,4 +42,5 @@ object GameKeys {
     const val SHIFT = KeyEvent.KEYCODE_SHIFT_LEFT
     const val CTRL = KeyEvent.KEYCODE_CTRL_LEFT
     const val RESET = KeyEvent.KEYCODE_R
+    const val PAUSE = KeyEvent.KEYCODE_P
 }
