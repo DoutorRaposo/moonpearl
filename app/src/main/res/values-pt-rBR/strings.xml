@@ -24,7 +24,6 @@
     <string name="fill_screen_crops_columns">Cobre a tela inteira, escondendo cerca de %1$d colunas do jogo de cada lado.</string>
     <string name="fill_screen_exact">Este modo coincide exatamente com a tela.</string>
     <string name="enhanced_mode7">Mapa-múndi em alta resolução</string>
-    <string name="linear_filtering">Suavizar pixels (filtro linear)</string>
     <string name="dim_flashes">Reduzir efeitos de flash</string>
 
     <string name="section_link">Link</string>
@@ -210,4 +209,31 @@
     <string name="msu_resume">Retomar a música</string>
     <string name="msu_resume_desc">Continua a música de onde parou quando você volta para a mesma área.</string>
     <string name="legal_notice">Este app não contém nenhum dado do jogo. Você precisa fornecer uma ROM de um cartucho que possua. Baseado em snesrev/zelda3 (MIT).</string>
+    <string name="image_filter">Filtro de imagem</string>
+    <string name="filter_plain">Sem shader</string>
+    <string name="filter_shaders">Shaders</string>
+    <string name="filter_imported">Seus shaders</string>
+    <string name="filter_sharp">Pixels nítidos</string>
+    <string name="filter_sharp_desc">Como o jogo desenha. Em escalas quebradas alguns pixels ficam um pouco mais largos que outros.</string>
+    <string name="filter_smooth">Suave</string>
+    <string name="filter_smooth_desc">Filtragem linear: imagem mais macia, sem pixels desiguais.</string>
+    <string name="filter_gpu_hint">Os shaders rodam na GPU. Se o jogo ficar lento, volte para Pixels nítidos ou Suave.</string>
+    <string name="shader_crt">CRT (Lottes)</string>
+    <string name="shader_crt_desc">Linhas de varredura e máscara de sombra, como numa TV antiga.</string>
+    <string name="shader_lcd">Grade de LCD</string>
+    <string name="shader_lcd_desc">Grade de pixels visível, como a tela de um portátil.</string>
+    <string name="shader_sharp_bilinear">Bilinear nítido</string>
+    <string name="shader_sharp_bilinear_desc">Pixels nítidos e todos do mesmo tamanho, só com as bordas suavizadas.</string>
+    <string name="shader_xbr">xBR</string>
+    <string name="shader_xbr_desc">Suaviza a pixel art em formas mais arredondadas.</string>
+    <string name="shader_omniscale">OmniScale</string>
+    <string name="shader_omniscale_desc">Suaviza a pixel art mantendo os contornos nítidos.</string>
+    <string name="shaders_import_hint">Use shaders GLSL do RetroArch (.glslp ou .glsl): escolha uma pasta, como uma cópia da coleção glsl-shaders. Os arquivos de shader são copiados para o app. Shaders slang (.slangp) não são suportados.</string>
+    <string name="shaders_import">Importar pasta</string>
+    <string name="shaders_importing">Copiando…</string>
+    <string name="shaders_remove">Remover todos</string>
+    <string name="shaders_imported">%1$d shaders importados.</string>
+    <string name="shaders_none_found">Nenhum shader GLSL (.glslp ou .glsl) nessa pasta.</string>
+    <string name="shaders_too_big">Essa pasta tem mais de 64 MB de arquivos de shader.</string>
+    <string name="shaders_import_failed">Não foi possível copiar os shaders.</string>
 </resources>

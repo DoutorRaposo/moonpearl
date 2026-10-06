@@ -97,6 +97,7 @@ private val features = listOf(
 @Composable
 private fun SettingsScreen(data: GameData, prefs: AppPrefs, onClose: () -> Unit) {
     var open by rememberSaveable { mutableStateOf<Category?>(null) }
+    var filterOpen by rememberSaveable { mutableStateOf(false) }
     var ini by remember { mutableStateOf(data.readIni()) }
     fun editIni(block: Ini.() -> Unit) {
         val updated = Ini(ini.text).apply(block)
@@ -104,8 +105,14 @@ private fun SettingsScreen(data: GameData, prefs: AppPrefs, onClose: () -> Unit)
         ini = updated
     }
 
-    BackHandler(enabled = open != null) { open = null }
+    BackHandler(enabled = open != null) { if (filterOpen) filterOpen = false else open = null }
     val back = { open = null }
+    if (open == Category.DISPLAY && filterOpen) {
+        Page(stringResource(R.string.image_filter), onBack = { filterOpen = false }) {
+            ShaderSettings(ini, data.dir, ::editIni)
+        }
+        return
+    }
     when (open) {
         null -> Page(stringResource(R.string.settings_title), onBack = onClose) {
             Section(null) {
@@ -121,7 +128,7 @@ private fun SettingsScreen(data: GameData, prefs: AppPrefs, onClose: () -> Unit)
             }
         }
         Category.DISPLAY -> Page(stringResource(R.string.section_display), onBack = back) {
-            DisplaySettings(ini, prefs, ::editIni)
+            DisplaySettings(ini, prefs, ::editIni, onImageFilter = { filterOpen = true })
         }
         Category.AUDIO -> Page(stringResource(R.string.settings_audio), onBack = back) {
             AudioSettings(ini, prefs, ::editIni)
@@ -151,7 +158,7 @@ private fun SettingsScreen(data: GameData, prefs: AppPrefs, onClose: () -> Unit)
 }
 
 @Composable
-private fun DisplaySettings(ini: Ini, prefs: AppPrefs, edit: (Ini.() -> Unit) -> Unit) {
+private fun DisplaySettings(ini: Ini, prefs: AppPrefs, edit: (Ini.() -> Unit) -> Unit, onImageFilter: () -> Unit) {
     val context = LocalContext.current
     var fillScreen by remember { mutableStateOf(prefs.fillScreen) }
     val screenRatio = remember { AspectRatio.screenRatio(context) }
@@ -193,7 +200,13 @@ private fun DisplaySettings(ini: Ini, prefs: AppPrefs, edit: (Ini.() -> Unit) ->
             )
         }
         IniSwitch(ini, "Graphics", "EnhancedMode7", R.string.enhanced_mode7, edit)
-        IniSwitch(ini, "Graphics", "LinearFiltering", R.string.linear_filtering, edit)
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.image_filter)) },
+            supportingContent = { Text(shaderChoiceLabel(Shaders.current(ini))) },
+            trailingContent = { Icon(ChevronRight, null) },
+            colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onImageFilter),
+        )
         IniSwitch(ini, "Graphics", "DimFlashes", R.string.dim_flashes, edit, R.string.dim_flashes_desc)
     }
 }

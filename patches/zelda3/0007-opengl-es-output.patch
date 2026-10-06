@@ -1,0 +1,140 @@
+diff --git a/src/glsl_shader.c b/src/glsl_shader.c
+index 0733833..1fe4e3e 100644
+--- a/src/glsl_shader.c
++++ b/src/glsl_shader.c
+@@ -242,8 +242,9 @@ size_t LengthOfInitialComments(const uint8 *data, size_t size) {
+ static bool GlslPass_Compile(GlslPass *p, uint type, const uint8 *data, size_t size, bool use_opengl_es) {
+   static const char kVertexPrefix[] =   "#define VERTEX\n#define PARAMETER_UNIFORM\n";
+   static const char kFragmentPrefixCore[] = "#define FRAGMENT\n#define PARAMETER_UNIFORM\n";
++  // mediump causes visible banding in CRT shaders on phones; use highp where available.
+   static const char kFragmentPrefixEs[] = "#define FRAGMENT\n#define PARAMETER_UNIFORM\n" \
+-					"precision mediump float;";
++					"#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n";
+   const GLchar *strings[3];
+   GLint lengths[3];
+   char buffer[256];
+@@ -253,7 +254,9 @@ static bool GlslPass_Compile(GlslPass *p, uint type, const uint8 *data, size_t s
+   size_t commsize = LengthOfInitialComments(data, size);
+   data += commsize, size -= commsize;
+ 
+-  if (size < 8 || memcmp(data, "#version", 8) != 0) {
++  if (size < 8 || memcmp(data, "#version", 8) != 0 || use_opengl_es) {
++    if (size >= 8 && memcmp(data, "#version", 8) == 0)
++      while (skip < size && data[skip++] != '\n') {}
+     if (!use_opengl_es) {
+       strings[0] = "#version 330\n";
+       lengths[0] = sizeof("#version 330\n") - 1;
+@@ -353,7 +356,10 @@ static bool IsGlslFilename(const char *filename) {
+   return len >= 5 && memcmp(filename + len - 5, ".glsl", 5) == 0;
+ }
+ 
++static bool g_glsl_opengl_es;
++
+ GlslShader *GlslShader_CreateFromFile(const char *filename, bool opengl_es) {
++  g_glsl_opengl_es = opengl_es;
+   char buffer[256];
+   GLint link_status;
+   ByteArray shader_code = { 0 };
+@@ -421,8 +427,9 @@ GlslShader *GlslShader_CreateFromFile(const char *filename, bool opengl_es) {
+       if (!data) {
+         fprintf(stderr, "Unable to read PNG '%s'\n", new_filename);
+       } else {
+-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imw, imh, 0, 
+-                     (imn == 4) ? GL_RGBA : (imn == 3) ? GL_RGB : GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
++        GLenum format = (imn == 4) ? GL_RGBA : (imn == 3) ? GL_RGB : GL_LUMINANCE;
++        glTexImage2D(GL_TEXTURE_2D, 0, opengl_es ? format : GL_RGBA, imw, imh, 0,
++                     format, GL_UNSIGNED_BYTE, data);
+       }
+       free(data);
+       free(new_filename);
+@@ -595,7 +602,14 @@ void GlslShader_Render(GlslShader *gs, GlTextureWithSize *tex, int viewport_x, i
+     if (!last_pass) {
+       // output to a texture
+       glBindTexture(GL_TEXTURE_2D, p->gl_texture);
+-      if (p->srgb_framebuffer) {
++      if (g_glsl_opengl_es) {
++        if (p->srgb_framebuffer)
++          glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, p->width, p->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
++        else if (p->float_framebuffer)
++          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, p->width, p->height, 0, GL_RGBA, GL_HALF_FLOAT, NULL);
++        else
++          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, p->width, p->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
++      } else if (p->srgb_framebuffer) {
+         glEnable(GL_FRAMEBUFFER_SRGB);
+         glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, p->width, p->height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, NULL);
+       } else {
+@@ -631,7 +645,7 @@ void GlslShader_Render(GlslShader *gs, GlTextureWithSize *tex, int viewport_x, i
+     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+     for(int i = 0; i < ctx.num_vaos; i++)
+       glDisableVertexAttribArray(ctx.vaos[i]);
+-    if (p->srgb_framebuffer)
++    if (p->srgb_framebuffer && !g_glsl_opengl_es)
+       glDisable(GL_FRAMEBUFFER_SRGB);
+   }
+ 
+diff --git a/src/opengl.c b/src/opengl.c
+index 8038f9d..dd291ec 100644
+--- a/src/opengl.c
++++ b/src/opengl.c
+@@ -18,6 +18,11 @@ static GlTextureWithSize g_texture;
+ static GlslShader *g_glsl_shader;
+ static bool g_opengl_es;
+ 
++#ifndef GL_TEXTURE_SWIZZLE_R
++#define GL_TEXTURE_SWIZZLE_R 0x8E42
++#define GL_TEXTURE_SWIZZLE_B 0x8E44
++#endif
++
+ static void GL_APIENTRY MessageCallback(GLenum source,
+                 GLenum type,
+                 GLuint id,
+@@ -135,7 +140,7 @@ static bool OpenGLRenderer_Init(SDL_Window *window) {
+ );
+ 
+   const GLchar *fs_code_es = "#version 300 es\n" CODE(
+-  precision mediump float;
++  precision highp float;
+   out vec4 FragColor;
+   in vec2 TexCoord;
+   // texture samplers
+@@ -201,28 +206,35 @@ static void OpenGLRenderer_EndDraw() {
+   int viewport_width = drawable_width, viewport_height = drawable_height;
+ 
+   if (!g_config.ignore_aspect_ratio) {
+-    if (viewport_width * g_draw_height < viewport_height * g_draw_width)
++    // With SDL's "overscan" logical size mode the picture covers the window and is cropped.
++    const char *mode = SDL_GetHint(SDL_HINT_RENDER_LOGICAL_SIZE_MODE);
++    bool cover = mode != NULL && SDL_strcasecmp(mode, "overscan") == 0;
++    if ((viewport_width * g_draw_height < viewport_height * g_draw_width) != cover)
+       viewport_height = viewport_width * g_draw_height / g_draw_width;  // limit height
+     else
+       viewport_width = viewport_height * g_draw_width / g_draw_height;  // limit width
+   }
+ 
+-  int viewport_x = (drawable_width - viewport_width) >> 1;
+-  int viewport_y = (viewport_height - viewport_height) >> 1;
++  int viewport_x = (drawable_width - viewport_width) / 2;
++  int viewport_y = (drawable_height - viewport_height) / 2;
+ 
+   glBindTexture(GL_TEXTURE_2D, g_texture.gl_texture);
+   if (g_draw_width == g_texture.width && g_draw_height == g_texture.height) {
+     if (!g_opengl_es)
+       glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, g_draw_width, g_draw_height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, g_screen_buffer);
+     else
+-      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, g_draw_width, g_draw_height, GL_BGRA, GL_UNSIGNED_BYTE, g_screen_buffer);
++      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, g_draw_width, g_draw_height, GL_RGBA, GL_UNSIGNED_BYTE, g_screen_buffer);
+   } else {
+     g_texture.width = g_draw_width;
+     g_texture.height = g_draw_height;
+     if (!g_opengl_es)
+       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, g_draw_width, g_draw_height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, g_screen_buffer);
+     else
+-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, g_draw_width, g_draw_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, g_screen_buffer);
++      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, g_draw_width, g_draw_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, g_screen_buffer);
++  }
++  if (g_opengl_es) {
++    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
++    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
+   }
+ 
+   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);

@@ -62,6 +62,8 @@ class GameData(private val context: Context) {
             Ini(context.assets.open("zelda3.ini").use { it.readBytes().decodeToString() }).apply(::applyAndroidDefaults)
         }
         if (ini["Graphics", "LinkGraphics"] != null && LinkSprites(dir).selected(ini) == null) ini.remove("Graphics", "LinkGraphics")
+        Shaders.installBuiltins(context, dir, "${BuildConfig.VERSION_NAME}-${BuildConfig.VERSION_CODE}")
+        Shaders.validate(ini, dir)
         // The touch overlay depends on this mapping, so keep it in place even if the file was edited.
         ini["KeyMap", "Controls"] = TouchControlsView.KEYMAP_CONTROLS
         for ((key, value) in GameKeys.bindings) ini["KeyMap", key] = value
