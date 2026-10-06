@@ -283,4 +283,7 @@
     <string name="section_app">App</string>
     <string name="settings_app_summary">Language, game data, about</string>
     <string name="launcher_just_now">Just now</string>
+    <string name="widescreen_hud">HUD at the screen edges</string>
+    <string name="widescreen_hud_desc">Moves the magic meter, item and counters to the left edge and the hearts to the right, as in a game made for wide screens. With touch controls you may want to move L and R (Controls > Customize layout).</string>
+    <string name="widescreen_hud_needs_wide">Needs a widescreen aspect ratio (or Fill the screen on a wide display).</string>
 </resources>

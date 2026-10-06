@@ -41,6 +41,8 @@ own ROM; the app sets everything up on the device.
 - **MSU-1 soundtracks**: play the game with a replacement soundtrack pack (orchestral,
   CD-quality and others, in PCM or OPUZ, including MSU Deluxe). Pick the pack's folder; the
   files are read in place, not copied.
+- **Widescreen HUD** (optional): the magic meter, item and counters move to the left edge and the
+  hearts to the right, as in a game made for wide screens.
 - **Image filters**: sharp or smooth pixels, CRT scanlines, an LCD grid and pixel art
   smoothing (xBR, OmniScale), or your own RetroArch GLSL shaders. Switch them from the in-game
   menu and see the result right away.

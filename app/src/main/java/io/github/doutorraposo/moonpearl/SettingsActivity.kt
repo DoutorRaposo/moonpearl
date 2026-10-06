@@ -245,6 +245,7 @@ private fun DisplaySettings(ini: Ini, prefs: AppPrefs, edit: (Ini.() -> Unit) ->
                 Modifier.padding(bottom = 8.dp),
             )
         }
+        WidescreenHudSwitch(prefs, AspectRatio.fromIni(ini["General", "ExtendedAspectRatio"]) != AspectRatio.STANDARD)
         IniSwitch(ini, "Graphics", "EnhancedMode7", R.string.enhanced_mode7, edit)
         ListItem(
             headlineContent = { Text(stringResource(R.string.image_filter)) },
@@ -477,4 +478,18 @@ private fun LinkRow(data: GameData) {
         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = Modifier.fillMaxWidth().clickable { context.startActivity(Intent(context, LinkSpritesActivity::class.java)) },
     )
+}
+
+@Composable
+private fun WidescreenHudSwitch(prefs: AppPrefs, widescreen: Boolean) {
+    var on by remember { mutableStateOf(prefs.widescreenHud) }
+    SwitchRow(
+        stringResource(R.string.widescreen_hud),
+        on && widescreen,
+        stringResource(if (widescreen) R.string.widescreen_hud_desc else R.string.widescreen_hud_needs_wide),
+    ) {
+        if (!widescreen) return@SwitchRow
+        on = it
+        prefs.widescreenHud = it
+    }
 }

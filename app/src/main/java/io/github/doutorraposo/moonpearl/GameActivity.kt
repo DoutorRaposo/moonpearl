@@ -116,6 +116,7 @@ class GameActivity : SDLActivity() {
         triggerSpeed = prefs.triggerSpeed
         rewindEnabled = prefs.rewind
         nativeRewindEnable(rewindEnabled)
+        nativeSetWidescreenHud(prefs.widescreenHud)
 
         startChapter = intent.getIntExtra(EXTRA_CHAPTER, 0).takeIf { it in 1..GameKeys.chapterKeys.size } ?: 0
         if (startChapter != 0) mLayout.post(chapterStart)
@@ -488,6 +489,10 @@ class GameActivity : SDLActivity() {
 
         /** Chapter (1-based) to start at, from the launcher; the menu has the same jump. */
         const val EXTRA_CHAPTER = "chapter"
+
+        /** android_main.c, patches/zelda3/0010-widescreen-hud.patch: the HUD at the picture's edges. */
+        @JvmStatic
+        private external fun nativeSetWidescreenHud(enabled: Boolean)
 
         /** android_main.c: turns of the game's main loop so far (patch 0008); 0 until it runs. */
         @JvmStatic

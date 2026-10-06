@@ -24,6 +24,7 @@ uint32_t ZeldaMainLoopCount(void);                                     // patche
 void ZeldaSetFrameHook(void (*hook)(void));                            // patches/zelda3/0002-frame-hook.patch
 void ZeldaSetRewindHook(int (*hook)(void));                            // patches/zelda3/0009-rewind-hooks.patch
 void ZeldaSetStateJumpHook(void (*hook)(void));                        // patches/zelda3/0009-rewind-hooks.patch
+void ZeldaSetWidescreenHud(bool enabled);                              // patches/zelda3/0010-widescreen-hud.patch
 void CheatsOnFrame(void);  // cheats.c
 void RewindOnFrame(void);  // rewind.c
 int RewindHook(void);      // rewind.c
@@ -72,6 +73,11 @@ static void RedirectStdioToLogcat(void) {
   pthread_t thread;
   if (pthread_create(&thread, NULL, LogPump, (void *)(intptr_t)fds[0]) == 0)
     pthread_detach(thread);
+}
+
+JNIEXPORT void JNICALL
+Java_io_github_doutorraposo_moonpearl_GameActivity_nativeSetWidescreenHud(JNIEnv *env, jclass cls, jboolean enabled) {
+  ZeldaSetWidescreenHud(enabled);
 }
 
 JNIEXPORT jint JNICALL

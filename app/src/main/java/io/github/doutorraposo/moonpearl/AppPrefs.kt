@@ -70,6 +70,11 @@ class AppPrefs(context: Context) {
         get() = prefs.getBoolean("trigger_speed", false)
         set(value) { prefs.edit().putBoolean("trigger_speed", value).commit() }
 
+    /** Move the HUD's side blocks to the edges of a widescreen picture (patch 0010). */
+    var widescreenHud: Boolean
+        get() = prefs.getBoolean("widescreen_hud", false)
+        set(value) { prefs.edit().putBoolean("widescreen_hud", value).commit() }
+
     var touchLayout: TouchLayout
         get() = TouchLayout.decode(prefs.getString("touch_layout", null))
         set(value) { prefs.edit().putString("touch_layout", value.encode()).commit() }

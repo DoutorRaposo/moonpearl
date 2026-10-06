@@ -283,4 +283,7 @@
     <string name="section_app">App</string>
     <string name="settings_app_summary">Idioma, dados do jogo, sobre</string>
     <string name="launcher_just_now">Agora há pouco</string>
+    <string name="widescreen_hud">HUD nas bordas da tela</string>
+    <string name="widescreen_hud_desc">Leva o medidor de magia, o item e os contadores para a borda esquerda e os corações para a direita, como num jogo feito para tela larga. Com os controles de toque, talvez você queira mover L e R (Controles > Personalizar layout).</string>
+    <string name="widescreen_hud_needs_wide">Precisa de uma proporção widescreen (ou Preencher a tela num aparelho de tela larga).</string>
 </resources>

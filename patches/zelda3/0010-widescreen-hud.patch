@@ -1,0 +1,140 @@
+diff --git a/snes/ppu.c b/snes/ppu.c
+index 02dec96..ab7300f 100644
+--- a/snes/ppu.c
++++ b/snes/ppu.c
+@@ -368,7 +368,18 @@ static void PpuDrawBackground_4bpp(Ppu *ppu, uint y, bool sub, uint layer, PpuZb
+ }
+ 
+ // Draw a whole line of a 2bpp background layer into bgBuffers
++// Widescreen HUD: the HUD is BG3's tilemap rows 2-7 (lines 16-63). Its left part (magic meter,
++// item, rupees, bombs, arrows, keys) and right part (life, hearts) are drawn out at the edges of
++// the widescreen picture, as far out as they sit from the edges of the 256-pixel one.
++enum { kHudTop = 16, kHudBottom = 64, kHudSplit = 152 };
++
++static bool PpuIsHudLine(Ppu *ppu, uint y) {
++  const BgLayer *bg3 = &ppu->bgLayer[2];
++  return ppu->hudShift != 0 && bg3->hScroll == 0 && bg3->vScroll == 0 && y >= kHudTop && y < kHudBottom;
++}
++
+ static void PpuDrawBackground_2bpp(Ppu *ppu, uint y, bool sub, uint layer, PpuZbufType zhi, PpuZbufType zlo) {
++  uint line = y;
+ #define DO_PIXEL(i) do { \
+   pixel = (bits >> i) & 1 | (bits >> (7 + i)) & 2; \
+   if (pixel && z > dstz[i]) dstz[i] = z + pixel; } while (0)
+@@ -393,13 +404,29 @@ static void PpuDrawBackground_2bpp(Ppu *ppu, uint y, bool sub, uint layer, PpuZb
+   int tileadr = ppu->bgLayer[layer].tileAdr, pixel;
+   int tileadr1 = tileadr + 7 - (y & 0x7), tileadr0 = tileadr + (y & 0x7);
+ 
++  // Widescreen HUD: the left part shifted out left, the right part out right; the gap between
++  // them stays empty.
++  int span_lo[2], span_hi[2], span_shift[2], nspans = 0;
++  if (layer == 2 && !IS_SCREEN_WINDOWED(ppu, sub, layer) && PpuIsHudLine(ppu, line)) {
++    int d = ppu->hudShift;
++    span_lo[0] = -d, span_hi[0] = kHudSplit - d, span_shift[0] = d;
++    span_lo[1] = kHudSplit + d, span_hi[1] = 256 + d, span_shift[1] = -d;
++    nspans = 2;
++  }
++
+   const uint16 *addr;
+-  for (size_t windex = 0; windex < win.nr; windex++) {
+-    if (win.bits & (1 << windex))
+-      continue;  // layer is disabled for this window part
+-    uint x = win.edges[windex] + bglayer->hScroll;
+-    uint w = win.edges[windex + 1] - win.edges[windex];
+-    PpuZbufType *dstz = ppu->bgBuffers[sub].data + win.edges[windex] + kPpuExtraLeftRight;
++  for (size_t windex = 0; windex < (nspans ? (size_t)nspans : win.nr); windex++) {
++    int lo, hi, shift = 0;
++    if (nspans) {
++      lo = span_lo[windex], hi = span_hi[windex], shift = span_shift[windex];
++    } else {
++      if (win.bits & (1 << windex))
++        continue;  // layer is disabled for this window part
++      lo = win.edges[windex], hi = win.edges[windex + 1];
++    }
++    uint x = lo + shift + bglayer->hScroll;
++    uint w = hi - lo;
++    PpuZbufType *dstz = ppu->bgBuffers[sub].data + lo + kPpuExtraLeftRight;
+     const uint16 *tp = tps[x >> 8 & 1] + ((x >> 3) & 0x1f);
+     const uint16 *tp_last = tps[x >> 8 & 1] + 31;
+     const uint16 *tp_next = tps[(x >> 8 & 1) ^ 1];
+@@ -858,6 +885,12 @@ static NOINLINE void PpuDrawWholeLine(Ppu *ppu, uint y) {
+   // Render main screen
+   PpuDrawBackgrounds(ppu, y, false);
+ 
++  // On HUD lines the HUD reaches into side area the scene does not cover: compose all of it.
++  uint8 scene_left = ppu->extraLeftCur, scene_right = ppu->extraRightCur;
++  bool hud_line = PpuIsHudLine(ppu, y);
++  if (hud_line)
++    ppu->extraLeftCur = ppu->extraRightCur = ppu->extraLeftRight;
++
+   // The 6:th bit is automatically zero, math is never applied to the first half of the sprites.
+   uint32 math_enabled = ppu->mathEnabled;
+ 
+@@ -939,6 +972,17 @@ static NOINLINE void PpuDrawWholeLine(Ppu *ppu, uint y) {
+     }
+   } while (cw_clip_math >>= 1, ++windex < cwin.nr);
+ 
++  if (hud_line) {
++    // Black out the side area beyond the scene, keeping the HUD (BG3) pixels.
++    ppu->extraLeftCur = scene_left, ppu->extraRightCur = scene_right;
++    int width = 256 + ppu->extraLeftRight * 2, base = kPpuExtraLeftRight - ppu->extraLeftRight;
++    for (int i = 0; i < width; i++) {
++      bool beyond = i < ppu->extraLeftRight - scene_left || i >= width - (ppu->extraLeftRight - scene_right);
++      if (beyond && ((ppu->bgBuffers[0].data[base + i] >> 8) & 0xf) != 2)
++        dst_org[i] = 0;
++    }
++    return;
++  }
+   // Clear out stuff on the sides.
+   if (ppu->extraLeftRight - ppu->extraLeftCur != 0)
+     memset(dst_org, 0, sizeof(uint32) * (ppu->extraLeftRight - ppu->extraLeftCur));
+diff --git a/snes/ppu.h b/snes/ppu.h
+index 8c650df..e753e5b 100644
+--- a/snes/ppu.h
++++ b/snes/ppu.h
+@@ -53,6 +53,8 @@ struct Ppu {
+   uint32_t renderPitch;
+   uint8_t *renderBuffer;
+   uint8_t extraLeftCur, extraRightCur, extraLeftRight, extraBottomCur;
++  // Widescreen HUD: pixels to move the HUD's left and right blocks out by (0 = off).
++  uint8_t hudShift;
+   float mode7PerspectiveLow, mode7PerspectiveHigh;
+ 
+   // TMW / TSW etc
+diff --git a/src/zelda_rtl.c b/src/zelda_rtl.c
+index 0c376ec..0f24dc4 100644
+--- a/src/zelda_rtl.c
++++ b/src/zelda_rtl.c
+@@ -174,9 +174,32 @@ static void ConfigurePpuSideSpace() {
+   PpuSetExtraSideSpace(g_zenv.ppu, extra_left, extra_right, extra_bottom);
+ }
+ 
++static bool g_widescreen_hud;
++
++// Moves the HUD's side blocks to the edges of a widescreen picture.
++void ZeldaSetWidescreenHud(bool enabled) {
++  g_widescreen_hud = enabled;
++}
++
++// Whether BG3's top rows hold the HUD: in play and in the interface modes that keep it (text,
++// potions, the desert prayer, the save and quit box), but not the item menu, maps, file select
++// and such, which draw other things there.
++static bool HudIsShown(void) {
++  switch (main_module_index) {
++  case 7: case 9: case 11: case 15: case 16: case 17: case 19: case 21: case 22: case 24:
++    return true;
++  case 14:
++    return submodule_index == 2 || submodule_index == 4 || submodule_index == 5 ||
++           submodule_index == 8 || submodule_index == 9 || submodule_index == 11;
++  default:
++    return false;
++  }
++}
++
+ void ZeldaDrawPpuFrame(uint8 *pixel_buffer, size_t pitch, uint32 render_flags) {
+   SimpleHdma hdma_chans[2];
+ 
++  g_zenv.ppu->hudShift = g_widescreen_hud && HudIsShown() ? g_zenv.ppu->extraLeftRight : 0;
+   PpuBeginDrawing(g_zenv.ppu, pixel_buffer, pitch, render_flags);
+ 
+   dma_startDma(g_zenv.dma, HDMAEN_copy, true);
