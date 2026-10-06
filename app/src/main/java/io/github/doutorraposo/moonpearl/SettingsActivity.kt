@@ -169,6 +169,7 @@ private fun SettingsScreen(data: GameData, prefs: AppPrefs, onClose: () -> Unit)
         Category.GAME -> Page(stringResource(R.string.section_game), onBack = back) {
             Section(null) {
                 IniSwitch(ini, "General", "Autosave", R.string.autosave, ::editIni)
+                RewindSwitch(prefs)
                 IniSwitch(ini, "Graphics", "NoSpriteLimits", R.string.no_sprite_limits, ::editIni, R.string.no_sprite_limits_desc)
             }
         }
@@ -309,10 +310,21 @@ private fun AudioSettings(ini: Ini, prefs: AppPrefs, edit: (Ini.() -> Unit) -> U
 }
 
 @Composable
+private fun RewindSwitch(prefs: AppPrefs) {
+    var rewind by remember { mutableStateOf(prefs.rewind) }
+    SwitchRow(stringResource(R.string.rewind_setting), rewind, stringResource(R.string.rewind_setting_desc)) {
+        rewind = it
+        prefs.rewind = it
+    }
+}
+
+@Composable
 private fun ControlSettings(prefs: AppPrefs, onRemap: () -> Unit) {
     var touchControls by remember { mutableStateOf(prefs.touchControls) }
     val context = LocalContext.current
     var turboButton by remember { mutableStateOf(prefs.turboButton) }
+    var rewindButton by remember { mutableStateOf(prefs.rewindButton) }
+    var triggerSpeed by remember { mutableStateOf(prefs.triggerSpeed) }
     var menuButton by remember { mutableStateOf(prefs.menuButton) }
     var doubleTapMenu by remember { mutableStateOf(prefs.doubleTapMenu) }
     Section(R.string.settings_touch) {
@@ -324,6 +336,12 @@ private fun ControlSettings(prefs: AppPrefs, onRemap: () -> Unit) {
             SwitchRow(stringResource(R.string.turbo_button), turboButton, stringResource(R.string.turbo_button_desc)) {
                 turboButton = it
                 prefs.turboButton = it
+            }
+            if (prefs.rewind) {
+                SwitchRow(stringResource(R.string.rewind_button), rewindButton, stringResource(R.string.rewind_button_desc)) {
+                    rewindButton = it
+                    prefs.rewindButton = it
+                }
             }
         }
         ListItem(
@@ -349,6 +367,10 @@ private fun ControlSettings(prefs: AppPrefs, onRemap: () -> Unit) {
     }
     Section(R.string.settings_controller) {
         Hint(stringResource(R.string.controller_hint), Modifier.padding(16.dp))
+        SwitchRow(stringResource(R.string.trigger_speed), triggerSpeed, stringResource(R.string.trigger_speed_desc)) {
+            triggerSpeed = it
+            prefs.triggerSpeed = it
+        }
         ListItem(
             headlineContent = { Text(stringResource(R.string.remap_title)) },
             supportingContent = { Text(stringResource(R.string.remap_desc)) },

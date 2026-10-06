@@ -32,11 +32,12 @@ class ControllerMapTest {
 
     @Test
     fun roundTripAndAliases() {
-        val map = ControllerMap.BY_POSITION.assigned(Snes.Y, Pad.L3).assigned(Snes.L, Pad.RB)
+        val map = ControllerMap.BY_POSITION.assigned(Snes.Y, Pad.BACK).assigned(Snes.L, Pad.RB)
         assertEquals(map, ControllerMap.fromIni(map.iniValue()))
         // L1/R1 are upstream's other names for the shoulder buttons.
         assertEquals(Pad.LB, ControllerMap.fromIni(upstream.replace("Lb", "L1"))[Snes.L])
-        // Unknown names keep the default for that button.
+        // Unknown names, and L3 (the speed button), keep the default for that button.
         assertEquals(Pad.X, ControllerMap.fromIni(upstream.replace(", X,", ", Guide,"))[Snes.Y])
+        assertEquals(Pad.X, ControllerMap.fromIni(upstream.replace(", X,", ", L3,"))[Snes.Y])
     }
 }

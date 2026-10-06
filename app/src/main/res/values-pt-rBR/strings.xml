@@ -95,7 +95,7 @@
 
     <string name="menu_button">Botão de menu (⋯) na tela</string>
     <string name="double_tap_menu">Toque duplo na tela abre o menu</string>
-    <string name="menu_hint">O botão voltar e, no controle, o botão Guia ou o clique do analógico direito também abrem o menu. RT e LT mudam a velocidade do jogo.</string>
+    <string name="menu_hint">O botão voltar e, no controle, o botão Guia ou o clique do analógico direito também abrem o menu. O L3 cicla a velocidade do jogo.</string>
 
     <string name="menu_title">Pausado</string>
     <string name="menu_resume">Continuar</string>
@@ -250,7 +250,7 @@
     <string name="opengl_failed_message">O jogo não conseguiu rodar com a saída OpenGL neste aparelho: travou ou fechou logo depois de abrir. Agora ele usa a saída SDL; dá para voltar em Configurações > Tela > Filtro de imagem.</string>
     <string name="remap_title">Remapear botões</string>
     <string name="remap_desc">Escolha qual botão do controle faz o quê</string>
-    <string name="remap_hint">Toque num botão do SNES e aperte o botão do controle que você quer usar para ele. Se esse botão já estiver em uso, os dois trocam de lugar. O direcional e o analógico esquerdo movem o Link; o botão Guia e o R3 abrem o menu; LT e RT mudam a velocidade.</string>
+    <string name="remap_hint">Toque num botão do SNES e aperte o botão do controle que você quer usar para ele. Se esse botão já estiver em uso, os dois trocam de lugar. O direcional e o analógico esquerdo movem o Link; o botão Guia e o R3 abrem o menu; o L3 muda a velocidade; LT+RT rebobinam.</string>
     <string name="remap_snes">%1$s do SNES</string>
     <string name="remap_by_position">Posição do SNES (padrão)</string>
     <string name="remap_by_letter">Pelas letras</string>
@@ -264,5 +264,18 @@
     <string name="pad_rb">RB / R1</string>
     <string name="pad_back">Select / Back</string>
     <string name="pad_start">Start / Menu</string>
-    <string name="pad_l3">L3 (apertar o analógico esquerdo)</string>
+    <string name="layout_rewind">Rebobinar</string>
+    <string name="rewind_title">Rebobinando</string>
+    <string name="rewind_now">Agora</string>
+    <string name="rewind_resume">Continuar</string>
+    <string name="rewind_cancel">Cancelar</string>
+    <string name="rewind_controller_hint">Controle: segure LT para voltar, RT para avançar · A continua · B cancela</string>
+    <string name="menu_rewind">Rebobinar</string>
+    <string name="rewind_setting">Rebobinar</string>
+    <string name="rewind_setting_desc">Guarda o último minuto de jogo na memória para voltar no tempo: segure LT+RT no controle, use o botão de toque ou o menu do jogo.</string>
+    <string name="rewind_button">Botão de rebobinar</string>
+    <string name="rewind_button_desc">Volta no tempo enquanto estiver pressionado</string>
+    <string name="trigger_speed">Gatilhos mudam a velocidade</string>
+    <string name="trigger_speed_desc">RT acelera e LT desacelera, um passo por toque. De qualquer jeito, o L3 cicla a velocidade e LT+RT juntos rebobinam.</string>
+    <string name="rewind_empty">Nada para voltar ainda</string>
 </resources>

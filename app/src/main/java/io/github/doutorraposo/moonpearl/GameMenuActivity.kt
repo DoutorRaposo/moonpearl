@@ -94,7 +94,7 @@ import org.libsdl.app.SDLControllerManager
  * upstream key presses.
  */
 class GameMenuActivity : ComponentActivity() {
-    enum class Action { SAVE, LOAD, CHAPTER, RESET, QUIT }
+    enum class Action { SAVE, LOAD, CHAPTER, RESET, QUIT, REWIND }
 
     private val result = Intent()
     /** Buttons pressed while the menu was open; releases of anything else are ignored. */
@@ -260,6 +260,11 @@ private fun GameMenu(
                 }
                 touchOn?.let { on ->
                     MenuSwitch(stringResource(R.string.touch_controls), on) { touchOn = it; onTouchVisible(it) }
+                }
+                if (prefs.rewind) {
+                    OutlinedButton(onClick = { onAction(GameMenuActivity.Action.REWIND, 0) }, modifier = Modifier.focusRing().fillMaxWidth()) {
+                        Text(stringResource(R.string.menu_rewind))
+                    }
                 }
                 OutlinedButton(onClick = { confirmReset = true }, modifier = Modifier.focusRing().fillMaxWidth()) {
                     Text(stringResource(R.string.menu_reset))

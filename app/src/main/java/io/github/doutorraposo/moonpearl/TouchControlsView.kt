@@ -20,7 +20,7 @@ import kotlin.math.hypot
 
 /**
  * On-screen SNES pad drawn over the SDL surface, plus the "⋯" menu button and the optional
- * fast-forward button. Buttons inject keyboard events, which upstream maps to the joypad
+ * fast-forward and rewind buttons, which act while held. Buttons inject keyboard events, which upstream maps to the joypad
  * through [KeyMap] Controls (see [KEYMAP_CONTROLS]). Where each control sits comes from a
  * [TouchLayout]; in [editMode] touches move controls around instead of pressing them.
  */
@@ -29,7 +29,8 @@ class TouchControlsView(
     context: Context,
     private val sendKey: (keyCode: Int, down: Boolean) -> Unit = { _, _ -> },
     private val onMenu: () -> Unit = {},
-    private val onTurbo: (down: Boolean) -> Unit = {},
+    /** The fast-forward or rewind button was pressed or released. */
+    private val onHold: (element: Element, down: Boolean) -> Unit = { _, _ -> },
 ) : View(context) {
 
     var opacity = 0.5f
@@ -47,7 +48,15 @@ class TouchControlsView(
         set(value) {
             if (field == value) return
             field = value
-            releaseAll()
+            releaseHidden()
+            invalidate()
+        }
+
+    /** While the rewind panel is up, the rewind button stays even with the pad hidden. */
+    var rewinding = false
+        set(value) {
+            field = value
+            releaseHidden()
             invalidate()
         }
 
@@ -76,7 +85,7 @@ class TouchControlsView(
     private sealed interface Control
     private data object Dpad : Control
     private data object Menu : Control
-    private data object Turbo : Control
+    private data class Hold(val element: Element) : Control
     private data class Press(val button: Button) : Control
 
     // Layout, computed in relayout.
@@ -86,11 +95,11 @@ class TouchControlsView(
     private var dpadRadius = 0f
     private var buttonRadius = 0f
     private var menuRadius = 0f
-    private var turboRadius = 0f
     private val buttonCenters = HashMap<Button, TouchLayout.Point>()
     private val buttonRects = HashMap<Button, RectF>()
     private var menuCenter = TouchLayout.Point(0f, 0f)
-    private var turboCenter = TouchLayout.Point(0f, 0f)
+    private val holdCenters = HashMap<Element, TouchLayout.Point>()
+    private val holdRadii = HashMap<Element, Float>()
     private val bounds = HashMap<Element, RectF>()
     private var safeLeft = 0
     private var safeRight = 0
@@ -102,7 +111,7 @@ class TouchControlsView(
     private val heldButtons = HashSet<Button>()
     private var dpadKeys: Set<Int> = emptySet()
     private var menuHeld = false
-    private var turboHeld = false
+    private val heldHolds = HashSet<Element>()
 
     // Edit state: the dragged control and where it was grabbed, relative to its center.
     private var dragging: Element? = null
@@ -170,9 +179,13 @@ class TouchControlsView(
         menuCenter = center(Element.MENU)
         menuRadius = 4.5f * size(Element.MENU)
         bounds[Element.MENU] = box(menuCenter, menuRadius, menuRadius)
-        turboCenter = center(Element.TURBO)
-        turboRadius = 4.5f * size(Element.TURBO)
-        bounds[Element.TURBO] = box(turboCenter, turboRadius, turboRadius)
+        for (e in HOLD_ELEMENTS) {
+            val c = center(e)
+            val r = 4.5f * size(e)
+            holdCenters[e] = c
+            holdRadii[e] = r
+            bounds[e] = box(c, r, r)
+        }
 
         text.textSize = 5 * unit
         stroke.strokeWidth = 0.5f * unit
@@ -181,7 +194,29 @@ class TouchControlsView(
         invalidate()
     }
 
-    private fun shown(e: Element) = e in elements && (padVisible || e == Element.MENU)
+    private fun shown(e: Element) =
+        e in elements && (padVisible || e == Element.MENU || (rewinding && e == Element.REWIND))
+
+    private fun elementOf(control: Control) = when (control) {
+        Dpad -> Element.DPAD
+        Menu -> Element.MENU
+        is Hold -> control.element
+        is Press -> when (control.button) {
+            Button.A, Button.B, Button.X, Button.Y -> Element.FACE
+            Button.L -> Element.L
+            Button.R -> Element.R
+            Button.SELECT -> Element.SELECT
+            Button.START -> Element.START
+        }
+    }
+
+    /** Lets go of the controls that are no longer shown; a finger on one still shown keeps it. */
+    private fun releaseHidden() {
+        val gone = pointerControl.filterValues { !shown(elementOf(it)) }.keys
+        pointerControl.keys.removeAll(gone)
+        pointerDpadKeys.keys.removeAll(gone)
+        sync()
+    }
 
     private fun buttonShown(b: Button) = when (b) {
         Button.A, Button.B, Button.X, Button.Y -> shown(Element.FACE)
@@ -217,7 +252,7 @@ class TouchControlsView(
                         // Sliding a finger across the face buttons moves the press, like on a real pad.
                         is Press -> pointerControl[id] = hitButton(x, y)?.let(::Press) ?: pointerControl.getValue(id)
                         null -> hitButton(x, y)?.let { pointerControl[id] = Press(it) }
-                        Menu, Turbo -> Unit
+                        Menu, is Hold -> Unit
                     }
                 }
             }
@@ -242,11 +277,15 @@ class TouchControlsView(
         return true
     }
 
-    private fun controlAt(x: Float, y: Float): Control? = when {
-        hitMenu(x, y) -> Menu
-        shown(Element.TURBO) && hypot(x - turboCenter.x, y - turboCenter.y) <= turboRadius * 1.5f -> Turbo
-        shown(Element.DPAD) && hypot(x - dpadX, y - dpadY) <= dpadRadius * 1.4f -> Dpad
-        else -> hitButton(x, y)?.let(::Press)
+    private fun controlAt(x: Float, y: Float): Control? {
+        if (hitMenu(x, y)) return Menu
+        hitHold(x, y)?.let { return Hold(it) }
+        if (shown(Element.DPAD) && hypot(x - dpadX, y - dpadY) <= dpadRadius * 1.4f) return Dpad
+        return hitButton(x, y)?.let(::Press)
+    }
+
+    private fun hitHold(x: Float, y: Float): Element? = HOLD_ELEMENTS.firstOrNull { e ->
+        shown(e) && hypot(x - holdCenters.getValue(e).x, y - holdCenters.getValue(e).y) <= holdRadii.getValue(e) * 1.5f
     }
 
     private fun hitMenu(x: Float, y: Float) =
@@ -267,26 +306,26 @@ class TouchControlsView(
         val buttons = pointerControl.values.filterIsInstance<Press>().map { it.button }.toSet()
         val wanted = dpadKeys + buttons.map { it.keyCode }
         val menu = Menu in pointerControl.values
-        val turbo = Turbo in pointerControl.values
+        val holds = pointerControl.values.filterIsInstance<Hold>().map { it.element }.toSet()
+        if (held == wanted && heldButtons == buttons && menu == menuHeld && holds == heldHolds) return
 
-        var pressedSomething = false
-        for (code in held - wanted) sendKey(code, false)
-        for (code in wanted - held) {
-            sendKey(code, true)
-            pressedSomething = true
-        }
-        if (turbo != turboHeld) {
-            onTurbo(turbo)
-            if (turbo) pressedSomething = true
-        }
-        if (pressedSomething) performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-        if (held != wanted || heldButtons != buttons || menu != menuHeld || turbo != turboHeld) {
-            held.clear(); held += wanted
-            heldButtons.clear(); heldButtons += buttons
-            menuHeld = menu
-            turboHeld = turbo
-            invalidate()
-        }
+        // Record the new state before calling out: a callback may change the pad (the rewind
+        // button hides it) and sync again, which must not see the same presses as new.
+        val released = held - wanted
+        val pressed = wanted - held
+        val holdsReleased = heldHolds - holds
+        val holdsPressed = holds - heldHolds
+        held.clear(); held += wanted
+        heldButtons.clear(); heldButtons += buttons
+        menuHeld = menu
+        heldHolds.clear(); heldHolds += holds
+        invalidate()
+
+        for (code in released) sendKey(code, false)
+        for (code in pressed) sendKey(code, true)
+        for (e in holdsReleased) onHold(e, false)
+        for (e in holdsPressed) onHold(e, true)
+        if (pressed.isNotEmpty() || holdsPressed.isNotEmpty()) performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
     }
 
     private fun hitButton(x: Float, y: Float): Button? {
@@ -391,7 +430,7 @@ class TouchControlsView(
         text.textSize = baseText
 
         if (shown(Element.MENU)) drawMenu(canvas, idle, active)
-        if (shown(Element.TURBO)) drawTurbo(canvas, idle, active)
+        for (e in HOLD_ELEMENTS) if (shown(e)) drawHold(canvas, e, idle, active)
 
         if (editMode) {
             selected?.takeIf { it in elements }?.let { e ->
@@ -435,22 +474,23 @@ class TouchControlsView(
         for (i in -1..1) canvas.drawCircle(cx + i * menuRadius * 0.42f, cy, dot, fill)
     }
 
-    /** Two triangles, the usual fast-forward sign. */
-    private fun drawTurbo(canvas: Canvas, idle: Int, active: Int) {
-        val (cx, cy) = turboCenter
-        val r = turboRadius
-        fill.color = Color.argb(if (turboHeld) active else idle, 255, 255, 255)
+    /** Two triangles: the usual fast-forward sign, or pointing left for rewind. */
+    private fun drawHold(canvas: Canvas, e: Element, idle: Int, active: Int) {
+        val (cx, cy) = holdCenters.getValue(e)
+        val r = holdRadii.getValue(e)
+        val pressed = e in heldHolds
+        fill.color = Color.argb(if (pressed) active else idle, 255, 255, 255)
         canvas.drawCircle(cx, cy, r, fill)
         canvas.drawCircle(cx, cy, r, stroke)
         val alpha = (opacity * 255).toInt().coerceAtMost(255)
-        fill.color = if (turboHeld) Color.argb(alpha, 0, 0, 0) else Color.argb(alpha, 255, 255, 255)
+        fill.color = if (pressed) Color.argb(alpha, 0, 0, 0) else Color.argb(alpha, 255, 255, 255)
         val h = r * 0.38f
-        val w = r * 0.38f
-        for (left in listOf(cx - w, cx)) {
+        val w = if (e == Element.REWIND) -r * 0.38f else r * 0.38f
+        for (base in listOf(cx - w, cx)) {
             arrow.reset()
-            arrow.moveTo(left, cy - h)
-            arrow.lineTo(left + w, cy)
-            arrow.lineTo(left, cy + h)
+            arrow.moveTo(base, cy - h)
+            arrow.lineTo(base + w, cy)
+            arrow.lineTo(base, cy + h)
             arrow.close()
             canvas.drawPath(arrow, fill)
         }
@@ -471,11 +511,14 @@ class TouchControlsView(
          */
         const val KEYMAP_CONTROLS = "Up, Down, Left, Right, q, Return, x, z, s, a, c, v"
 
+        private val HOLD_ELEMENTS = listOf(Element.TURBO, Element.REWIND)
+
         /** Controls to show for the current settings. */
         fun elementsFor(prefs: AppPrefs): Set<Element> = buildSet {
             if (prefs.touchControls) {
                 addAll(listOf(Element.DPAD, Element.FACE, Element.L, Element.R, Element.SELECT, Element.START))
                 if (prefs.turboButton) add(Element.TURBO)
+                if (prefs.rewindButton && prefs.rewind) add(Element.REWIND)
             }
             if (prefs.menuButton) add(Element.MENU)
         }

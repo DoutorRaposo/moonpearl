@@ -6,7 +6,7 @@ package io.github.doutorraposo.moonpearl
  * its shape on screens of any aspect ratio.
  */
 data class TouchLayout(val placements: Map<Element, Placement>) {
-    enum class Element { DPAD, FACE, L, R, SELECT, START, MENU, TURBO }
+    enum class Element { DPAD, FACE, L, R, SELECT, START, MENU, TURBO, REWIND }
     enum class AnchorX { LEFT, CENTER, RIGHT }
     enum class AnchorY { TOP, BOTTOM }
 
@@ -81,7 +81,7 @@ data class TouchLayout(val placements: Map<Element, Placement>) {
             Element.FACE -> 17.5f to 17.5f
             Element.L, Element.R -> 11f to 5f
             Element.SELECT, Element.START -> 7.5f to 3f
-            Element.MENU, Element.TURBO -> 4.5f to 4.5f
+            Element.MENU, Element.TURBO, Element.REWIND -> 4.5f to 4.5f
         }
 
         /** Matches the pad's original fixed layout (margins of 6 units). */
@@ -95,6 +95,7 @@ data class TouchLayout(val placements: Map<Element, Placement>) {
                 Element.START to Placement(AnchorX.CENTER, AnchorY.BOTTOM, 9.5f, 9f),
                 Element.MENU to Placement(AnchorX.RIGHT, AnchorY.TOP, 35.5f, 11f),
                 Element.TURBO to Placement(AnchorX.RIGHT, AnchorY.TOP, 47.5f, 11f),
+                Element.REWIND to Placement(AnchorX.RIGHT, AnchorY.TOP, 59.5f, 11f),
             ),
         )
 

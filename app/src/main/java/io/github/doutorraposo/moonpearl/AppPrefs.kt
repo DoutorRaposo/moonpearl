@@ -55,6 +55,21 @@ class AppPrefs(context: Context) {
         get() = prefs.getBoolean("turbo_button", false)
         set(value) { prefs.edit().putBoolean("turbo_button", value).commit() }
 
+    /** Keep the last minute of play in memory to rewind through (rewind.c). */
+    var rewind: Boolean
+        get() = prefs.getBoolean("rewind", true)
+        set(value) { prefs.edit().putBoolean("rewind", value).commit() }
+
+    /** Hold-to-rewind button on the touch pad. */
+    var rewindButton: Boolean
+        get() = prefs.getBoolean("rewind_button", false)
+        set(value) { prefs.edit().putBoolean("rewind_button", value).commit() }
+
+    /** LT and RT step the speed; otherwise L3 cycles it. LT+RT rewinds either way. */
+    var triggerSpeed: Boolean
+        get() = prefs.getBoolean("trigger_speed", false)
+        set(value) { prefs.edit().putBoolean("trigger_speed", value).commit() }
+
     var touchLayout: TouchLayout
         get() = TouchLayout.decode(prefs.getString("touch_layout", null))
         set(value) { prefs.edit().putString("touch_layout", value.encode()).commit() }

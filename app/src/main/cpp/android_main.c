@@ -21,6 +21,13 @@ void ZeldaSetDieHook(void (*hook)(const char *error));  // patches/zelda3/0003-d
 void ZeldaSetMsuOpenHook(FILE *(*hook)(const char *name));  // patches/zelda3/0006-msu-open-hook.patch
 void ZeldaSetImageFilter(const char *shader, bool linear_filtering);  // patches/zelda3/0008-live-image-filter.patch
 uint32_t ZeldaMainLoopCount(void);                                     // patches/zelda3/0008-live-image-filter.patch
+void ZeldaSetFrameHook(void (*hook)(void));                            // patches/zelda3/0002-frame-hook.patch
+void ZeldaSetRewindHook(int (*hook)(void));                            // patches/zelda3/0009-rewind-hooks.patch
+void ZeldaSetStateJumpHook(void (*hook)(void));                        // patches/zelda3/0009-rewind-hooks.patch
+void CheatsOnFrame(void);  // cheats.c
+void RewindOnFrame(void);  // rewind.c
+int RewindHook(void);      // rewind.c
+void RewindOnStateJump(void);  // rewind.c
 
 static const char kTag[] = "moonpearl";
 
@@ -160,6 +167,13 @@ static void OnDie(const char *error) {
 // link would reopen the file by its shared-storage path, which scoped storage denies; use a
 // duplicate of the descriptor opened through the folder permission instead. Upstream keeps a
 // single MSU file open at a time, so the shared file position is not an issue.
+// Runs on the game thread before every frame. The cheats stay on even with everything off, so
+// walking through walls gets switched back.
+static void OnFrame(void) {
+  CheatsOnFrame();
+  RewindOnFrame();
+}
+
 static FILE *OpenMsuTrack(const char *name) {
   char target[64];
   ssize_t n = readlink(name, target, sizeof(target) - 1);
@@ -206,6 +220,9 @@ int SDL_main(int argc, char *argv[]) {
   // Fatal errors go through Die(); main() itself returns 1 when SDL cannot start.
   ZeldaSetDieHook(OnDie);
   ZeldaSetMsuOpenHook(OpenMsuTrack);
+  ZeldaSetFrameHook(OnFrame);
+  ZeldaSetRewindHook(RewindHook);
+  ZeldaSetStateJumpHook(RewindOnStateJump);
   StartShaderCheck();
   int result = main(argc, argv);
   if (result != 0 && access(kLastErrorFile, F_OK) != 0) {

@@ -7,7 +7,7 @@ import androidx.annotation.StringRes
  * Which controller button presses each SNES button. Stored in upstream's [GamepadMap] Controls
  * (order: Up, Down, Left, Right, Select, Start, A, B, X, Y, L, R; names of SDL's game controller
  * buttons). The d-pad stays on the d-pad, and the buttons the app itself uses (guide and right
- * stick for the menu, the triggers for the speed) are left out.
+ * stick for the menu, left stick for the speed, the triggers for rewind and speed) are left out.
  */
 data class ControllerMap(val buttons: Map<Snes, Pad>) {
     /** The SNES buttons in the order of upstream's Controls list after the four directions. */
@@ -25,8 +25,7 @@ data class ControllerMap(val buttons: Map<Snes, Pad>) {
         LB("Lb", KeyEvent.KEYCODE_BUTTON_L1, R.string.pad_lb),
         RB("Rb", KeyEvent.KEYCODE_BUTTON_R1, R.string.pad_rb),
         BACK("Back", KeyEvent.KEYCODE_BUTTON_SELECT, R.string.pad_back),
-        START("Start", KeyEvent.KEYCODE_BUTTON_START, R.string.pad_start),
-        L3("L3", KeyEvent.KEYCODE_BUTTON_THUMBL, R.string.pad_l3);
+        START("Start", KeyEvent.KEYCODE_BUTTON_START, R.string.pad_start);
 
         companion object {
             fun fromKeyCode(keyCode: Int) = entries.firstOrNull { it.keyCode == keyCode }

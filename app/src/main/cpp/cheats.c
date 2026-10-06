@@ -1,5 +1,5 @@
-// Cheats, applied on the game thread before every frame through the hook added by
-// patches/zelda3/0002-frame-hook.patch.
+// Cheats, applied on the game thread before every frame (CheatsOnFrame, called from the frame
+// hook that android_main.c installs through patches/zelda3/0002-frame-hook.patch).
 //
 // The game's RAM is laid out exactly like the SNES work RAM (g_ram = $7E0000-$7FFFFF), so
 // built-in cheats write the same variables the game uses, and Pro Action Replay RAM codes
@@ -12,7 +12,6 @@
 extern unsigned char g_ram[];                  // src/zelda_rtl.c, 128 KiB
 extern const uint8_t kMaxBombsForLevel[];      // src/hud.c, capacity per upgrade level
 extern const uint8_t kMaxArrowsForLevel[];
-void ZeldaSetFrameHook(void (*hook)(void));    // patches/zelda3/0002-frame-hook.patch
 
 // Must match Cheats.kt.
 enum {
@@ -96,7 +95,7 @@ static void ApplyBuiltIn(int flags) {
     g_ram[kRam_Keys] = 1;
 }
 
-static void ApplyCheats(void) {
+void CheatsOnFrame(void) {
   pthread_mutex_lock(&g_lock);
   ApplyBuiltIn(g_flags);
   for (int i = 0; i < g_num_codes; i++)
@@ -121,6 +120,4 @@ Java_io_github_doutorraposo_moonpearl_GameActivity_nativeSetCheats(JNIEnv *env, 
 
   if (items)
     (*env)->ReleaseIntArrayElements(env, codes, items, JNI_ABORT);
-  // Stays installed even with everything off, so walking through walls gets switched back.
-  ZeldaSetFrameHook(ApplyCheats);
 }

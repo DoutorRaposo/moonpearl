@@ -95,7 +95,7 @@
 
     <string name="menu_button">Menu button (⋯) on screen</string>
     <string name="double_tap_menu">Double-tap the screen to open the menu</string>
-    <string name="menu_hint">The back button and, on a controller, the guide button or the right stick button also open the menu. RT and LT change the game speed.</string>
+    <string name="menu_hint">The back button and, on a controller, the guide button or the right stick button also open the menu. L3 cycles the game speed.</string>
 
     <string name="menu_title">Paused</string>
     <string name="menu_resume">Resume</string>
@@ -250,7 +250,7 @@
     <string name="opengl_failed_message">The game did not get going with its OpenGL output on this device: it froze or closed right after starting. It now uses the SDL output; you can switch back in Settings > Display > Image filter.</string>
     <string name="remap_title">Remap buttons</string>
     <string name="remap_desc">Choose which controller button does what</string>
-    <string name="remap_hint">Tap a SNES button, then press the controller button you want for it. A button already in use swaps places. The d-pad and left stick move Link; the guide button and R3 open the menu; LT and RT change the speed.</string>
+    <string name="remap_hint">Tap a SNES button, then press the controller button you want for it. A button already in use swaps places. The d-pad and left stick move Link; the guide button and R3 open the menu; L3 changes the speed; LT+RT rewind.</string>
     <string name="remap_snes">SNES %1$s</string>
     <string name="remap_by_position">SNES layout (default)</string>
     <string name="remap_by_letter">By letter</string>
@@ -264,5 +264,18 @@
     <string name="pad_rb">RB / R1</string>
     <string name="pad_back">Select / Back</string>
     <string name="pad_start">Start / Menu</string>
-    <string name="pad_l3">L3 (left stick press)</string>
+    <string name="layout_rewind">Rewind</string>
+    <string name="rewind_title">Rewinding</string>
+    <string name="rewind_now">Now</string>
+    <string name="rewind_resume">Continue</string>
+    <string name="rewind_cancel">Cancel</string>
+    <string name="rewind_controller_hint">Controller: hold LT to go back, RT to go forward · A continues · B cancels</string>
+    <string name="menu_rewind">Rewind</string>
+    <string name="rewind_setting">Rewind</string>
+    <string name="rewind_setting_desc">Keeps the last minute of play in memory, to go back in time: hold LT+RT on a controller, use the touch button or the in-game menu.</string>
+    <string name="rewind_button">Rewind button</string>
+    <string name="rewind_button_desc">Goes back in time while you hold it</string>
+    <string name="trigger_speed">Triggers change the speed</string>
+    <string name="trigger_speed_desc">RT speeds up and LT slows down, one step each press. Either way, L3 cycles the speed and LT+RT together rewind.</string>
+    <string name="rewind_empty">Nothing to rewind yet</string>
 </resources>

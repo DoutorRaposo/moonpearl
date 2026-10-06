@@ -40,6 +40,20 @@ class GameActivity : SDLActivity() {
     private val triggerKey = BooleanArray(2)
     private val triggerAxis = BooleanArray(2)
     private var speedToast: Toast? = null
+    /** The speed before a trigger press that turned out to be the start of LT+RT. */
+    private var speedBeforeTrigger = 1
+    private var triggerSpeed = false
+    private var rewindEnabled = false
+    private var rewind: RewindOverlayView? = null
+    /** Whether the touch pad showed before rewinding; it hides while the panel is up. */
+    private var padBeforeRewind = false
+    private val rewindPoll = object : Runnable {
+        override fun run() {
+            val view = rewind ?: return
+            nativeRewindPosition()?.let { view.update(it[0], it[1], it[2]) }
+            view.postDelayed(this, 100)
+        }
+    }
     /** Set from the menu; unlike hiding for a controller, a touch does not bring the pad back. */
     private var touchHiddenByUser = false
     private var doubleTap: GestureDetector? = null
@@ -86,6 +100,9 @@ class GameActivity : SDLActivity() {
         nativeSetenv("SDL_RENDER_LOGICAL_SIZE_MODE", if (prefs.fillScreen) "overscan" else "letterbox")
 
         applyCheats()
+        triggerSpeed = prefs.triggerSpeed
+        rewindEnabled = prefs.rewind
+        nativeRewindEnable(rewindEnabled)
 
         val elements = TouchControlsView.elementsFor(prefs)
         hasPad = prefs.touchControls
@@ -94,7 +111,13 @@ class GameActivity : SDLActivity() {
                 this,
                 sendKey = { code, down -> if (down) onNativeKeyDown(code) else onNativeKeyUp(code) },
                 onMenu = ::openMenu,
-                onTurbo = ::holdTurbo,
+                onHold = { element, down ->
+                    when (element) {
+                        TouchLayout.Element.TURBO -> holdTurbo(down)
+                        TouchLayout.Element.REWIND -> holdRewindButton(down)
+                        else -> Unit
+                    }
+                },
             ).also {
                 it.opacity = prefs.touchOpacity
                 it.layout = prefs.touchLayout
@@ -122,6 +145,8 @@ class GameActivity : SDLActivity() {
 
     override fun onPause() {
         touch?.releaseAll()
+        // Going to the background continues from the point shown, like pressing Continue.
+        if (rewind != null) leaveRewind(cancel = false)
         if (autosave && !mBrokenLibraries) {
             // When finishing, main() writes the autosave itself on the way out.
             if (!isFinishing) saveResumePoint()
@@ -231,6 +256,7 @@ class GameActivity : SDLActivity() {
             GameMenuActivity.Action.CHAPTER -> press(GameKeys.chapterKeys[arg - 1])
             GameMenuActivity.Action.RESET -> pressWith(GameKeys.CTRL, GameKeys.RESET)
             GameMenuActivity.Action.QUIT -> finish()
+            GameMenuActivity.Action.REWIND -> enterRewind()
             null -> Unit
         }
     }
@@ -252,6 +278,64 @@ class GameActivity : SDLActivity() {
         if (down) onNativeKeyDown(GameKeys.TURBO) else if (speed != GameKeys.SPEED_MAX) onNativeKeyUp(GameKeys.TURBO)
     }
 
+    // --- Rewind (rewind.c) ----------------------------------------------------------
+
+    /** Stops the game where it is and shows the rewind panel. */
+    private fun enterRewind() {
+        if (!rewindEnabled || rewind != null || mBrokenLibraries) return
+        nativeRewindMode(true, false)
+        val view = RewindOverlayView(this, ::nativeRewindDirection, { leaveRewind(cancel = false) }, { leaveRewind(cancel = true) })
+        rewind = view
+        mLayout.addView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+        view.post(rewindPoll)
+        touch?.let {
+            // Only the rewind button stays, so a finger holding it keeps going back.
+            it.rewinding = true
+            padBeforeRewind = it.padVisible
+            it.padVisible = false
+        }
+    }
+
+    /** Continues from the point shown, or with [cancel] from where the game was. */
+    private fun leaveRewind(cancel: Boolean) {
+        val view = rewind ?: return
+        view.removeCallbacks(rewindPoll)
+        mLayout.removeView(view)
+        rewind = null
+        nativeRewindMode(false, cancel)
+        touch?.rewinding = false
+        if (padBeforeRewind) touch?.padVisible = true
+    }
+
+    /** The touch rewind button goes back while held; the panel then offers the rest. */
+    private fun holdRewindButton(down: Boolean) {
+        if (down) enterRewind()
+        if (rewind != null) nativeRewindDirection(if (down) -1 else 0)
+    }
+
+    /** In rewind mode LT goes back and RT forward while held (both or none: stay). */
+    private fun updateRewindDirection() {
+        val lt = triggerKey[0] || triggerAxis[0]
+        val rt = triggerKey[1] || triggerAxis[1]
+        nativeRewindDirection(if (lt == rt) 0 else if (lt) -1 else 1)
+    }
+
+    /** Controller keys in rewind mode: A or Start continue, B cancels, the d-pad scrubs. Nothing reaches the game. */
+    private fun handleRewindKey(event: KeyEvent): Boolean {
+        if (rewind == null) return false
+        if (handleTriggerKey(event)) return true
+        val up = event.action == KeyEvent.ACTION_UP && !event.isCanceled
+        when (event.keyCode) {
+            KeyEvent.KEYCODE_BUTTON_A, KeyEvent.KEYCODE_BUTTON_START -> if (up) leaveRewind(cancel = false)
+            KeyEvent.KEYCODE_BUTTON_B -> if (up) leaveRewind(cancel = true)
+            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                val dir = if (event.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) -1 else 1
+                nativeRewindDirection(if (event.action == KeyEvent.ACTION_DOWN) dir else 0)
+            }
+        }
+        return true
+    }
+
     /** The menu edits cheats in AppPrefs; hand the current set to cheats.c. */
     private fun applyCheats() {
         val prefs = AppPrefs(this)
@@ -266,13 +350,16 @@ class GameActivity : SDLActivity() {
         // SDLSurface forwards the system back key to the game as a keyboard key, so
         // onBackPressed never runs. Catch it here and open the menu instead.
         if (event.keyCode == KeyEvent.KEYCODE_BACK && !fromController) {
-            if (event.action == KeyEvent.ACTION_UP && !event.isCanceled) openMenu()
+            if (event.action == KeyEvent.ACTION_UP && !event.isCanceled) {
+                // Back leaves the rewind panel the way it came: at the present.
+                if (rewind != null) leaveRewind(cancel = true) else openMenu()
+            }
             return true
         }
         if (fromController) {
             // Hide the overlay while a physical controller is in use; it comes back on the next touch.
             hideTouch()
-            if (handleMenuShortcut(event) || handleTriggerKey(event)) return true
+            if (handleRewindKey(event) || handleMenuShortcut(event) || handleTriggerKey(event) || handleSpeedCycle(event)) return true
         }
         return super.dispatchKeyEvent(event)
     }
@@ -289,7 +376,20 @@ class GameActivity : SDLActivity() {
         return true
     }
 
-    /** RT raises the fast-forward rate one step, LT lowers it. The game does not use them. */
+    /** L3 cycles the speed (1×, 2×, 3×, max). The game does not use it. */
+    private fun handleSpeedCycle(event: KeyEvent): Boolean {
+        if (event.keyCode != KeyEvent.KEYCODE_BUTTON_THUMBL) return false
+        if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+            val speeds = GameKeys.speeds
+            stepSpeed(if (speed == speeds.last()) -speeds.lastIndex else 1)
+        }
+        return true
+    }
+
+    /**
+     * LT and RT: together they open the rewind panel; on their own they step the speed (RT up,
+     * LT down) if the player chose so. The game does not use them.
+     */
     private fun handleTriggerKey(event: KeyEvent): Boolean {
         val i = when (event.keyCode) {
             KeyEvent.KEYCODE_BUTTON_L2 -> 0
@@ -319,7 +419,25 @@ class GameActivity : SDLActivity() {
         val wasPressed = triggerKey[i] || triggerAxis[i]
         triggerKey[i] = key
         triggerAxis[i] = axis
-        if (!wasPressed && (key || axis)) stepSpeed(if (i == 1) 1 else -1)
+        val pressed = key || axis
+        if (pressed == wasPressed) return
+        if (rewind != null) {
+            updateRewindDirection()
+            return
+        }
+        if (!pressed) return
+        val other = triggerKey[1 - i] || triggerAxis[1 - i]
+        if (other && rewindEnabled) {
+            // LT+RT: undo the speed step the first trigger made, then rewind.
+            if (triggerSpeed && speed != speedBeforeTrigger) {
+                setSpeed(speedBeforeTrigger)
+                speedToast?.cancel()
+            }
+            enterRewind()
+        } else if (!other && triggerSpeed) {
+            speedBeforeTrigger = speed
+            stepSpeed(if (i == 1) 1 else -1)
+        }
     }
 
     private fun stepSpeed(direction: Int) {
@@ -333,7 +451,7 @@ class GameActivity : SDLActivity() {
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        touch?.let { if (!it.padVisible && !touchHiddenByUser) it.padVisible = true }
+        touch?.let { if (!it.padVisible && !touchHiddenByUser && rewind == null) it.padVisible = true }
         doubleTap?.onTouchEvent(event)
         return super.dispatchTouchEvent(event)
     }
@@ -363,6 +481,22 @@ class GameActivity : SDLActivity() {
          */
         @JvmStatic
         external fun nativeSetImageFilter(shader: String, linear: Boolean)
+
+        /** rewind.c (patches/zelda3/0009-rewind-hooks.patch): keep snapshots to rewind through. */
+        @JvmStatic
+        private external fun nativeRewindEnable(enabled: Boolean)
+
+        /** rewind.c: enter rewind mode, or leave it (with [cancel], back at the present). */
+        @JvmStatic
+        private external fun nativeRewindMode(active: Boolean, cancel: Boolean)
+
+        /** rewind.c: -1 goes back, 1 forward, 0 holds still. */
+        @JvmStatic
+        private external fun nativeRewindDirection(direction: Int)
+
+        /** rewind.c: snapshots back from the present, kept, and at most (10 per second). */
+        @JvmStatic
+        private external fun nativeRewindPosition(): IntArray?
 
         /** cheats.c, run each frame through patches/zelda3/0002-frame-hook.patch. */
         @JvmStatic

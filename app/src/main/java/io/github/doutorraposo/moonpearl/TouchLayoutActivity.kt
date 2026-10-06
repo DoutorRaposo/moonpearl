@@ -278,4 +278,5 @@ private fun elementName(e: Element) = when (e) {
     Element.START -> "START"
     Element.MENU -> stringResource(R.string.layout_menu)
     Element.TURBO -> stringResource(R.string.layout_turbo)
+    Element.REWIND -> stringResource(R.string.layout_rewind)
 }

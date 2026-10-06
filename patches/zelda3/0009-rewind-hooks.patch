@@ -1,0 +1,106 @@
+diff --git a/src/main.c b/src/main.c
+index 7a2462e..abf5a57 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -299,6 +299,14 @@ static const struct RendererFuncs kSdlRendererFuncs  = {
+ void OpenGLRenderer_Create(struct RendererFuncs *funcs, bool use_opengl_es);
+ void OpenGLRenderer_SetShader(const char *filename);
+ 
++// While rewinding, the host's hook loads earlier snapshots instead of the game running frames.
++// It returns 0 when not rewinding, 1 while rewinding with nothing new, 2 after loading one.
++static int (*g_rewind_hook)(void);
++
++void ZeldaSetRewindHook(int (*hook)(void)) {
++  g_rewind_hook = hook;
++}
++
+ static SDL_SpinLock g_filter_lock;
+ static bool g_filter_pending, g_filter_linear;
+ static char g_filter_shader[256];
+@@ -501,15 +509,30 @@ int main(int argc, char** argv) {
+       }
+     }
+ 
+-    if (g_paused != audiopaused) {
+-      audiopaused = g_paused;
++    int rewinding = 0;
++    if (g_rewind_hook) {
++      SDL_LockMutex(g_audio_mutex);
++      rewinding = g_rewind_hook();
++      SDL_UnlockMutex(g_audio_mutex);
++    }
++
++    if ((g_paused || rewinding) != audiopaused) {
++      audiopaused = g_paused || rewinding;
+       if (device)
+         SDL_PauseAudioDevice(device, audiopaused);
+     }
+ 
+-    if (ApplyPendingImageFilter() && g_paused)
++    if (ApplyPendingImageFilter() && (g_paused || rewinding))
+       DrawPpuFrameWithPerf();
+ 
++    if (rewinding) {
++      if (rewinding == 2)
++        DrawPpuFrameWithPerf();
++      else
++        SDL_Delay(16);
++      continue;
++    }
++
+     if (g_paused) {
+       SDL_Delay(16);
+       continue;
+diff --git a/src/zelda_rtl.c b/src/zelda_rtl.c
+index 33b6cbe..0c376ec 100644
+--- a/src/zelda_rtl.c
++++ b/src/zelda_rtl.c
+@@ -381,6 +381,12 @@ static void InternalSaveLoad(SaveLoadFunc *func, void *ctx) {
+   func(ctx, junk, 4); // snes junk
+ }
+ 
++static void (*g_state_jump_hook)(void);
++
++void ZeldaSetStateJumpHook(void (*hook)(void)) {
++  g_state_jump_hook = hook;
++}
++
+ void ZeldaReset(bool preserve_sram) {
+   frame_ctr_dbg = 0;
+   dma_reset(g_zenv.dma);
+@@ -392,7 +398,8 @@ void ZeldaReset(bool preserve_sram) {
+   ZeldaRestoreMusicAfterLoad_Locked(true);
+   ZeldaApuUnlock();
+   EmuSynchronizeWholeState();
+-
++  if (g_state_jump_hook)
++    g_state_jump_hook();
+ }
+ 
+ static void LoadSnesState(SaveLoadFunc *func, void *ctx) {
+@@ -414,6 +421,16 @@ static void SaveSnesState(SaveLoadFunc *func, void *ctx) {
+   ZeldaApuUnlock();
+ }
+ 
++// Snapshots of the whole game state through |func|, e.g. kept in memory for rewinding. The bytes
++// are the snapshot part of a save state; the input log is left alone.
++void ZeldaSaveSnapshot(SaveLoadFunc *func, void *ctx) {
++  SaveSnesState(func, ctx);
++}
++
++void ZeldaLoadSnapshot(SaveLoadFunc *func, void *ctx) {
++  LoadSnesState(func, ctx);
++}
++
+ typedef struct StateRecorder {
+   uint16 last_inputs;
+   uint32 frames_since_last;
+@@ -826,6 +843,8 @@ void SaveLoadSlot(int cmd, int which) {
+     }
+ 
+     fclose(f);
++    if (cmd != kSaveLoad_Save && g_state_jump_hook)
++      g_state_jump_hook();
+   }
+ }
+ 
