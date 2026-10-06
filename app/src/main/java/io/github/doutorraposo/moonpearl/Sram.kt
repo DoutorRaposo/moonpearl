@@ -1,4 +1,4 @@
-package io.github.doutorraposo.z3
+package io.github.doutorraposo.moonpearl
 
 /**
  * The cartridge save RAM, laid out exactly like the original game's (and so like any

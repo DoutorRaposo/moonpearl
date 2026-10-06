@@ -105,7 +105,7 @@ static void ApplyCheats(void) {
 }
 
 JNIEXPORT void JNICALL
-Java_io_github_doutorraposo_z3_GameActivity_nativeSetCheats(JNIEnv *env, jclass cls, jint flags, jintArray codes) {
+Java_io_github_doutorraposo_moonpearl_GameActivity_nativeSetCheats(JNIEnv *env, jclass cls, jint flags, jintArray codes) {
   jsize n = codes ? (*env)->GetArrayLength(env, codes) : 0;
   jint *items = n ? (*env)->GetIntArrayElements(env, codes, NULL) : NULL;
 

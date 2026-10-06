@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A plain sword, drawn inside the 66dp adaptive icon safe zone. -->
+<!-- A crescent moon cradling a pearl, inside the 66dp adaptive icon safe zone. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Shapes span x 27-72 and y 33-79; shift them to the icon's center (54, 54). -->
     <group
-        android:pivotX="54"
-        android:pivotY="54"
-        android:rotation="45">
+        android:translateX="4.5"
+        android:translateY="-2">
+        <!-- Moon: a disc (center 50,56, r 23) with a bite (center 60,47, r 20) taken out. -->
         <path
-            android:fillColor="@color/icon_foreground"
-            android:pathData="M51,26 L54,22 L57,26 L57,62 L51,62 Z" />
+            android:fillColor="@color/icon_moon"
+            android:pathData="M45.25,33.5 A23,23 0 1,0 71.88,63.09 A20,20 0 0,1 45.25,33.5 Z" />
+        <!-- Pearl resting in the bite. -->
         <path
-            android:fillColor="@color/icon_foreground"
-            android:pathData="M42,62 L66,62 L66,67 L42,67 Z" />
+            android:fillColor="@color/icon_pearl"
+            android:pathData="M62,52 m-8.5,0 a8.5,8.5 0 1,0 17,0 a8.5,8.5 0 1,0 -17,0 Z" />
         <path
-            android:fillColor="@color/icon_foreground"
-            android:pathData="M51.5,67 L56.5,67 L56.5,79 L51.5,79 Z" />
-        <path
-            android:fillColor="@color/icon_foreground"
-            android:pathData="M49,79 L59,79 L59,85 L49,85 Z" />
+            android:fillColor="@color/icon_pearl_highlight"
+            android:pathData="M59.3,49.2 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0 Z" />
     </group>
 </vector>

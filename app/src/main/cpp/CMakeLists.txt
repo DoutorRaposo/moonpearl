@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(zelda3_android C)
+project(moonpearl C)
 
 if(NOT ZELDA3_DIR OR NOT ZELDA3_PATCHES_DIR OR NOT SDL_DIR)
   message(FATAL_ERROR "ZELDA3_DIR, ZELDA3_PATCHES_DIR and SDL_DIR must be passed by Gradle")

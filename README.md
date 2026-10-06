@@ -1,4 +1,4 @@
-# zelda3-android
+# Moon Pearl
 
 A native Android port of [snesrev/zelda3](https://github.com/snesrev/zelda3), the C
 reimplementation of *A Link to the Past*.
@@ -52,8 +52,8 @@ and the build. The few changes the game code needs are kept as small patches in
 ## Building
 
 ```sh
-git clone --recursive https://github.com/DoutorRaposo/zelda3-android
-cd zelda3-android
+git clone --recursive https://github.com/DoutorRaposo/moonpearl
+cd moonpearl
 ./gradlew assembleDebug
 ```
 
@@ -72,11 +72,11 @@ keyAlias=...
 keyPassword=...
 ```
 
-CI reads the same values from the `ZELDA3_KEYSTORE*` / `ZELDA3_KEY*` environment
+CI reads the same values from the `MOONPEARL_KEYSTORE*` / `MOONPEARL_KEY*` environment
 variables. Pushing a tag such as `v0.2.0` runs `.github/workflows/release.yml`, which
 builds the signed APK (version taken from the tag) and publishes a GitHub release. It needs
-the repository secrets `ZELDA3_KEYSTORE_BASE64`, `ZELDA3_KEYSTORE_PASSWORD`,
-`ZELDA3_KEY_ALIAS` and `ZELDA3_KEY_PASSWORD`.
+the repository secrets `MOONPEARL_KEYSTORE_BASE64`, `MOONPEARL_KEYSTORE_PASSWORD`,
+`MOONPEARL_KEY_ALIAS` and `MOONPEARL_KEY_PASSWORD`.
 
 ## How it fits together
 

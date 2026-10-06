@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "zelda3-android"
+rootProject.name = "moonpearl"
 include(":app")

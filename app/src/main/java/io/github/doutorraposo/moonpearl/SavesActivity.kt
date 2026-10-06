@@ -1,4 +1,4 @@
-package io.github.doutorraposo.z3
+package io.github.doutorraposo.moonpearl
 
 import android.content.Context
 import android.net.Uri
@@ -179,7 +179,7 @@ private fun SavesScreen(manager: SaveManager, states: SaveStates) {
                 )
                 Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(onClick = { pickSrm.launch(arrayOf("*/*")) }) { Text(stringResource(R.string.saves_import_srm)) }
-                    OutlinedButton(onClick = { exportSrm.launch("zelda3.srm") }, enabled = hasSram) {
+                    OutlinedButton(onClick = { exportSrm.launch("moonpearl.srm") }, enabled = hasSram) {
                         Text(stringResource(R.string.saves_export_srm))
                     }
                 }
@@ -234,7 +234,7 @@ private fun SavesScreen(manager: SaveManager, states: SaveStates) {
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
                 )
                 Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = { exportZip.launch("zelda3-saves-${LocalDate.now()}.zip") }, enabled = hasData) {
+                    OutlinedButton(onClick = { exportZip.launch("moonpearl-saves-${LocalDate.now()}.zip") }, enabled = hasData) {
                         Text(stringResource(R.string.saves_export_backup))
                     }
                     OutlinedButton(onClick = { pickZip.launch(arrayOf("application/zip", "application/octet-stream", "*/*")) }) {

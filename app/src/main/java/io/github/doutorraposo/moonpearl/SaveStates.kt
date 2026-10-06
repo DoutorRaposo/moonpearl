@@ -1,4 +1,4 @@
-package io.github.doutorraposo.z3
+package io.github.doutorraposo.moonpearl
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

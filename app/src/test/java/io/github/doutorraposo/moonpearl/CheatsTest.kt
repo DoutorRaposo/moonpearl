@@ -1,4 +1,4 @@
-package io.github.doutorraposo.z3
+package io.github.doutorraposo.moonpearl
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

@@ -1,4 +1,4 @@
-package io.github.doutorraposo.z3
+package io.github.doutorraposo.moonpearl
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme

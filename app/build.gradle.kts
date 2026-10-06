@@ -18,7 +18,7 @@ val assetsSignature: String = providers.fileContents(upstreamDir.file("src/asset
 }.get()
 
 // Release signing comes from keystore.properties (local, gitignored) or, in CI, from
-// ZELDA3_KEYSTORE* environment variables. Without either, release builds stay unsigned.
+// MOONPEARL_KEYSTORE* environment variables. Without either, release builds stay unsigned.
 val keystoreProperties = rootProject.file("keystore.properties").takeIf { it.isFile }?.let { file ->
     Properties().apply { file.inputStream().use(::load) }
 }
@@ -26,12 +26,12 @@ fun signingValue(env: String, key: String): String? =
     providers.environmentVariable(env).orNull ?: keystoreProperties?.getProperty(key)
 
 android {
-    namespace = "io.github.doutorraposo.z3"
+    namespace = "io.github.doutorraposo.moonpearl"
     compileSdk = 37
     ndkVersion = "29.0.14206865"
 
     defaultConfig {
-        applicationId = "io.github.doutorraposo.z3"
+        applicationId = "io.github.doutorraposo.moonpearl"
         minSdk = 26
         targetSdk = 36
         // Release builds pass these from the git tag (see .github/workflows/release.yml).
@@ -70,13 +70,13 @@ android {
     }
 
     signingConfigs {
-        val storePath = signingValue("ZELDA3_KEYSTORE", "storeFile")
+        val storePath = signingValue("MOONPEARL_KEYSTORE", "storeFile")
         if (storePath != null) {
             create("release") {
                 storeFile = file(storePath)
-                storePassword = signingValue("ZELDA3_KEYSTORE_PASSWORD", "storePassword")
-                keyAlias = signingValue("ZELDA3_KEY_ALIAS", "keyAlias")
-                keyPassword = signingValue("ZELDA3_KEY_PASSWORD", "keyPassword")
+                storePassword = signingValue("MOONPEARL_KEYSTORE_PASSWORD", "storePassword")
+                keyAlias = signingValue("MOONPEARL_KEY_ALIAS", "keyAlias")
+                keyPassword = signingValue("MOONPEARL_KEY_PASSWORD", "keyPassword")
             }
         }
     }
@@ -85,10 +85,10 @@ android {
         debug {
             // Installs next to the release build, so testing never wipes the real saves.
             applicationIdSuffix = ".debug"
-            resValue("string", "app_name", "Z3 debug")
+            resValue("string", "app_name", "Moon Pearl debug")
         }
         release {
-            resValue("string", "app_name", "Z3")
+            resValue("string", "app_name", "Moon Pearl")
             signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = true
             isShrinkResources = true

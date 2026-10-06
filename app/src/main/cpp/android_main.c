@@ -17,7 +17,7 @@
 int main(int argc, char **argv);  // src/main.c
 void ZeldaSetSpeed(int speed);    // patches/zelda3/0001-fixed-rate-fast-forward.patch
 
-static const char kTag[] = "zelda3";
+static const char kTag[] = "moonpearl";
 
 // Upstream reports everything (including Die() messages) through stdio, which
 // goes nowhere on Android. Pipe it into logcat instead.
@@ -63,7 +63,7 @@ static void RedirectStdioToLogcat(void) {
 }
 
 JNIEXPORT void JNICALL
-Java_io_github_doutorraposo_z3_GameActivity_nativeSetSpeed(JNIEnv *env, jclass cls, jint speed) {
+Java_io_github_doutorraposo_moonpearl_GameActivity_nativeSetSpeed(JNIEnv *env, jclass cls, jint speed) {
   ZeldaSetSpeed(speed);
 }
 

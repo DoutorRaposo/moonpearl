@@ -1,4 +1,4 @@
-package io.github.doutorraposo.z3
+package io.github.doutorraposo.moonpearl
 
 /**
  * Minimal editor for zelda3.ini that keeps comments and layout intact, so the

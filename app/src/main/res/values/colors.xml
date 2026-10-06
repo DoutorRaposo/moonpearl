@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="background">#0F1410</color>
-    <color name="icon_background">#173A22</color>
-    <color name="icon_foreground">#E2C15A</color>
+    <color name="icon_background">#141B33</color>
+    <color name="icon_moon">#E2C15A</color>
+    <color name="icon_pearl">#F3DCE6</color>
+    <color name="icon_pearl_highlight">#FFFFFF</color>
 </resources>

@@ -48,27 +48,27 @@ jobs:
 
       - name: Build signed APK
         env:
-          KEYSTORE_BASE64: ${{ secrets.ZELDA3_KEYSTORE_BASE64 }}
-          ZELDA3_KEYSTORE_PASSWORD: ${{ secrets.ZELDA3_KEYSTORE_PASSWORD }}
-          ZELDA3_KEY_ALIAS: ${{ secrets.ZELDA3_KEY_ALIAS }}
-          ZELDA3_KEY_PASSWORD: ${{ secrets.ZELDA3_KEY_PASSWORD }}
+          KEYSTORE_BASE64: ${{ secrets.MOONPEARL_KEYSTORE_BASE64 }}
+          MOONPEARL_KEYSTORE_PASSWORD: ${{ secrets.MOONPEARL_KEYSTORE_PASSWORD }}
+          MOONPEARL_KEY_ALIAS: ${{ secrets.MOONPEARL_KEY_ALIAS }}
+          MOONPEARL_KEY_PASSWORD: ${{ secrets.MOONPEARL_KEY_PASSWORD }}
         run: |
-          export ZELDA3_KEYSTORE="$RUNNER_TEMP/release.jks"
-          echo "$KEYSTORE_BASE64" | base64 -d > "$ZELDA3_KEYSTORE"
+          export MOONPEARL_KEYSTORE="$RUNNER_TEMP/release.jks"
+          echo "$KEYSTORE_BASE64" | base64 -d > "$MOONPEARL_KEYSTORE"
           ./gradlew testDebugUnitTest assembleRelease --console=plain \
             -PversionName=${{ steps.version.outputs.name }} \
             -PversionCode=${{ steps.version.outputs.code }}
-          rm "$ZELDA3_KEYSTORE"
+          rm "$MOONPEARL_KEYSTORE"
           # Only signed builds are named app-release.apk, so this also fails on a signing problem.
-          cp app/build/outputs/apk/release/app-release.apk "zelda3-android-${{ steps.version.outputs.name }}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "moonpearl-${{ steps.version.outputs.name }}.apk"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: zelda3-android-${{ steps.version.outputs.name }}
-          path: zelda3-android-*.apk
+          name: moonpearl-${{ steps.version.outputs.name }}
+          path: moonpearl-*.apk
 
       - name: Publish release
         if: github.ref_type == 'tag'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" zelda3-android-*.apk --generate-notes --title "$GITHUB_REF_NAME"
+        run: gh release create "$GITHUB_REF_NAME" moonpearl-*.apk --generate-notes --title "$GITHUB_REF_NAME"
