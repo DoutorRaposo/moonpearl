@@ -236,4 +236,6 @@
     <string name="shaders_none_found">No GLSL shaders (.glslp or .glsl) in that folder.</string>
     <string name="shaders_too_big">That folder has more than 64 MB of shader files.</string>
     <string name="shaders_import_failed">The shaders could not be copied.</string>
+    <string name="shader_failed_title">Image filter switched off</string>
+    <string name="shader_failed_message">The game did not get going with the shader “%1$s”: it froze or closed right after starting. The image filter is back to Sharp pixels.</string>
 </resources>

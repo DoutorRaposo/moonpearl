@@ -70,8 +70,28 @@ Java_io_github_doutorraposo_moonpearl_GameActivity_nativeSetSpeed(JNIEnv *env, j
   ZeldaSetSpeed(speed);
 }
 
-#ifndef NDEBUG
 extern unsigned char g_ram[];  // src/zelda_rtl.c; 0x1A is the game's frame counter
+
+// GameActivity writes this file when the game starts with a shader (Shaders.kt). It is removed
+// once the game has run about two seconds; if a shader hangs or crashes the game first, the file
+// stays and the launcher switches the shader off (GameData.takeShaderFailure).
+static const char kShaderCheckFile[] = "shader_check";
+
+static void *ClearShaderCheck(void *arg) {
+  (void)arg;
+  unsigned char last = g_ram[0x1A];
+  int frames = 0;
+  while (frames < 120) {
+    usleep(50 * 1000);
+    unsigned char now = g_ram[0x1A];
+    frames += (unsigned char)(now - last);
+    last = now;
+  }
+  unlink(kShaderCheckFile);
+  return NULL;
+}
+
+#ifndef NDEBUG
 
 // Debug builds log how many game frames run per second, to check fast-forward rates.
 static void *LogGameSpeed(void *arg) {
@@ -157,6 +177,11 @@ int SDL_main(int argc, char *argv[]) {
   // Fatal errors go through Die(); main() itself returns 1 when SDL cannot start.
   ZeldaSetDieHook(OnDie);
   ZeldaSetMsuOpenHook(OpenMsuTrack);
+  if (access(kShaderCheckFile, F_OK) == 0) {
+    pthread_t check_thread;
+    if (pthread_create(&check_thread, NULL, ClearShaderCheck, NULL) == 0)
+      pthread_detach(check_thread);
+  }
   int result = main(argc, argv);
   if (result != 0 && access(kLastErrorFile, F_OK) != 0) {
     char message[512];

@@ -236,4 +236,6 @@
     <string name="shaders_none_found">Nenhum shader GLSL (.glslp ou .glsl) nessa pasta.</string>
     <string name="shaders_too_big">Essa pasta tem mais de 64 MB de arquivos de shader.</string>
     <string name="shaders_import_failed">Não foi possível copiar os shaders.</string>
+    <string name="shader_failed_title">Filtro de imagem desligado</string>
+    <string name="shader_failed_message">O jogo não conseguiu rodar com o shader “%1$s”: travou ou fechou logo depois de abrir. O filtro de imagem voltou para Pixels nítidos.</string>
 </resources>

@@ -62,7 +62,9 @@ class GameData(private val context: Context) {
             Ini(context.assets.open("zelda3.ini").use { it.readBytes().decodeToString() }).apply(::applyAndroidDefaults)
         }
         if (ini["Graphics", "LinkGraphics"] != null && LinkSprites(dir).selected(ini) == null) ini.remove("Graphics", "LinkGraphics")
-        Shaders.installBuiltins(context, dir, "${BuildConfig.VERSION_NAME}-${BuildConfig.VERSION_CODE}")
+        // Recopied whenever the app is installed or updated, even without a version change.
+        val installed = context.packageManager.getPackageInfo(context.packageName, 0).lastUpdateTime
+        Shaders.installBuiltins(context, dir, "${BuildConfig.VERSION_CODE}-$installed")
         Shaders.validate(ini, dir)
         // The touch overlay depends on this mapping, so keep it in place even if the file was edited.
         ini["KeyMap", "Controls"] = TouchControlsView.KEYMAP_CONTROLS
@@ -74,6 +76,16 @@ class GameData(private val context: Context) {
             if (!target.exists())
                 context.assets.open("saves/ref/$name").use { input -> target.outputStream().use { input.copyTo(it) } }
         }
+    }
+
+    /** See [Shaders.takeFailure]: the shader that kept the last session from running, switched off. */
+    fun takeShaderFailure(): String? {
+        if (!File(dir, "shader_check").isFile) return null
+        val ini = readIni()
+        val before = ini.text
+        val path = Shaders.takeFailure(ini, dir)
+        if (ini.text != before) writeIni(ini)
+        return path
     }
 
     /** The message of the last fatal game error (written by android_main.c), consumed once. */

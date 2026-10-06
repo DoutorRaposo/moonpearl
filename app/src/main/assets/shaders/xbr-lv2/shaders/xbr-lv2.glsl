@@ -175,9 +175,9 @@ const float coef         = 2.0;
 const vec3 rgbw          = vec3(14.352, 28.176, 5.472);
 const vec4 eq_threshold  = vec4(15.0, 15.0, 15.0, 15.0);
 
-vec4 delta   = vec4(1.0/XBR_SCALE, 1.0/XBR_SCALE, 1.0/XBR_SCALE, 1.0/XBR_SCALE);
-vec4 delta_l = vec4(0.5/XBR_SCALE, 1.0/XBR_SCALE, 0.5/XBR_SCALE, 1.0/XBR_SCALE);
-vec4 delta_u = delta_l.yxwz;
+const vec4 delta   = vec4(1.0/XBR_SCALE, 1.0/XBR_SCALE, 1.0/XBR_SCALE, 1.0/XBR_SCALE);
+const vec4 delta_l = vec4(0.5/XBR_SCALE, 1.0/XBR_SCALE, 0.5/XBR_SCALE, 1.0/XBR_SCALE);
+const vec4 delta_u = delta_l.yxwz; // const: OpenGL ES needs constant global initializers
 
 const  vec4 Ao = vec4( 1.0, -1.0, -1.0, 1.0 );
 const  vec4 Bo = vec4( 1.0,  1.0, -1.0,-1.0 );

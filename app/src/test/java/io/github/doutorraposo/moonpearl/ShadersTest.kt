@@ -69,4 +69,26 @@ class ShadersTest {
         )
         assertEquals("crt/crt-geom", Shaders.displayName("shaders/custom/crt/crt-geom.glslp"))
     }
+
+    @Test
+    fun aShaderThatNeverGotGoingIsSwitchedOff() {
+        val ini = ini()
+        val crt = Shaders.Choice.Shader(Shaders.Builtin.CRT.path)
+        Shaders.apply(ini, crt)
+        Shaders.markGameStart(ini, tmp.root)
+        // The game hung before android_main.c removed the marker.
+        assertEquals(crt.path, Shaders.takeFailure(ini, tmp.root))
+        assertEquals(Shaders.Choice.Sharp, Shaders.current(ini))
+        assertEquals(null, Shaders.takeFailure(ini, tmp.root))
+    }
+
+    @Test
+    fun aShaderThatRanIsKept() {
+        val ini = ini()
+        Shaders.apply(ini, Shaders.Choice.Shader(Shaders.Builtin.LCD.path))
+        Shaders.markGameStart(ini, tmp.root)
+        File(tmp.root, "shader_check").delete() // what android_main.c does after ~2 s
+        assertEquals(null, Shaders.takeFailure(ini, tmp.root))
+        assertEquals(Shaders.Choice.Shader(Shaders.Builtin.LCD.path), Shaders.current(ini))
+    }
 }

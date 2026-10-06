@@ -57,6 +57,7 @@ class GameActivity : SDLActivity() {
         val msuTracks = MsuPack.prepareForGame(this, ini, AppPrefs(this))
         if (msuTracks > 0) android.util.Log.i("moonpearl", "MSU-1: $msuTracks tracks linked")
         if (ini.text != iniBeforeMsu) data.writeIni(ini)
+        Shaders.markGameStart(ini, data.dir)
         // Keep "fill the screen" matched to the display, e.g. after moving the data to another device.
         if (AppPrefs(this).fillScreen) {
             val before = ini.text

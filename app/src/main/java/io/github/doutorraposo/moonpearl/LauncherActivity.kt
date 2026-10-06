@@ -55,12 +55,16 @@ import kotlinx.coroutines.withContext
 class LauncherActivity : ComponentActivity() {
     /** Set when the game process ended with a fatal error; shown once. */
     private val gameError = mutableStateOf<String?>(null)
+    /** A shader that hung or crashed the last session and was switched off; shown once. */
+    private val failedShader = mutableStateOf<String?>(null)
 
     override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguage.wrap(newBase))
 
     override fun onResume() {
         super.onResume()
-        GameData(this).takeLastError()?.let { gameError.value = it }
+        val data = GameData(this)
+        data.takeLastError()?.let { gameError.value = it }
+        data.takeShaderFailure()?.let { failedShader.value = it }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,6 +76,16 @@ class LauncherActivity : ComponentActivity() {
             AppTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     LauncherScreen(data, onPlay = { startActivity(Intent(this, GameActivity::class.java)) })
+                    failedShader.value?.takeIf { gameError.value == null }?.let { path ->
+                        AlertDialog(
+                            onDismissRequest = { failedShader.value = null },
+                            title = { Text(stringResource(R.string.shader_failed_title)) },
+                            text = { Text(stringResource(R.string.shader_failed_message, shaderChoiceLabel(Shaders.Choice.Shader(path)))) },
+                            confirmButton = {
+                                TextButton(onClick = { failedShader.value = null }) { Text(stringResource(android.R.string.ok)) }
+                            },
+                        )
+                    }
                     gameError.value?.let { message ->
                         AlertDialog(
                             onDismissRequest = { gameError.value = null },

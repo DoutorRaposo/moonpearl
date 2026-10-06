@@ -69,6 +69,29 @@ object Shaders {
         if (choice is Choice.Shader && !File(gameDir, choice.path).isFile) apply(ini, Choice.Sharp)
     }
 
+    private const val CHECK_FILE = "shader_check"
+
+    /** Called as the game starts; android_main.c removes the file after ~2 s of running. */
+    fun markGameStart(ini: Ini, gameDir: File) {
+        val file = File(gameDir, CHECK_FILE)
+        val choice = current(ini)
+        if (choice is Choice.Shader) file.writeText(choice.path) else file.delete()
+    }
+
+    /**
+     * The shader the last game session started with, if the game never ran long enough to
+     * clear the marker (it hung or crashed). Switches it off; returns its path. Consumed once.
+     */
+    fun takeFailure(ini: Ini, gameDir: File): String? {
+        val file = File(gameDir, CHECK_FILE)
+        if (!file.isFile) return null
+        val path = file.readText().trim()
+        file.delete()
+        if (path.isEmpty()) return null
+        if (current(ini) == Choice.Shader(path)) apply(ini, Choice.Sharp)
+        return path
+    }
+
     fun builtin(path: String) = Builtin.entries.firstOrNull { it.path == path }
 
     /** Copies the bundled presets into the game folder once per app version. */

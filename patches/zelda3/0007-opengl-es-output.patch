@@ -1,8 +1,14 @@
 diff --git a/src/glsl_shader.c b/src/glsl_shader.c
-index 0733833..1fe4e3e 100644
+index 0733833..cf333f2 100644
 --- a/src/glsl_shader.c
 +++ b/src/glsl_shader.c
-@@ -242,8 +242,9 @@ size_t LengthOfInitialComments(const uint8 *data, size_t size) {
+@@ -239,11 +239,15 @@ size_t LengthOfInitialComments(const uint8 *data, size_t size) {
+   return data - data_org;
+ }
+ 
++// OpenGL ES: compile as GLSL ES 1.00 instead of 3.00 (second try for older shaders).
++static bool g_glsl_es_legacy;
++
  static bool GlslPass_Compile(GlslPass *p, uint type, const uint8 *data, size_t size, bool use_opengl_es) {
    static const char kVertexPrefix[] =   "#define VERTEX\n#define PARAMETER_UNIFORM\n";
    static const char kFragmentPrefixCore[] = "#define FRAGMENT\n#define PARAMETER_UNIFORM\n";
@@ -13,7 +19,7 @@ index 0733833..1fe4e3e 100644
    const GLchar *strings[3];
    GLint lengths[3];
    char buffer[256];
-@@ -253,7 +254,9 @@ static bool GlslPass_Compile(GlslPass *p, uint type, const uint8 *data, size_t s
+@@ -253,10 +257,15 @@ static bool GlslPass_Compile(GlslPass *p, uint type, const uint8 *data, size_t s
    size_t commsize = LengthOfInitialComments(data, size);
    data += commsize, size -= commsize;
  
@@ -24,18 +30,60 @@ index 0733833..1fe4e3e 100644
      if (!use_opengl_es) {
        strings[0] = "#version 330\n";
        lengths[0] = sizeof("#version 330\n") - 1;
-@@ -353,7 +356,10 @@ static bool IsGlslFilename(const char *filename) {
++    } else if (g_glsl_es_legacy) {
++      strings[0] = "#version 100\n";
++      lengths[0] = sizeof("#version 100\n") - 1;
+     } else {
+       strings[0] = "#version 300 es\n";
+       lengths[0] = sizeof("#version 300 es\n") - 1;
+@@ -353,7 +362,14 @@ static bool IsGlslFilename(const char *filename) {
    return len >= 5 && memcmp(filename + len - 5, ".glsl", 5) == 0;
  }
  
 +static bool g_glsl_opengl_es;
++
++static GLint GlslWrapMode(GLint mode) {
++  return g_glsl_opengl_es && (mode == GL_CLAMP_TO_BORDER || mode == GL_CLAMP) ? GL_CLAMP_TO_EDGE : mode;
++}
 +
  GlslShader *GlslShader_CreateFromFile(const char *filename, bool opengl_es) {
 +  g_glsl_opengl_es = opengl_es;
    char buffer[256];
    GLint link_status;
    ByteArray shader_code = { 0 };
-@@ -421,8 +427,9 @@ GlslShader *GlslShader_CreateFromFile(const char *filename, bool opengl_es) {
+@@ -390,9 +406,19 @@ GlslShader *GlslShader_CreateFromFile(const char *filename, bool opengl_es) {
+       goto FAIL;
+     }
+     p->gl_program = glCreateProgram();
++    g_glsl_es_legacy = false;
+     if (!GlslPass_Compile(p, GL_VERTEX_SHADER, shader_code.data, shader_code.size, opengl_es) ||
+         !GlslPass_Compile(p, GL_FRAGMENT_SHADER, shader_code.data, shader_code.size, opengl_es)) {
+-      goto FAIL;
++      if (!opengl_es)
++        goto FAIL;
++      fprintf(stderr, "Retrying '%s' as GLSL ES 1.00\n", p->filename);
++      glDeleteProgram(p->gl_program);
++      p->gl_program = glCreateProgram();
++      g_glsl_es_legacy = true;
++      if (!GlslPass_Compile(p, GL_VERTEX_SHADER, shader_code.data, shader_code.size, opengl_es) ||
++          !GlslPass_Compile(p, GL_FRAGMENT_SHADER, shader_code.data, shader_code.size, opengl_es)) {
++        goto FAIL;
++      }
+     }
+     glLinkProgram(p->gl_program);
+     glGetProgramiv(p->gl_program, GL_LINK_STATUS, &link_status);
+@@ -409,8 +435,8 @@ GlslShader *GlslShader_CreateFromFile(const char *filename, bool opengl_es) {
+   for (GlslTexture *t = gs->first_texture; t; t = t->next) {
+     glGenTextures(1, &t->gl_texture);
+     glBindTexture(GL_TEXTURE_2D, t->gl_texture);
+-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, t->wrap_mode);
+-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, t->wrap_mode);
++    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GlslWrapMode(t->wrap_mode));
++    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GlslWrapMode(t->wrap_mode));
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, t->filter);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, t->mipmap ? 
+                     (t->filter == GL_LINEAR ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST) : t->filter);
+@@ -421,8 +447,9 @@ GlslShader *GlslShader_CreateFromFile(const char *filename, bool opengl_es) {
        if (!data) {
          fprintf(stderr, "Unable to read PNG '%s'\n", new_filename);
        } else {
@@ -47,7 +95,7 @@ index 0733833..1fe4e3e 100644
        }
        free(data);
        free(new_filename);
-@@ -595,7 +602,14 @@ void GlslShader_Render(GlslShader *gs, GlTextureWithSize *tex, int viewport_x, i
+@@ -595,7 +622,14 @@ void GlslShader_Render(GlslShader *gs, GlTextureWithSize *tex, int viewport_x, i
      if (!last_pass) {
        // output to a texture
        glBindTexture(GL_TEXTURE_2D, p->gl_texture);
@@ -63,7 +111,18 @@ index 0733833..1fe4e3e 100644
          glEnable(GL_FRAMEBUFFER_SRGB);
          glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, p->width, p->height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, NULL);
        } else {
-@@ -631,7 +645,7 @@ void GlslShader_Render(GlslShader *gs, GlTextureWithSize *tex, int viewport_x, i
+@@ -618,8 +652,8 @@ void GlslShader_Render(GlslShader *gs, GlTextureWithSize *tex, int viewport_x, i
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, p->mipmap_input ? 
+                     (filter == GL_LINEAR ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST) : filter);
+-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, p->wrap_mode);
+-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, p->wrap_mode);
++    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GlslWrapMode(p->wrap_mode));
++    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GlslWrapMode(p->wrap_mode));
+     if (p->mipmap_input)
+       glGenerateMipmap(GL_TEXTURE_2D);
+     glUseProgram(p->gl_program);
+@@ -631,7 +665,7 @@ void GlslShader_Render(GlslShader *gs, GlTextureWithSize *tex, int viewport_x, i
      glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
      for(int i = 0; i < ctx.num_vaos; i++)
        glDisableVertexAttribArray(ctx.vaos[i]);
