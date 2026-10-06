@@ -1,5 +1,6 @@
 package io.github.doutorraposo.z3
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -55,6 +56,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class LauncherActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguage.wrap(newBase))
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // The launcher is always dark, so ask for light system bar icons regardless of the system theme.
@@ -271,6 +274,28 @@ private fun LauncherScreen(data: GameData, prefs: AppPrefs, onPlay: () -> Unit) 
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
                 )
                 for (f in features) IniSwitch(ini, "Features", f.key, f.label, ::editIni, f.description)
+            }
+
+            Section(R.string.section_language) {
+                val current = remember { AppLanguage.current(context) }
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(16.dp)) {
+                    AppLanguage.options.forEachIndexed { i, tag ->
+                        SegmentedButton(
+                            selected = tag == current,
+                            onClick = { if (tag != current) AppLanguage.set(context as android.app.Activity, tag) },
+                            shape = SegmentedButtonDefaults.itemShape(i, AppLanguage.options.size),
+                        ) {
+                            Text(
+                                when (tag) {
+                                    "" -> stringResource(R.string.language_system)
+                                    "en" -> "English"
+                                    else -> "Português"
+                                },
+                                maxLines = 1,
+                            )
+                        }
+                    }
+                }
             }
 
             Text(

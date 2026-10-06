@@ -21,15 +21,16 @@ and the build. The few changes the game code needs are kept as small patches in
   feedback and adjustable opacity. They hide while a controller is in use.
 - **In-game menu** with save states (9 slots plus the resume point, each with a screenshot
   and time), fast-forward at 2x, 3x or maximum speed, jump to any chapter (upstream's reference saves), reset and quit.
-  It opens from an on-screen "⋯" button, an optional double tap, the back button, or
-  Select+Start / the right stick button on a controller, and is fully usable with a
-  controller. Under the hood it drives upstream's own save state and turbo shortcuts.
+  It opens from an on-screen "⋯" button, an optional double tap, the back button, or the
+  guide button, Select+Start or the right stick button on a controller, and is fully usable
+  with a controller. On a controller, RT and LT step the speed up and down. Under the hood it drives upstream's own save state and turbo shortcuts.
 - **Cheats**: infinite health, magic, bombs, arrows and small keys, a full wallet, walking
   through walls, and Pro Action Replay RAM codes (`7Exxxx:yy`). The game RAM keeps the SNES
   layout, so classic RAM codes work unchanged; ROM codes such as Game Genie do not apply.
 - **Enhancements** from upstream (item switching on L/R, turning while dashing, bug fixes and
   more), each with a short explanation of what it changes.
 - **Save management**: see the three game files (name and hearts) and every save state,
+  erase a single file or all of them,
   export or restore everything as a `.zip`, and import or export the game files as an `.srm`.
   The save RAM uses the cartridge layout, so files move both ways between this app and SNES
   emulators.
@@ -40,7 +41,7 @@ and the build. The few changes the game code needs are kept as small patches in
 - Settings screen for upstream's display options and gameplay enhancements (item switching
   on L/R, turning while dashing, bug fixes, and so on). Everything is stored in the stock
   `zelda3.ini`, so upstream's documentation still applies.
-- English and Brazilian Portuguese UI.
+- English and Brazilian Portuguese UI, following the system or chosen in the app.
 
 ## Requirements
 

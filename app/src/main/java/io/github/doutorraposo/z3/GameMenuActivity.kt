@@ -1,5 +1,6 @@
 package io.github.doutorraposo.z3
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
@@ -87,6 +88,10 @@ class GameMenuActivity : ComponentActivity() {
     enum class Action { SAVE, LOAD, CHAPTER, RESET, QUIT }
 
     private val result = Intent()
+    /** Buttons pressed while the menu was open; releases of anything else are ignored. */
+    private val buttonsDown = HashSet<Int>()
+
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguage.wrap(newBase))
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -129,14 +134,18 @@ class GameMenuActivity : ComponentActivity() {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        // Controllers: A activates the focused item, B/Start go back to the game.
+        // Controllers: A activates the focused item, B/Start/guide/R3 go back to the game.
         when (event.keyCode) {
             KeyEvent.KEYCODE_BUTTON_A -> return super.dispatchKeyEvent(
                 KeyEvent(event.downTime, event.eventTime, event.action, KeyEvent.KEYCODE_DPAD_CENTER,
                     event.repeatCount, event.metaState, event.deviceId, event.scanCode, event.flags, event.source),
             )
-            KeyEvent.KEYCODE_BUTTON_B, KeyEvent.KEYCODE_BUTTON_START -> {
-                if (event.action == KeyEvent.ACTION_UP) finish()
+            // The release of the button that opened the menu arrives here too, so only a full
+            // press inside the menu closes it. The guide button and R3 toggle the menu.
+            KeyEvent.KEYCODE_BUTTON_B, KeyEvent.KEYCODE_BUTTON_START,
+            KeyEvent.KEYCODE_BUTTON_MODE, KeyEvent.KEYCODE_BUTTON_THUMBR -> {
+                if (event.action == KeyEvent.ACTION_DOWN) buttonsDown += event.keyCode
+                else if (buttonsDown.remove(event.keyCode) && !event.isCanceled) finish()
                 return true
             }
         }

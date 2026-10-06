@@ -1,5 +1,6 @@
 package io.github.doutorraposo.z3
 
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.text.format.DateUtils
@@ -61,6 +62,8 @@ import kotlinx.coroutines.withContext
 
 /** Lists the game files and save states, and moves them in and out of the device. */
 class SavesActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguage.wrap(newBase))
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(SystemBarStyle.dark(android.graphics.Color.TRANSPARENT), SystemBarStyle.dark(android.graphics.Color.TRANSPARENT))
@@ -79,6 +82,8 @@ private sealed interface Pending {
     data class Restore(val uri: Uri) : Pending
     data class ImportSrm(val uri: Uri) : Pending
     data class DeleteState(val slot: Int) : Pending
+    data class EraseFile(val slot: Int) : Pending
+    data object DeleteAllFiles : Pending
 }
 
 @Composable
@@ -160,6 +165,9 @@ private fun SavesScreen(manager: SaveManager, states: SaveStates) {
                             )
                         },
                         supportingContent = file?.let { { Text(stringResource(R.string.saves_hearts, it.hearts)) } },
+                        trailingContent = file?.let {
+                            { TextButton(onClick = { pending = Pending.EraseFile(i) }) { Text(stringResource(R.string.saves_delete)) } }
+                        },
                         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                     )
                 }
@@ -175,6 +183,11 @@ private fun SavesScreen(manager: SaveManager, states: SaveStates) {
                         Text(stringResource(R.string.saves_export_srm))
                     }
                 }
+                TextButton(
+                    onClick = { pending = Pending.DeleteAllFiles },
+                    enabled = hasSram,
+                    modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
+                ) { Text(stringResource(R.string.saves_delete_all_files), color = MaterialTheme.colorScheme.error) }
             }
 
             SavesSection(R.string.menu_tab_states) {
@@ -237,6 +250,8 @@ private fun SavesScreen(manager: SaveManager, states: SaveStates) {
             is Pending.Restore -> stringResource(R.string.saves_restore_confirm)
             is Pending.ImportSrm -> stringResource(R.string.saves_import_srm_confirm)
             is Pending.DeleteState -> stringResource(R.string.saves_delete_confirm)
+            is Pending.EraseFile -> stringResource(R.string.saves_erase_file_confirm, p.slot + 1)
+            Pending.DeleteAllFiles -> stringResource(R.string.saves_delete_all_files_confirm)
         }
         AlertDialog(
             onDismissRequest = { pending = null },
@@ -253,6 +268,14 @@ private fun SavesScreen(manager: SaveManager, states: SaveStates) {
                         }
                         is Pending.DeleteState -> run(R.string.saves_deleted) {
                             manager.deleteState(p.slot)
+                            SaveManager.Result.Done
+                        }
+                        is Pending.EraseFile -> run(R.string.saves_file_erased) {
+                            manager.eraseFile(p.slot)
+                            SaveManager.Result.Done
+                        }
+                        Pending.DeleteAllFiles -> run(R.string.saves_files_deleted) {
+                            manager.deleteGameFiles()
                             SaveManager.Result.Done
                         }
                     }

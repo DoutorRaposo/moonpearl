@@ -71,10 +71,11 @@
 
     <string name="menu_button">Menu button (⋯) on screen</string>
     <string name="double_tap_menu">Double-tap the screen to open the menu</string>
-    <string name="menu_hint">The back button and, on a controller, Select+Start or the right stick button also open the menu.</string>
+    <string name="menu_hint">The back button and, on a controller, the guide button, Select+Start or the right stick button also open the menu. RT and LT change the game speed.</string>
 
     <string name="menu_title">Paused</string>
     <string name="menu_resume">Resume</string>
+    <string name="speed_changed">Speed: %1$s</string>
     <string name="menu_speed">Speed</string>
     <string name="menu_speed_max">Max</string>
     <string name="menu_reset">Reset</string>
@@ -103,6 +104,12 @@
     <string name="saves_import_srm">Import .srm</string>
     <string name="saves_export_srm">Export .srm</string>
     <string name="saves_import_srm_confirm">Replace the three game files with this .srm? The current ones are kept as sram.bak, and the resume point is cleared so the game starts at the file select screen.</string>
+    <string name="saves_delete_all_files">Delete all game files</string>
+    <string name="saves_erase_file_confirm">Erase file %1$d? The previous files are kept as sram.bak, and the resume point is cleared too.</string>
+    <string name="saves_delete_all_files_confirm">Delete all three game files? They are kept as sram.bak, and the resume point is cleared. Save states stay; loading one brings back the files as they were when it was made.</string>
+    <string name="saves_file_erased">File erased.</string>
+    <string name="saves_files_deleted">Game files deleted.</string>
+
     <string name="saves_no_states">No save states yet. Create them from the in-game menu.</string>
     <string name="saves_delete">Delete</string>
     <string name="saves_delete_confirm">Delete this save state?</string>
@@ -140,6 +147,9 @@
     <string name="cheats_name">Name (optional)</string>
     <string name="cheats_add">Add</string>
     <string name="cheats_invalid">Use 6 hex digits of address in 7E0000–7FFFFF and 2 of value, e.g. 7EF36D:A0.</string>
+
+    <string name="section_language">App language</string>
+    <string name="language_system">System</string>
 
     <string name="legal_notice">This app contains no game data. You must supply a ROM from a cartridge you own. Based on snesrev/zelda3 (MIT).</string>
 </resources>

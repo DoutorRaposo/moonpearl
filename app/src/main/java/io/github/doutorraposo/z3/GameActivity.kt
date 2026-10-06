@@ -1,5 +1,6 @@
 package io.github.doutorraposo.z3
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
@@ -16,6 +17,7 @@ import android.view.PixelCopy
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.Toast
 import org.libsdl.app.SDLActivity
 import java.io.File
 
@@ -31,11 +33,21 @@ class GameActivity : SDLActivity() {
     private var speed = 1
     private var menuOpen = false
     private var selectHeld = false
+    /** Start went down while Select was held: the release opens the menu. */
+    private var startChord = false
+    /** Controller buttons whose press opened nothing yet; the menu opens on their release. */
+    private val menuButtonsDown = HashSet<Int>()
+    /** LT and RT, as buttons and as analog axes (controllers report either or both). */
+    private val triggerKey = BooleanArray(2)
+    private val triggerAxis = BooleanArray(2)
+    private var speedToast: Toast? = null
     /** Set from the menu; unlike hiding for a controller, a touch does not bring the pad back. */
     private var touchHiddenByUser = false
     private var doubleTap: GestureDetector? = null
     private val states by lazy { SaveStates(filesDir) }
     private val menuShot by lazy { File(cacheDir, "menu_shot.png") }
+
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguage.wrap(newBase))
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val data = GameData(this)
@@ -238,31 +250,79 @@ class GameActivity : SDLActivity() {
         if (fromController) {
             // Hide the overlay while a physical controller is in use; it comes back on the next touch.
             hideTouch()
-            if (isMenuShortcut(event)) return true
+            if (handleMenuShortcut(event) || handleTriggerKey(event)) return true
         }
         return super.dispatchKeyEvent(event)
     }
 
-    /** Controllers open the menu with the right stick button, the guide button, or Select+Start. */
-    private fun isMenuShortcut(event: KeyEvent): Boolean {
+    /**
+     * Controllers open the menu with the guide button, the right stick button, or Select+Start.
+     * It opens on release: opened on press, the release would land in the menu and close it, and
+     * an unhandled guide button falls back to Home and leaves the app.
+     */
+    private fun handleMenuShortcut(event: KeyEvent): Boolean {
         val down = event.action == KeyEvent.ACTION_DOWN
         when (event.keyCode) {
             KeyEvent.KEYCODE_BUTTON_SELECT -> selectHeld = down
-            KeyEvent.KEYCODE_BUTTON_THUMBR, KeyEvent.KEYCODE_BUTTON_MODE -> {
-                if (down && event.repeatCount == 0) openMenu()
+            KeyEvent.KEYCODE_BUTTON_MODE, KeyEvent.KEYCODE_BUTTON_THUMBR -> {
+                if (down) menuButtonsDown += event.keyCode
+                else if (menuButtonsDown.remove(event.keyCode) && !event.isCanceled) openMenu()
                 return true
             }
-            KeyEvent.KEYCODE_BUTTON_START -> if (selectHeld) {
-                if (down && event.repeatCount == 0) openMenu()
+            KeyEvent.KEYCODE_BUTTON_START -> {
+                if (down && selectHeld) startChord = true
+                if (!startChord) return false
+                if (!down) {
+                    startChord = false
+                    if (!event.isCanceled) openMenu()
+                }
                 return true
             }
         }
         return false
     }
 
+    /** RT raises the fast-forward rate one step, LT lowers it. The game does not use them. */
+    private fun handleTriggerKey(event: KeyEvent): Boolean {
+        val i = when (event.keyCode) {
+            KeyEvent.KEYCODE_BUTTON_L2 -> 0
+            KeyEvent.KEYCODE_BUTTON_R2 -> 1
+            else -> return false
+        }
+        updateTrigger(i, key = event.action == KeyEvent.ACTION_DOWN)
+        return true
+    }
+
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
-        if (event.isFromSource(InputDevice.SOURCE_JOYSTICK)) hideTouch()
+        if (event.isFromSource(InputDevice.SOURCE_JOYSTICK)) {
+            hideTouch()
+            if (event.actionMasked == MotionEvent.ACTION_MOVE) {
+                val lt = maxOf(event.getAxisValue(MotionEvent.AXIS_LTRIGGER), event.getAxisValue(MotionEvent.AXIS_BRAKE))
+                val rt = maxOf(event.getAxisValue(MotionEvent.AXIS_RTRIGGER), event.getAxisValue(MotionEvent.AXIS_GAS))
+                updateTrigger(0, axis = pressedWithHysteresis(lt, triggerAxis[0]))
+                updateTrigger(1, axis = pressedWithHysteresis(rt, triggerAxis[1]))
+            }
+        }
         return super.dispatchGenericMotionEvent(event)
+    }
+
+    private fun pressedWithHysteresis(value: Float, wasPressed: Boolean) = if (wasPressed) value > 0.3f else value > 0.6f
+
+    private fun updateTrigger(i: Int, key: Boolean = triggerKey[i], axis: Boolean = triggerAxis[i]) {
+        val wasPressed = triggerKey[i] || triggerAxis[i]
+        triggerKey[i] = key
+        triggerAxis[i] = axis
+        if (!wasPressed && (key || axis)) stepSpeed(if (i == 1) 1 else -1)
+    }
+
+    private fun stepSpeed(direction: Int) {
+        val speeds = GameKeys.speeds
+        val next = speeds[(speeds.indexOf(speed) + direction).coerceIn(0, speeds.lastIndex)]
+        if (next == speed) return
+        setSpeed(next)
+        val label = if (next == GameKeys.SPEED_MAX) getString(R.string.menu_speed_max) else "$next×"
+        speedToast?.cancel()
+        speedToast = Toast.makeText(this, getString(R.string.speed_changed, label), Toast.LENGTH_SHORT).also { it.show() }
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {

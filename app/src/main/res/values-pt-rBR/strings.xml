@@ -71,10 +71,11 @@
 
     <string name="menu_button">Botão de menu (⋯) na tela</string>
     <string name="double_tap_menu">Toque duplo na tela abre o menu</string>
-    <string name="menu_hint">O botão voltar e, no controle, Select+Start ou o clique do analógico direito também abrem o menu.</string>
+    <string name="menu_hint">O botão voltar e, no controle, o botão Guia, Select+Start ou o clique do analógico direito também abrem o menu. RT e LT mudam a velocidade do jogo.</string>
 
     <string name="menu_title">Pausado</string>
     <string name="menu_resume">Continuar</string>
+    <string name="speed_changed">Velocidade: %1$s</string>
     <string name="menu_speed">Velocidade</string>
     <string name="menu_speed_max">Máx</string>
     <string name="menu_reset">Reiniciar</string>
@@ -103,6 +104,12 @@
     <string name="saves_import_srm">Importar .srm</string>
     <string name="saves_export_srm">Exportar .srm</string>
     <string name="saves_import_srm_confirm">Substituir as três fichas por este .srm? As atuais ficam guardadas como sram.bak, e o ponto de retomada é apagado para o jogo abrir na seleção de fichas.</string>
+    <string name="saves_delete_all_files">Apagar todas as fichas</string>
+    <string name="saves_erase_file_confirm">Apagar a ficha %1$d? As fichas anteriores ficam guardadas como sram.bak, e o ponto de retomada também é apagado.</string>
+    <string name="saves_delete_all_files_confirm">Apagar as três fichas do jogo? Elas ficam guardadas como sram.bak, e o ponto de retomada é apagado. Os save states continuam; carregar um deles traz de volta as fichas como estavam quando ele foi feito.</string>
+    <string name="saves_file_erased">Ficha apagada.</string>
+    <string name="saves_files_deleted">Fichas apagadas.</string>
+
     <string name="saves_no_states">Nenhum save state ainda. Crie pelo menu dentro do jogo.</string>
     <string name="saves_delete">Apagar</string>
     <string name="saves_delete_confirm">Apagar este save state?</string>
@@ -140,6 +147,9 @@
     <string name="cheats_name">Nome (opcional)</string>
     <string name="cheats_add">Adicionar</string>
     <string name="cheats_invalid">Use 6 dígitos hexadecimais de endereço entre 7E0000 e 7FFFFF e 2 de valor, ex.: 7EF36D:A0.</string>
+
+    <string name="section_language">Idioma do app</string>
+    <string name="language_system">Sistema</string>
 
     <string name="legal_notice">Este app não contém nenhum dado do jogo. Você precisa fornecer uma ROM de um cartucho que possua. Baseado em snesrev/zelda3 (MIT).</string>
 </resources>

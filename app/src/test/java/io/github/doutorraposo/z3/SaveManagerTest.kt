@@ -69,6 +69,35 @@ class SaveManagerTest {
     }
 
     @Test
+    fun eraseFileClearsOnlyThatFileAndItsCopy() {
+        val sram = validSram(5) // file 1 valid, the rest filled with 5s
+        File(saves, "sram.dat").writeBytes(sram)
+        File(saves, "save0.sav").writeBytes(byteArrayOf(1))
+
+        manager.eraseFile(0)
+        val after = manager.readSram()!!
+        assertTrue((0 until 0x500).all { after[it] == 0.toByte() })
+        assertTrue((0xF00 until 0x1400).all { after[it] == 0.toByte() })
+        assertEquals(5.toByte(), after[0x500]) // file 2 untouched
+        assertFalse(Sram.hasAnyFile(after))
+        assertArrayEquals(sram, File(saves, "sram.bak").readBytes())
+        assertFalse(File(saves, "save0.sav").exists())
+    }
+
+    @Test
+    fun deleteGameFilesKeepsBackupAndStates() {
+        File(saves, "sram.dat").writeBytes(validSram())
+        File(saves, "save0.sav").writeBytes(byteArrayOf(1))
+        File(saves, "save2.sav").writeBytes(byteArrayOf(2))
+
+        manager.deleteGameFiles()
+        assertFalse(File(saves, "sram.dat").exists())
+        assertArrayEquals(validSram(), File(saves, "sram.bak").readBytes())
+        assertFalse(File(saves, "save0.sav").exists())
+        assertTrue(File(saves, "save2.sav").exists())
+    }
+
+    @Test
     fun importSrmRejectsOtherFiles() {
         assertEquals(SaveManager.Result.NotRecognized, manager.importSrm(ByteArrayInputStream(ByteArray(Sram.SIZE))))
         assertEquals(SaveManager.Result.NotRecognized, manager.importSrm(ByteArrayInputStream(ByteArray(100))))

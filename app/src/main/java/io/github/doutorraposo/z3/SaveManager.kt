@@ -45,6 +45,28 @@ class SaveManager(gameDir: File) {
         return Result.Done
     }
 
+    /**
+     * Erases one game file the way the game's own "erase player" does: the file and its backup
+     * copy at +0xF00 are zeroed. Like [importSrm], it drops the resume point.
+     */
+    fun eraseFile(slot: Int) {
+        require(slot in 0 until 3)
+        val data = readSram() ?: return
+        sramFile.copyTo(File(savesDir, "sram.bak"), overwrite = true)
+        for (base in intArrayOf(slot * 0x500, slot * 0x500 + 0xF00)) data.fill(0, base, base + 0x500)
+        writeAtomically(sramFile, data)
+        deleteState(0)
+    }
+
+    /** Removes the save RAM altogether (kept as sram.bak), so the game starts with no files. */
+    fun deleteGameFiles() {
+        if (sramFile.isFile) {
+            sramFile.copyTo(File(savesDir, "sram.bak"), overwrite = true)
+            sramFile.delete()
+        }
+        deleteState(0)
+    }
+
     fun exportZip(out: OutputStream) {
         ZipOutputStream(out).use { zip ->
             for (file in backupFiles()) {
