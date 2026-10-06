@@ -269,7 +269,7 @@
     <string name="rewind_now">Agora</string>
     <string name="rewind_resume">Continuar</string>
     <string name="rewind_cancel">Cancelar</string>
-    <string name="rewind_controller_hint">Controle: segure LT para voltar, RT para avançar · A continua · B cancela</string>
+    <string name="rewind_controller_hint">Arraste a barra ou segure ◀◀ ▶▶ · Controle: LT volta, RT avança, A continua, B cancela</string>
     <string name="menu_rewind">Rebobinar</string>
     <string name="rewind_setting">Rebobinar</string>
     <string name="rewind_setting_desc">Guarda o último minuto de jogo na memória para voltar no tempo: segure LT+RT no controle, use o botão de toque ou o menu do jogo.</string>

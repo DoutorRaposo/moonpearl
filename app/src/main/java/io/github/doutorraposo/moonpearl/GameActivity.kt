@@ -284,7 +284,7 @@ class GameActivity : SDLActivity() {
     private fun enterRewind() {
         if (!rewindEnabled || rewind != null || mBrokenLibraries) return
         nativeRewindMode(true, false)
-        val view = RewindOverlayView(this, ::nativeRewindDirection, { leaveRewind(cancel = false) }, { leaveRewind(cancel = true) })
+        val view = RewindOverlayView(this, ::nativeRewindDirection, ::nativeRewindSeek, { leaveRewind(cancel = false) }, { leaveRewind(cancel = true) })
         rewind = view
         mLayout.addView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
         view.post(rewindPoll)
@@ -493,6 +493,10 @@ class GameActivity : SDLActivity() {
         /** rewind.c: -1 goes back, 1 forward, 0 holds still. */
         @JvmStatic
         private external fun nativeRewindDirection(direction: Int)
+
+        /** rewind.c: jump to a point, in snapshots back from the present (dragging the bar). */
+        @JvmStatic
+        private external fun nativeRewindSeek(stepsBack: Int)
 
         /** rewind.c: snapshots back from the present, kept, and at most (10 per second). */
         @JvmStatic

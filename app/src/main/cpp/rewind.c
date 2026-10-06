@@ -58,6 +58,7 @@ static volatile int g_enabled = 1;
 static volatile int g_want_active;
 static volatile int g_want_cancel;
 static volatile int g_direction;
+static volatile int g_seek = -1;  // snapshots back from the present to jump to, or -1
 
 static void SaveToTmp(void *ctx, void *data, size_t size) {
   (void)ctx;
@@ -291,6 +292,22 @@ int RewindHook(void) {
     ClearRedo();
     return 0;
   }
+  // Dragging the bar: walk the deltas to the point (cheap XORs), then load and show it once.
+  int seek = g_seek;
+  if (seek >= 0) {
+    g_seek = -1;
+    bool moved = false;
+    while (g_redo_count < seek && StepBack())
+      moved = true;
+    while (g_redo_count > seek && StepForward())
+      moved = true;
+    if (!moved)
+      return 1;
+    LoadCurrent();
+    ZeldaRunFrame(0);
+    g_ran_past = true;
+    return 2;
+  }
   int dir = g_direction;
   int64_t now = NowMs();
   if (dir != g_held_dir) {
@@ -324,6 +341,13 @@ Java_io_github_doutorraposo_moonpearl_GameActivity_nativeRewindMode(JNIEnv *env,
   g_direction = 0;
   g_want_cancel = cancel;
   g_want_active = active;
+}
+
+// Jump to a point: snapshots back from the present (dragging the bar).
+JNIEXPORT void JNICALL
+Java_io_github_doutorraposo_moonpearl_GameActivity_nativeRewindSeek(JNIEnv *env, jclass cls, jint steps_back) {
+  g_direction = 0;
+  g_seek = steps_back < 0 ? 0 : steps_back;
 }
 
 // -1 back, 0 hold still, 1 forward.

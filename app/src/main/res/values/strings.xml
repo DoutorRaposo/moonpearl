@@ -269,7 +269,7 @@
     <string name="rewind_now">Now</string>
     <string name="rewind_resume">Continue</string>
     <string name="rewind_cancel">Cancel</string>
-    <string name="rewind_controller_hint">Controller: hold LT to go back, RT to go forward · A continues · B cancels</string>
+    <string name="rewind_controller_hint">Drag the bar or hold ◀◀ ▶▶ · Controller: LT back, RT forward, A continues, B cancels</string>
     <string name="menu_rewind">Rewind</string>
     <string name="rewind_setting">Rewind</string>
     <string name="rewind_setting_desc">Keeps the last minute of play in memory, to go back in time: hold LT+RT on a controller, use the touch button or the in-game menu.</string>
