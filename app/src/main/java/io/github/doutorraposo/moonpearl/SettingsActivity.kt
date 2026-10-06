@@ -268,7 +268,8 @@ private fun AudioSettings(ini: Ini, prefs: AppPrefs, edit: (Ini.() -> Unit) -> U
 @Composable
 private fun ControlSettings(prefs: AppPrefs) {
     var touchControls by remember { mutableStateOf(prefs.touchControls) }
-    var touchOpacity by remember { mutableFloatStateOf(prefs.touchOpacity) }
+    val context = LocalContext.current
+    var turboButton by remember { mutableStateOf(prefs.turboButton) }
     var menuButton by remember { mutableStateOf(prefs.menuButton) }
     var doubleTapMenu by remember { mutableStateOf(prefs.doubleTapMenu) }
     Section(R.string.settings_touch) {
@@ -277,16 +278,20 @@ private fun ControlSettings(prefs: AppPrefs) {
             prefs.touchControls = it
         }
         if (touchControls) {
-            Column(Modifier.padding(horizontal = 16.dp)) {
-                Text(stringResource(R.string.touch_opacity), style = MaterialTheme.typography.bodyMedium)
-                Slider(
-                    value = touchOpacity,
-                    onValueChange = { touchOpacity = it },
-                    onValueChangeFinished = { prefs.touchOpacity = touchOpacity },
-                    valueRange = 0.15f..1f,
-                )
+            SwitchRow(stringResource(R.string.turbo_button), turboButton, stringResource(R.string.turbo_button_desc)) {
+                turboButton = it
+                prefs.turboButton = it
             }
         }
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.touch_layout)) },
+            supportingContent = { Text(stringResource(R.string.touch_layout_desc)) },
+            trailingContent = { Icon(ChevronRight, null) },
+            colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+            modifier = Modifier.fillMaxWidth().clickable {
+                context.startActivity(Intent(context, TouchLayoutActivity::class.java))
+            },
+        )
     }
     Section(R.string.settings_menu) {
         SwitchRow(stringResource(R.string.menu_button), menuButton) {

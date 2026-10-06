@@ -39,6 +39,21 @@
     <string name="section_controls">Controls</string>
     <string name="touch_controls">On-screen controls</string>
     <string name="touch_opacity">Opacity</string>
+    <string name="touch_layout">Customize layout</string>
+    <string name="touch_layout_desc">Move and resize the on-screen buttons</string>
+    <string name="turbo_button">Fast-forward button</string>
+    <string name="turbo_button_desc">Runs the game at top speed while you hold it</string>
+    <string name="layout_title">Customize layout</string>
+    <string name="layout_hint">Drag a control to move it. Select one to change its size.</string>
+    <string name="layout_panel_hint">Tap an empty area to hide or show this panel.</string>
+    <string name="layout_selected">Selected: %1$s</string>
+    <string name="layout_size">Size: %1$d%%</string>
+    <string name="layout_reset">Reset</string>
+    <string name="layout_cancel">Cancel</string>
+    <string name="layout_save">Save</string>
+    <string name="layout_dpad">D-pad</string>
+    <string name="layout_menu">Menu button</string>
+    <string name="layout_turbo">Fast-forward</string>
     <string name="controller_hint">Controllers are detected automatically. The on-screen controls hide while one is in use and come back when you touch the screen.</string>
 
     <string name="section_game">Game</string>

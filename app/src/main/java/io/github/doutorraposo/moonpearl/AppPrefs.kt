@@ -50,6 +50,15 @@ class AppPrefs(context: Context) {
         get() = prefs.getInt("msu_volume", 100)
         set(value) { prefs.edit().putInt("msu_volume", value).commit() }
 
+    /** Hold-to-fast-forward button on the touch pad. */
+    var turboButton: Boolean
+        get() = prefs.getBoolean("turbo_button", false)
+        set(value) { prefs.edit().putBoolean("turbo_button", value).commit() }
+
+    var touchLayout: TouchLayout
+        get() = TouchLayout.decode(prefs.getString("touch_layout", null))
+        set(value) { prefs.edit().putString("touch_layout", value.encode()).commit() }
+
     var touchOpacity: Float
         get() = prefs.getFloat("touch_opacity", 0.5f)
         set(value) { prefs.edit().putFloat("touch_opacity", value).commit() }

@@ -39,6 +39,21 @@
     <string name="section_controls">Controles</string>
     <string name="touch_controls">Controles na tela</string>
     <string name="touch_opacity">Opacidade</string>
+    <string name="touch_layout">Personalizar layout</string>
+    <string name="touch_layout_desc">Mova e redimensione os botões na tela</string>
+    <string name="turbo_button">Botão de avanço rápido</string>
+    <string name="turbo_button_desc">Acelera o jogo ao máximo enquanto estiver pressionado</string>
+    <string name="layout_title">Personalizar layout</string>
+    <string name="layout_hint">Arraste um controle para movê-lo. Selecione um para mudar o tamanho.</string>
+    <string name="layout_panel_hint">Toque numa área vazia para esconder ou mostrar este painel.</string>
+    <string name="layout_selected">Selecionado: %1$s</string>
+    <string name="layout_size">Tamanho: %1$d%%</string>
+    <string name="layout_reset">Restaurar</string>
+    <string name="layout_cancel">Cancelar</string>
+    <string name="layout_save">Salvar</string>
+    <string name="layout_dpad">Direcional</string>
+    <string name="layout_menu">Botão de menu</string>
+    <string name="layout_turbo">Avanço rápido</string>
     <string name="controller_hint">Controles são detectados automaticamente. Os botões na tela somem enquanto um controle está em uso e voltam quando você toca na tela.</string>
 
     <string name="section_game">Jogo</string>

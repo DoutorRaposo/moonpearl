@@ -30,7 +30,8 @@ own ROM; the app sets everything up on the device.
 - **Resume where you left off.** Progress is saved whenever the app goes to the background,
   so nothing is lost if Android closes it.
 - **Touch controls** with multi-touch, an 8-way d-pad, sliding between buttons, haptic
-  feedback and adjustable opacity.
+  feedback and adjustable opacity. Every button can be moved and resized, and an optional
+  hold-to-fast-forward button can be added.
 - **Controllers** (Xbox, PlayStation, Switch Pro and most others) are detected
   automatically; the touch controls hide while one is in use.
 - **Link's look**: replace Link with any of the hundreds of community sprites (`.zspr` files
@@ -158,7 +159,7 @@ are small patches in `patches/zelda3`, applied to a copy at build time (see
 | Game host, in its own `:game` process since upstream keeps its state in C globals | `GameActivity.kt` |
 | In-game menu; drives upstream's own pause, save state and turbo shortcuts | `GameMenuActivity.kt` |
 | Save files and backups | `SaveManager.kt`, `Sram.kt`, `SavesActivity.kt` |
-| On-screen controls | `TouchControlsView.kt` |
+| On-screen controls and their layout editor | `TouchControlsView.kt`, `TouchLayout.kt`, `TouchLayoutActivity.kt` |
 
 Upstream binds Select to Right Shift. A held modifier turns other keys into Shift+key, which
 would leave buttons stuck under multi-touch, so the app maps every pad button to a plain key

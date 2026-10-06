@@ -41,6 +41,13 @@
             android:exported="false" />
 
         <activity
+            android:name=".TouchLayoutActivity"
+            android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
+            android:exported="false"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/Theme.Game" />
+
+        <activity
             android:name=".LicensesActivity"
             android:exported="false" />
 

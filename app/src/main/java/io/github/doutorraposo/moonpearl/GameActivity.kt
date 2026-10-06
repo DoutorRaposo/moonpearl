@@ -14,7 +14,6 @@ import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.PixelCopy
-import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
@@ -26,8 +25,9 @@ import java.io.File
  * C globals that are only initialised once, so every session gets a fresh process.
  */
 class GameActivity : SDLActivity() {
+    /** The touch pad and/or the menu button; null when both are switched off. */
     private var touch: TouchControlsView? = null
-    private var menuButton: MenuButtonView? = null
+    private var hasPad = false
     private var autosave = false
     /** See [GameKeys.speeds]. */
     private var speed = 1
@@ -86,19 +86,19 @@ class GameActivity : SDLActivity() {
 
         applyCheats()
 
-        val fullScreen = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-        if (prefs.touchControls) {
-            touch = TouchControlsView(this) { code, down ->
-                if (down) onNativeKeyDown(code) else onNativeKeyUp(code)
-            }.also {
+        val elements = TouchControlsView.elementsFor(prefs)
+        hasPad = prefs.touchControls
+        if (elements.isNotEmpty()) {
+            touch = TouchControlsView(
+                this,
+                sendKey = { code, down -> if (down) onNativeKeyDown(code) else onNativeKeyUp(code) },
+                onMenu = ::openMenu,
+                onTurbo = ::holdTurbo,
+            ).also {
                 it.opacity = prefs.touchOpacity
-                mLayout.addView(it, fullScreen)
-            }
-        }
-        if (prefs.menuButton) {
-            menuButton = MenuButtonView(this, ::openMenu).also {
-                it.opacity = prefs.touchOpacity
-                mLayout.addView(it, fullScreen)
+                it.layout = prefs.touchLayout
+                it.elements = elements
+                mLayout.addView(it, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
             }
         }
         if (prefs.doubleTapMenu) {
@@ -167,7 +167,7 @@ class GameActivity : SDLActivity() {
             startActivityForResult(
                 Intent(this, GameMenuActivity::class.java)
                     .putExtra(GameMenuActivity.EXTRA_SPEED, speed)
-                    .putExtra(GameMenuActivity.EXTRA_HAS_TOUCH, touch != null)
+                    .putExtra(GameMenuActivity.EXTRA_HAS_TOUCH, hasPad)
                     .putExtra(GameMenuActivity.EXTRA_TOUCH_VISIBLE, !touchHiddenByUser),
                 REQUEST_MENU,
             )
@@ -215,7 +215,7 @@ class GameActivity : SDLActivity() {
         touch?.let {
             val visible = data.getBooleanExtra(GameMenuActivity.EXTRA_TOUCH_VISIBLE, true)
             // Only act on a change: a pad hidden because a controller is in use stays hidden.
-            if (visible == touchHiddenByUser) it.visibility = if (visible) View.VISIBLE else View.GONE
+            if (visible == touchHiddenByUser) it.padVisible = visible
             touchHiddenByUser = !visible
         }
 
@@ -239,11 +239,16 @@ class GameActivity : SDLActivity() {
         speed = value
         nativeSetSpeed(if (value == GameKeys.SPEED_MAX) 1 else value)
         if (value == GameKeys.SPEED_MAX) onNativeKeyDown(GameKeys.TURBO) else onNativeKeyUp(GameKeys.TURBO)
-        menuButton?.badge = when (value) {
+        touch?.menuBadge = when (value) {
             1 -> null
             GameKeys.SPEED_MAX -> "»"
             else -> "$value×"
         }
+    }
+
+    /** The touch fast-forward button holds upstream's turbo key, unless "max" already holds it. */
+    private fun holdTurbo(down: Boolean) {
+        if (down) onNativeKeyDown(GameKeys.TURBO) else if (speed != GameKeys.SPEED_MAX) onNativeKeyUp(GameKeys.TURBO)
     }
 
     /** The menu edits cheats in AppPrefs; hand the current set to cheats.c. */
@@ -327,18 +332,13 @@ class GameActivity : SDLActivity() {
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        touch?.let { if (it.visibility != View.VISIBLE && !touchHiddenByUser) it.visibility = View.VISIBLE }
+        touch?.let { if (!it.padVisible && !touchHiddenByUser) it.padVisible = true }
         doubleTap?.onTouchEvent(event)
         return super.dispatchTouchEvent(event)
     }
 
     private fun hideTouch() {
-        touch?.let {
-            if (it.visibility == View.VISIBLE) {
-                it.releaseAll()
-                it.visibility = View.GONE
-            }
-        }
+        touch?.padVisible = false
     }
 
     override fun onDestroy() {
