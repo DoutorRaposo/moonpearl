@@ -26,7 +26,6 @@
     <string name="enhanced_mode7">Mapa-múndi em alta resolução</string>
     <string name="dim_flashes">Reduzir efeitos de flash</string>
 
-    <string name="section_link">Link</string>
     <string name="sprites_title">Visual do Link</string>
     <string name="sprites_hint">Troque o Link por um dos centenas de sprites feitos pela comunidade. Baixe um arquivo .zspr na galeria e importe aqui.</string>
     <string name="sprites_import">Importar .zspr</string>
@@ -182,11 +181,9 @@
     <string name="back">Voltar</string>
     <string name="settings_display_summary">Proporção, preencher a tela, filtros</string>
     <string name="settings_controls_summary">Controles na tela, atalhos do menu, controles físicos</string>
-    <string name="settings_game_summary">Continuar de onde parou, pisca-pisca de sprites</string>
+    <string name="settings_game_summary">Ponto de retorno, rebobinar, visual do Link, melhorias</string>
     <string name="settings_enhancements_summary">Mudanças opcionais de jogabilidade e correções</string>
-    <string name="settings_language_summary">Idioma do app</string>
     <string name="settings_about">Sobre</string>
-    <string name="settings_about_summary">Versão, aviso legal, licenças de código aberto</string>
     <string name="settings_version">Versão %1$s</string>
     <string name="settings_touch">Controles na tela</string>
     <string name="settings_menu">Menu do jogo</string>
@@ -278,4 +275,11 @@
     <string name="trigger_speed">Gatilhos mudam a velocidade</string>
     <string name="trigger_speed_desc">RT acelera e LT desacelera, um passo por toque. De qualquer jeito, o L3 cicla a velocidade e LT+RT juntos rebobinam.</string>
     <string name="rewind_empty">Nada para voltar ainda</string>
+    <string name="welcome_title">Bem-vindo ao Moon Pearl</string>
+    <string name="launcher_continue">Continuar</string>
+    <string name="launcher_chapters">Capítulos</string>
+    <string name="launcher_chapters_summary">Comece num ponto da história</string>
+    <string name="launcher_chapter_confirm">O jogo começa no início deste capítulo. O ponto onde você parou é substituído quando você sair do jogo.</string>
+    <string name="section_app">App</string>
+    <string name="settings_app_summary">Idioma, dados do jogo, sobre</string>
 </resources>

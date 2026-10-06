@@ -34,6 +34,11 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.Image
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -84,9 +89,7 @@ private enum class Category(@StringRes val title: Int, @StringRes val summary: I
     AUDIO(R.string.settings_audio, R.string.settings_audio_summary),
     CONTROLS(R.string.section_controls, R.string.settings_controls_summary),
     GAME(R.string.section_game, R.string.settings_game_summary),
-    ENHANCEMENTS(R.string.section_enhancements, R.string.settings_enhancements_summary),
-    LANGUAGE(R.string.section_language, R.string.settings_language_summary),
-    ABOUT(R.string.settings_about, R.string.settings_about_summary),
+    APP(R.string.section_app, R.string.settings_app_summary),
 }
 
 private class Feature(val key: String, @StringRes val label: Int, @StringRes val description: Int)
@@ -116,6 +119,7 @@ private fun SettingsScreen(data: GameData, prefs: AppPrefs, onClose: () -> Unit)
     var open by rememberSaveable { mutableStateOf<Category?>(null) }
     var filterOpen by rememberSaveable { mutableStateOf(false) }
     var remapOpen by rememberSaveable { mutableStateOf(false) }
+    var enhancementsOpen by rememberSaveable { mutableStateOf(false) }
     var ini by remember { mutableStateOf(data.readIni()) }
     fun editIni(block: Ini.() -> Unit) {
         val updated = Ini(ini.text).apply(block)
@@ -127,6 +131,7 @@ private fun SettingsScreen(data: GameData, prefs: AppPrefs, onClose: () -> Unit)
         when {
             filterOpen -> filterOpen = false
             remapOpen -> remapOpen = false
+            enhancementsOpen -> enhancementsOpen = false
             else -> open = null
         }
     }
@@ -134,6 +139,15 @@ private fun SettingsScreen(data: GameData, prefs: AppPrefs, onClose: () -> Unit)
     if (open == Category.DISPLAY && filterOpen) {
         Page(stringResource(R.string.image_filter), onBack = { filterOpen = false }) {
             ShaderSettings(ini, data.dir, ::editIni)
+        }
+        return
+    }
+    if (open == Category.GAME && enhancementsOpen) {
+        Page(stringResource(R.string.section_enhancements), onBack = { enhancementsOpen = false },
+            subtitle = stringResource(R.string.enhancements_hint)) {
+            Section(null) {
+                for (f in features) IniSwitch(ini, "Features", f.key, f.label, ::editIni, f.description)
+            }
         }
         return
     }
@@ -172,17 +186,18 @@ private fun SettingsScreen(data: GameData, prefs: AppPrefs, onClose: () -> Unit)
                 RewindSwitch(prefs)
                 IniSwitch(ini, "Graphics", "NoSpriteLimits", R.string.no_sprite_limits, ::editIni, R.string.no_sprite_limits_desc)
             }
-        }
-        Category.ENHANCEMENTS -> Page(stringResource(R.string.section_enhancements), onBack = back,
-            subtitle = stringResource(R.string.enhancements_hint)) {
             Section(null) {
-                for (f in features) IniSwitch(ini, "Features", f.key, f.label, ::editIni, f.description)
+                LinkRow(data)
+                NavRow(stringResource(R.string.section_enhancements), stringResource(R.string.settings_enhancements_summary)) {
+                    enhancementsOpen = true
+                }
             }
         }
-        Category.LANGUAGE -> Page(stringResource(R.string.section_language), onBack = back) {
+        Category.APP -> Page(stringResource(R.string.section_app), onBack = back) {
             LanguageSettings()
-        }
-        Category.ABOUT -> Page(stringResource(R.string.settings_about), onBack = back) {
+            Section(R.string.section_game_data) {
+                RomImport(data, installed = data.hasAssets(), onInstalled = {})
+            }
             AboutSettings()
         }
     }
@@ -385,7 +400,7 @@ private fun ControlSettings(prefs: AppPrefs, onRemap: () -> Unit) {
 private fun LanguageSettings() {
     val context = LocalContext.current
     val current = remember { AppLanguage.current(context) }
-    Section(null) {
+    Section(R.string.section_language) {
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(16.dp)) {
             AppLanguage.options.forEachIndexed { i, tag ->
                 SegmentedButton(
@@ -410,7 +425,7 @@ private fun LanguageSettings() {
 @Composable
 private fun AboutSettings() {
     val context = LocalContext.current
-    Section(null) {
+    Section(R.string.settings_about) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(stringResource(R.string.settings_version, BuildConfig.VERSION_NAME), style = MaterialTheme.typography.bodyMedium)
             Text(stringResource(R.string.tagline), style = MaterialTheme.typography.bodyMedium)
@@ -420,4 +435,46 @@ private fun AboutSettings() {
             }
         }
     }
+}
+
+@Composable
+private fun NavRow(title: String, summary: String, onClick: () -> Unit) {
+    ListItem(
+        headlineContent = { Text(title) },
+        supportingContent = { Text(summary) },
+        trailingContent = { Icon(ChevronRight, null) },
+        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+    )
+}
+
+/** Link's current look, opening the sprite gallery; refreshed when coming back from it. */
+@Composable
+private fun LinkRow(data: GameData) {
+    val context = LocalContext.current
+    val defaultName = stringResource(R.string.sprites_default)
+    var sprite by remember { mutableStateOf<LinkSprites.Sprite?>(null) }
+    val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(lifecycle) {
+        lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.RESUMED) {
+            sprite = withContext(Dispatchers.IO) {
+                val sprites = LinkSprites(data.dir)
+                sprites.selected(data.readIni())?.let { f -> LinkSprites.parse(f.readBytes())?.copy(file = f) }
+                    ?: sprites.default(defaultName)
+            }
+        }
+    }
+    ListItem(
+        headlineContent = { Text(stringResource(R.string.sprites_title)) },
+        supportingContent = { Text(sprite?.name.orEmpty()) },
+        leadingContent = sprite?.let { s ->
+            {
+                val bitmap = remember(s) { LinkSprites.preview(s).asImageBitmap() }
+                Image(bitmap, null, filterQuality = FilterQuality.None, modifier = Modifier.size(width = 32.dp, height = 48.dp))
+            }
+        },
+        trailingContent = { Icon(ChevronRight, null) },
+        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        modifier = Modifier.fillMaxWidth().clickable { context.startActivity(Intent(context, LinkSpritesActivity::class.java)) },
+    )
 }

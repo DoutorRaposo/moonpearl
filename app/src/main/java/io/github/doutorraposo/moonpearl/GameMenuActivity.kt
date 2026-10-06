@@ -240,6 +240,11 @@ private fun GameMenu(
                 Button(onClick = onResume, modifier = Modifier.focusRing().fillMaxWidth().focusRequester(resumeFocus)) {
                     Text(stringResource(R.string.menu_resume))
                 }
+                if (prefs.rewind) {
+                    OutlinedButton(onClick = { onAction(GameMenuActivity.Action.REWIND, 0) }, modifier = Modifier.focusRing().fillMaxWidth()) {
+                        Text(stringResource(R.string.menu_rewind))
+                    }
+                }
                 Text(
                     stringResource(R.string.menu_speed),
                     style = MaterialTheme.typography.labelLarge,
@@ -260,11 +265,6 @@ private fun GameMenu(
                 }
                 touchOn?.let { on ->
                     MenuSwitch(stringResource(R.string.touch_controls), on) { touchOn = it; onTouchVisible(it) }
-                }
-                if (prefs.rewind) {
-                    OutlinedButton(onClick = { onAction(GameMenuActivity.Action.REWIND, 0) }, modifier = Modifier.focusRing().fillMaxWidth()) {
-                        Text(stringResource(R.string.menu_rewind))
-                    }
                 }
                 OutlinedButton(onClick = { confirmReset = true }, modifier = Modifier.focusRing().fillMaxWidth()) {
                     Text(stringResource(R.string.menu_reset))

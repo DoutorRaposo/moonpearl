@@ -74,6 +74,11 @@ static void RedirectStdioToLogcat(void) {
     pthread_detach(thread);
 }
 
+JNIEXPORT jint JNICALL
+Java_io_github_doutorraposo_moonpearl_GameActivity_nativeMainLoopCount(JNIEnv *env, jclass cls) {
+  return (jint)ZeldaMainLoopCount();
+}
+
 JNIEXPORT void JNICALL
 Java_io_github_doutorraposo_moonpearl_GameActivity_nativeSetSpeed(JNIEnv *env, jclass cls, jint speed) {
   ZeldaSetSpeed(speed);

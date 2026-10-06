@@ -26,7 +26,6 @@
     <string name="enhanced_mode7">High resolution world map</string>
     <string name="dim_flashes">Reduce flashing effects</string>
 
-    <string name="section_link">Link</string>
     <string name="sprites_title">Link\'s look</string>
     <string name="sprites_hint">Replace Link with one of hundreds of sprites made by the community. Download a .zspr file from the gallery and import it here.</string>
     <string name="sprites_import">Import .zspr</string>
@@ -182,11 +181,9 @@
     <string name="back">Back</string>
     <string name="settings_display_summary">Aspect ratio, fill the screen, filters</string>
     <string name="settings_controls_summary">On-screen controls, menu shortcuts, controllers</string>
-    <string name="settings_game_summary">Resume where you left off, sprite flicker</string>
+    <string name="settings_game_summary">Resume point, rewind, Link\'s look, enhancements</string>
     <string name="settings_enhancements_summary">Optional gameplay changes and bug fixes</string>
-    <string name="settings_language_summary">Language of the app</string>
     <string name="settings_about">About</string>
-    <string name="settings_about_summary">Version, legal notice, open source licenses</string>
     <string name="settings_version">Version %1$s</string>
     <string name="settings_touch">On-screen controls</string>
     <string name="settings_menu">In-game menu</string>
@@ -278,4 +275,11 @@
     <string name="trigger_speed">Triggers change the speed</string>
     <string name="trigger_speed_desc">RT speeds up and LT slows down, one step each press. Either way, L3 cycles the speed and LT+RT together rewind.</string>
     <string name="rewind_empty">Nothing to rewind yet</string>
+    <string name="welcome_title">Welcome to Moon Pearl</string>
+    <string name="launcher_continue">Continue</string>
+    <string name="launcher_chapters">Chapters</string>
+    <string name="launcher_chapters_summary">Start at a point of the story</string>
+    <string name="launcher_chapter_confirm">The game starts at the beginning of this chapter. Your resume point is replaced when you leave the game.</string>
+    <string name="section_app">App</string>
+    <string name="settings_app_summary">Language, game data, about</string>
 </resources>

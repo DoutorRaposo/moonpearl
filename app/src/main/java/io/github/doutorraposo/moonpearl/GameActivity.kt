@@ -47,6 +47,19 @@ class GameActivity : SDLActivity() {
     private var rewind: RewindOverlayView? = null
     /** Whether the touch pad showed before rewinding; it hides while the panel is up. */
     private var padBeforeRewind = false
+    /** Chapter to load once the game runs (EXTRA_CHAPTER), or 0. */
+    private var startChapter = 0
+    private val chapterStart = object : Runnable {
+        override fun run() {
+            // Key presses only reach the game once its main loop runs (after the autosave loads).
+            if (nativeMainLoopCount() == 0) {
+                mLayout.postDelayed(this, 100)
+                return
+            }
+            press(GameKeys.chapterKeys[startChapter - 1])
+            startChapter = 0
+        }
+    }
     private val rewindPoll = object : Runnable {
         override fun run() {
             val view = rewind ?: return
@@ -103,6 +116,9 @@ class GameActivity : SDLActivity() {
         triggerSpeed = prefs.triggerSpeed
         rewindEnabled = prefs.rewind
         nativeRewindEnable(rewindEnabled)
+
+        startChapter = intent.getIntExtra(EXTRA_CHAPTER, 0).takeIf { it in 1..GameKeys.chapterKeys.size } ?: 0
+        if (startChapter != 0) mLayout.post(chapterStart)
 
         val elements = TouchControlsView.elementsFor(prefs)
         hasPad = prefs.touchControls
@@ -469,6 +485,13 @@ class GameActivity : SDLActivity() {
 
     companion object {
         private const val REQUEST_MENU = 1
+
+        /** Chapter (1-based) to start at, from the launcher; the menu has the same jump. */
+        const val EXTRA_CHAPTER = "chapter"
+
+        /** android_main.c: turns of the game's main loop so far (patch 0008); 0 until it runs. */
+        @JvmStatic
+        private external fun nativeMainLoopCount(): Int
 
         /** android_main.c, backed by patches/zelda3/0001-fixed-rate-fast-forward.patch. */
         @JvmStatic

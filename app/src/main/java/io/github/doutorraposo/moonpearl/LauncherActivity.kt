@@ -3,53 +3,61 @@ package io.github.doutorraposo.moonpearl
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.text.format.DateUtils
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class LauncherActivity : ComponentActivity() {
@@ -57,6 +65,8 @@ class LauncherActivity : ComponentActivity() {
     private val gameError = mutableStateOf<String?>(null)
     /** A shader that hung or crashed the last session and was switched off; shown once. */
     private val failedShader = mutableStateOf<Shaders.Failure?>(null)
+    /** Bumped on every return to the front, so the home screen picks up the latest autosave. */
+    private val resumes = mutableIntStateOf(0)
 
     override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguage.wrap(newBase))
 
@@ -65,6 +75,7 @@ class LauncherActivity : ComponentActivity() {
         val data = GameData(this)
         val error = data.takeLastError()?.also { gameError.value = it }
         data.takeShaderFailure(hadError = error != null)?.let { failedShader.value = it }
+        resumes.intValue++
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +86,9 @@ class LauncherActivity : ComponentActivity() {
         setContent {
             AppTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
-                    LauncherScreen(data, onPlay = { startActivity(Intent(this, GameActivity::class.java)) })
+                    LauncherScreen(data, resumes.intValue, onPlay = { chapter ->
+                        startActivity(Intent(this, GameActivity::class.java).putExtra(GameActivity.EXTRA_CHAPTER, chapter))
+                    })
                     failedShader.value?.takeIf { gameError.value == null }?.let { failure ->
                         AlertDialog(
                             onDismissRequest = { failedShader.value = null },
@@ -112,87 +125,177 @@ class LauncherActivity : ComponentActivity() {
     }
 }
 
+/** The welcome screen until the game data is installed; then the home screen. */
 @Composable
-private fun LauncherScreen(data: GameData, onPlay: () -> Unit) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+private fun LauncherScreen(data: GameData, resumes: Int, onPlay: (chapter: Int) -> Unit) {
     var hasAssets by remember { mutableStateOf(data.hasAssets()) }
-    var importing by remember { mutableStateOf(false) }
-    var importError by remember { mutableStateOf<String?>(null) }
-
-    val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
-        importing = true
-        importError = null
-        scope.launch {
-            val result = withContext(Dispatchers.IO) { runCatching { data.import(uri) } }
-            importing = false
-            importError = when (val r = result.getOrNull()) {
-                GameData.ImportResult.Installed -> null
-                is GameData.ImportResult.WrongRom -> context.getString(R.string.import_wrong_rom, "%08X".format(r.crc))
-                GameData.ImportResult.NotRecognized -> context.getString(R.string.import_not_recognized)
-                null -> context.getString(R.string.import_failed, result.exceptionOrNull()?.message.orEmpty())
+    // Settings > App can import again (or the data can go away), so check on every return.
+    LaunchedEffect(resumes) { hasAssets = data.hasAssets() }
+    if (!hasAssets) {
+        Page(stringResource(R.string.welcome_title), subtitle = stringResource(R.string.tagline)) {
+            Section(R.string.section_game_data) {
+                RomImport(data, installed = false, onInstalled = { hasAssets = true })
             }
-            hasAssets = data.hasAssets()
+        }
+    } else {
+        HomeScreen(data, resumes, onPlay)
+    }
+}
+
+/**
+ * Most launches are only to play, so that is the screen: the point the game resumes from, as
+ * large as it gets, with the less frequent places around it.
+ */
+@Composable
+private fun HomeScreen(data: GameData, resumes: Int, onPlay: (chapter: Int) -> Unit) {
+    val context = LocalContext.current
+    var resume by remember { mutableStateOf<SaveStates.Slot?>(null) }
+    var autosave by remember { mutableStateOf(true) }
+    var chapters by remember { mutableStateOf<List<SaveStates.Chapter>>(emptyList()) }
+    var choosingChapter by remember { mutableStateOf(false) }
+    var confirmChapter by remember { mutableStateOf<SaveStates.Chapter?>(null) }
+    LaunchedEffect(resumes) {
+        withContext(Dispatchers.IO) {
+            val states = SaveStates(data.dir)
+            autosave = data.readIni().getBool("General", "Autosave")
+            resume = states.slots().first().takeIf { it.exists }
+            chapters = states.chapters()
         }
     }
 
-    Page(stringResource(R.string.app_name), subtitle = stringResource(R.string.tagline)) {
-        Section(R.string.section_game_data) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    BoxWithConstraints(
+        Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.safeDrawing)
+            .padding(16.dp),
+    ) {
+        val landscape = maxWidth > maxHeight
+        Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    stringResource(if (hasAssets) R.string.assets_ready else R.string.assets_missing),
-                    style = MaterialTheme.typography.bodyMedium,
+                    stringResource(R.string.app_name),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
                 )
-                if (importing) {
-                    LinearProgressIndicator(Modifier.fillMaxWidth())
-                    Text(stringResource(R.string.importing), style = MaterialTheme.typography.bodySmall)
+                IconButton(onClick = { context.startActivity(Intent(context, SettingsActivity::class.java)) }) {
+                    Icon(Gear, stringResource(R.string.settings_title))
                 }
-                importError?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
-                val pick = { picker.launch(arrayOf("*/*")) }
-                if (hasAssets) {
-                    OutlinedButton(onClick = pick, enabled = !importing) { Text(stringResource(R.string.reimport_rom)) }
-                } else {
-                    Button(onClick = pick, enabled = !importing) { Text(stringResource(R.string.select_rom)) }
+            }
+            val continueCard = @Composable { modifier: Modifier ->
+                ContinueCard(resume?.takeIf { autosave }, modifier) { onPlay(0) }
+            }
+            val places = @Composable { modifier: Modifier ->
+                Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Place(
+                        stringResource(R.string.saves_title),
+                        stringResource(R.string.launcher_saves_summary),
+                        Modifier.fillMaxWidth(),
+                    ) { context.startActivity(Intent(context, SavesActivity::class.java)) }
+                    Place(
+                        stringResource(R.string.launcher_chapters),
+                        stringResource(R.string.launcher_chapters_summary),
+                        Modifier.fillMaxWidth(),
+                    ) { choosingChapter = true }
+                }
+            }
+            if (landscape) {
+                Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    continueCard(Modifier.weight(1.7f).fillMaxHeight())
+                    places(Modifier.weight(1f).verticalScroll(rememberScrollState()))
+                }
+            } else {
+                // The picture's own shape (the game's aspect ratio), so none of it is cut off.
+                val shape = resume?.takeIf { autosave }?.thumbnail?.let { it.width.toFloat() / it.height } ?: (4f / 3f)
+                continueCard(Modifier.fillMaxWidth().widthIn(max = 640.dp).aspectRatio(shape))
+                places(Modifier.fillMaxWidth())
+            }
+        }
+    }
+
+    if (choosingChapter) {
+        AlertDialog(
+            onDismissRequest = { choosingChapter = false },
+            title = { Text(stringResource(R.string.launcher_chapters)) },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    for (chapter in chapters) {
+                        TextButton(onClick = { choosingChapter = false; confirmChapter = chapter }, modifier = Modifier.fillMaxWidth()) {
+                            Text(stringResource(R.string.menu_chapter, chapter.index, chapter.title), modifier = Modifier.fillMaxWidth())
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = { TextButton(onClick = { choosingChapter = false }) { Text(stringResource(R.string.layout_cancel)) } },
+        )
+    }
+    confirmChapter?.let { chapter ->
+        AlertDialog(
+            onDismissRequest = { confirmChapter = null },
+            title = { Text(stringResource(R.string.menu_chapter, chapter.index, chapter.title)) },
+            text = { Text(stringResource(R.string.launcher_chapter_confirm)) },
+            confirmButton = {
+                TextButton(onClick = { confirmChapter = null; onPlay(chapter.index) }) { Text(stringResource(R.string.play)) }
+            },
+            dismissButton = { TextButton(onClick = { confirmChapter = null }) { Text(stringResource(R.string.layout_cancel)) } },
+        )
+    }
+}
+
+/** The autosave's picture and age, or a plain start when there is none (or Autosave is off). */
+@Composable
+private fun ContinueCard(resume: SaveStates.Slot?, modifier: Modifier, onClick: () -> Unit) {
+    Card(
+        onClick = onClick,
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+    ) {
+        Box(Modifier.fillMaxSize()) {
+            val thumbnail = resume?.thumbnail
+            if (thumbnail != null) {
+                val bitmap = remember(thumbnail) { thumbnail.asImageBitmap() }
+                Image(
+                    bitmap,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    filterQuality = FilterQuality.None,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            } else {
+                Image(
+                    painterResource(R.drawable.ic_launcher_foreground),
+                    contentDescription = null,
+                    modifier = Modifier.align(Alignment.Center).size(160.dp),
+                )
+            }
+            Column(
+                Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xD90B0F0C))))
+                    .padding(start = 20.dp, end = 20.dp, top = 32.dp, bottom = 16.dp),
+            ) {
+                Text(
+                    "▶  " + stringResource(if (resume != null) R.string.launcher_continue else R.string.play),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                )
+                resume?.modified?.let { time ->
+                    Text(
+                        DateUtils.getRelativeTimeSpanString(time, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.8f),
+                    )
                 }
             }
         }
-
-        Button(
-            onClick = onPlay,
-            enabled = hasAssets && !importing,
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-        ) { Text(stringResource(R.string.play), style = MaterialTheme.typography.titleMedium) }
-
-        Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Tile(
-                title = stringResource(R.string.saves_title),
-                subtitle = stringResource(R.string.launcher_saves_summary),
-                modifier = Modifier.weight(1f).fillMaxHeight(),
-                onClick = { context.startActivity(Intent(context, SavesActivity::class.java)) },
-            )
-            LinkTile(
-                data,
-                modifier = Modifier.weight(1f).fillMaxHeight(),
-                onClick = { context.startActivity(Intent(context, LinkSpritesActivity::class.java)) },
-            )
-        }
-
-        OutlinedButton(
-            onClick = { context.startActivity(Intent(context, SettingsActivity::class.java)) },
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-        ) { Text(stringResource(R.string.settings_title)) }
     }
 }
 
 @Composable
-private fun Tile(
-    title: String,
-    subtitle: String,
-    modifier: Modifier,
-    onClick: () -> Unit,
-    image: @Composable (() -> Unit)? = null,
-) {
+private fun Place(title: String, subtitle: String, modifier: Modifier, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = modifier,
@@ -209,36 +312,8 @@ private fun Tile(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            image?.let { Box(Modifier.padding(start = 8.dp)) { it() } }
+            Spacer(Modifier.size(8.dp))
+            Icon(ChevronRight, null)
         }
     }
-}
-
-/** The current Link look, refreshed whenever the launcher comes back to the front. */
-@Composable
-private fun LinkTile(data: GameData, modifier: Modifier, onClick: () -> Unit) {
-    val defaultName = stringResource(R.string.sprites_default)
-    var sprite by remember { mutableStateOf<LinkSprites.Sprite?>(null) }
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    LaunchedEffect(lifecycle) {
-        lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            sprite = withContext(Dispatchers.IO) {
-                val sprites = LinkSprites(data.dir)
-                sprites.selected(data.readIni())?.let { f -> LinkSprites.parse(f.readBytes())?.copy(file = f) }
-                    ?: sprites.default(defaultName)
-            }
-        }
-    }
-    Tile(
-        title = stringResource(R.string.section_link),
-        subtitle = sprite?.name.orEmpty(),
-        modifier = modifier,
-        onClick = onClick,
-        image = sprite?.let { s ->
-            {
-                val bitmap = remember(s) { LinkSprites.preview(s).asImageBitmap() }
-                Image(bitmap, s.name, filterQuality = FilterQuality.None, modifier = Modifier.size(width = 32.dp, height = 48.dp))
-            }
-        },
-    )
 }
