@@ -66,10 +66,34 @@ index 70267b0..7a2462e 100644
        SDL_Delay(16);
        continue;
 diff --git a/src/opengl.c b/src/opengl.c
-index dd291ec..9e01e87 100644
+index dd291ec..f1ea3f1 100644
 --- a/src/opengl.c
 +++ b/src/opengl.c
-@@ -255,6 +255,16 @@ static void OpenGLRenderer_EndDraw() {
+@@ -13,7 +13,7 @@ static SDL_Window *g_window;
+ static uint8 *g_screen_buffer;
+ static size_t g_screen_buffer_size;
+ static int g_draw_width, g_draw_height;
+-static unsigned int g_program, g_VAO;
++static unsigned int g_program, g_VAO, g_shader_VAO;
+ static GlTextureWithSize g_texture;
+ static GlslShader *g_glsl_shader;
+ static bool g_opengl_es;
+@@ -81,6 +81,7 @@ static bool OpenGLRenderer_Init(SDL_Window *window) {
+   glGenBuffers(1, &vbo);
+ 
+   // vertex array object
++  glGenVertexArrays(1, &g_shader_VAO);
+   glGenVertexArrays(1, &g_VAO);
+   // 1. bind Vertex Array Object
+   glBindVertexArray(g_VAO);
+@@ -249,12 +250,23 @@ static void OpenGLRenderer_EndDraw() {
+     glBindVertexArray(g_VAO);
+     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+   } else {
++    glBindVertexArray(g_shader_VAO);
+     GlslShader_Render(g_glsl_shader, &g_texture, viewport_x, viewport_y, viewport_width, viewport_height);
+   }
+ 
    SDL_GL_SwapWindow(g_window);
  }
  
