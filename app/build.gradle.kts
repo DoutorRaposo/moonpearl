@@ -25,6 +25,12 @@ val keystoreProperties = rootProject.file("keystore.properties").takeIf { it.isF
 fun signingValue(env: String, key: String): String? =
     providers.environmentVariable(env).orNull ?: keystoreProperties?.getProperty(key)
 
+// Asset numbers in zelda3_assets.dat, for the Link sprite preview of the stock graphics.
+fun assetIndex(name: String): Int = providers.fileContents(upstreamDir.file("src/assets.h")).asText.map { text ->
+    Regex("""#define $name \(\(\w+\*\)g_asset_ptrs\[(\d+)\]\)""").find(text)?.groupValues?.get(1)?.toInt()
+        ?: error("$name not found in external/zelda3/src/assets.h")
+}.get()
+
 android {
     namespace = "io.github.doutorraposo.moonpearl"
     compileSdk = 37
@@ -39,6 +45,8 @@ android {
         versionName = providers.gradleProperty("versionName").orNull ?: "0.1.0"
 
         buildConfigField("String", "ASSETS_SIG", "\"$assetsSignature\"")
+        buildConfigField("int", "ASSET_LINK_GRAPHICS", assetIndex("kLinkGraphics").toString())
+        buildConfigField("int", "ASSET_LINK_PALETTE", assetIndex("kPalette_ArmorAndGloves").toString())
 
         ndk {
             abiFilters += listOf("arm64-v8a", "x86_64")

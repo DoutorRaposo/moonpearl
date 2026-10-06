@@ -56,6 +56,15 @@ class IniTest {
     }
 
     @Test
+    fun removesKey() {
+        val ini = Ini(sample)
+        ini.remove("Graphics", "Fullscreen")
+        assertNull(ini["Graphics", "Fullscreen"])
+        assertTrue(ini.text.contains("# LinkGraphics = foo.zspr")) // comments stay
+        ini.remove("Graphics", "Missing") // no-op
+    }
+
+    @Test
     fun aspectRatioKeepsModifiers() {
         assertEquals("extend_y, 16:9, unchanged_sprites", AspectRatio.toIni("extend_y, 4:3, unchanged_sprites", AspectRatio.WIDE_16_9))
         assertEquals("18:9", AspectRatio.toIni("4:3", AspectRatio.WIDE_18_9))

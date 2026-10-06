@@ -27,6 +27,15 @@
     <string name="linear_filtering">Suavizar pixels (filtro linear)</string>
     <string name="dim_flashes">Reduzir efeitos de flash</string>
 
+    <string name="section_link">Link</string>
+    <string name="sprites_title">Visual do Link</string>
+    <string name="sprites_hint">Troque o Link por um dos centenas de sprites feitos pela comunidade. Baixe um arquivo .zspr na galeria e importe aqui.</string>
+    <string name="sprites_import">Importar .zspr</string>
+    <string name="sprites_gallery">Abrir galeria</string>
+    <string name="sprites_change">Trocar</string>
+    <string name="sprites_default">Padrão</string>
+    <string name="sprites_not_recognized">Este não é um arquivo de sprite do Link (.zspr).</string>
+    <string name="sprites_delete_confirm">Apagar %1$s?</string>
     <string name="section_controls">Controles</string>
     <string name="touch_controls">Controles na tela</string>
     <string name="touch_opacity">Opacidade</string>

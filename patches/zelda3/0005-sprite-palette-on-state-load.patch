@@ -1,0 +1,29 @@
+diff --git a/src/zelda_rtl.c b/src/zelda_rtl.c
+index 19e5b46..33b6cbe 100644
+--- a/src/zelda_rtl.c
++++ b/src/zelda_rtl.c
+@@ -11,6 +11,7 @@
+ #include "util.h"
+ #include "audio.h"
+ #include "overworld.h"
++#include "load_gfx.h"
+ #include "assets.h"
+ ZeldaEnv g_zenv;
+ uint8 g_ram[131072];
+@@ -814,6 +815,16 @@ void SaveLoadSlot(int cmd, int which) {
+     else
+       StateRecorder_Save(&state_recorder, f);
+ 
++    // A save state carries the palettes that were loaded when it was made, so with a
++    // different Link sprite (LinkGraphics) its colors would stay until the next palette
++    // reload. Apply the current ones, choosing like the game does after a transformation.
++    if (cmd == kSaveLoad_Load && (main_module_index == 7 || main_module_index == 9) && submodule_index == 0) {
++      if (link_is_bunny | link_is_bunny_mirror)
++        LoadGearPalettes_bunny();
++      else
++        LoadActualGearPalettes();
++    }
++
+     fclose(f);
+   }
+ }

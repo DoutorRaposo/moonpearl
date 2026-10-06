@@ -33,6 +33,9 @@ own ROM; the app sets everything up on the device.
   feedback and adjustable opacity.
 - **Controllers** (Xbox, PlayStation, Switch Pro and most others) are detected
   automatically; the touch controls hide while one is in use.
+- **Link's look**: replace Link with any of the hundreds of community sprites (`.zspr` files
+  from the [sprite gallery](https://snesrev.github.io/sprites-gfx/snes/zelda3/link/)), with a
+  preview of each.
 - **Cheats**: infinite health, magic, bombs, arrows and small keys, a full wallet, walking
   through walls, and Pro Action Replay codes.
 - **Save management**: see your three game files, erase them, export or restore a backup,

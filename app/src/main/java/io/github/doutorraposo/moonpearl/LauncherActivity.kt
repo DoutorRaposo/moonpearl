@@ -11,7 +11,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -243,6 +250,10 @@ private fun LauncherScreen(data: GameData, prefs: AppPrefs, onPlay: () -> Unit) 
                 IniSwitch(ini, "Graphics", "DimFlashes", R.string.dim_flashes, ::editIni, R.string.dim_flashes_desc)
             }
 
+            Section(R.string.section_link) {
+                LinkSpriteRow(data, onChange = { context.startActivity(Intent(context, LinkSpritesActivity::class.java)) })
+            }
+
             Section(R.string.section_controls) {
                 SwitchRow(stringResource(R.string.touch_controls), touchControls) {
                     touchControls = it
@@ -328,6 +339,38 @@ private fun LauncherScreen(data: GameData, prefs: AppPrefs, onPlay: () -> Unit) 
             }
             Spacer(Modifier.height(8.dp))
         }
+    }
+}
+
+/** The current Link look, refreshed whenever the launcher comes back to the front. */
+@Composable
+private fun LinkSpriteRow(data: GameData, onChange: () -> Unit) {
+    val defaultName = stringResource(R.string.sprites_default)
+    var sprite by remember { mutableStateOf<LinkSprites.Sprite?>(null) }
+    val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(lifecycle) {
+        lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.RESUMED) {
+            sprite = withContext(Dispatchers.IO) {
+                val sprites = LinkSprites(data.dir)
+                sprites.selected(data.readIni())?.let { f -> LinkSprites.parse(f.readBytes())?.copy(file = f) }
+                    ?: sprites.default(defaultName)
+            }
+        }
+    }
+    Row(
+        Modifier.fillMaxWidth().padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        sprite?.let {
+            val bitmap = remember(it) { LinkSprites.preview(it).asImageBitmap() }
+            Image(bitmap, it.name, filterQuality = FilterQuality.None, modifier = Modifier.size(width = 48.dp, height = 72.dp))
+        }
+        Column(Modifier.weight(1f)) {
+            Text(sprite?.name.orEmpty(), style = MaterialTheme.typography.titleMedium)
+            Text(sprite?.author.orEmpty(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        OutlinedButton(onClick = onChange) { Text(stringResource(R.string.sprites_change)) }
     }
 }
 

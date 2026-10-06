@@ -27,6 +27,15 @@
     <string name="linear_filtering">Smooth pixels (linear filtering)</string>
     <string name="dim_flashes">Reduce flashing effects</string>
 
+    <string name="section_link">Link</string>
+    <string name="sprites_title">Link\'s look</string>
+    <string name="sprites_hint">Replace Link with one of hundreds of sprites made by the community. Download a .zspr file from the gallery and import it here.</string>
+    <string name="sprites_import">Import .zspr</string>
+    <string name="sprites_gallery">Open gallery</string>
+    <string name="sprites_change">Change</string>
+    <string name="sprites_default">Default</string>
+    <string name="sprites_not_recognized">This is not a Link sprite (.zspr) file.</string>
+    <string name="sprites_delete_confirm">Delete %1$s?</string>
     <string name="section_controls">Controls</string>
     <string name="touch_controls">On-screen controls</string>
     <string name="touch_opacity">Opacity</string>

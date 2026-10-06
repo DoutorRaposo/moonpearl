@@ -35,6 +35,11 @@ class Ini(text: String) {
         lines.add(lastContent + 1, "$key = $value")
     }
 
+    /** Removes the key, so upstream falls back to its default. */
+    fun remove(section: String, key: String) {
+        find(section, key)?.let { lines.removeAt(it) }
+    }
+
     fun getBool(section: String, key: String) = when (get(section, key)?.lowercase()) {
         "1", "true", "yes", "on" -> true
         else -> false
