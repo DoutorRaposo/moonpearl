@@ -1,0 +1,94 @@
+diff --git a/src/overworld.c b/src/overworld.c
+index 21d5f9d..b4fd7d2 100644
+--- a/src/overworld.c
++++ b/src/overworld.c
+@@ -11,6 +11,7 @@
+ #include "player_oam.h"
+ #include "snes/snes_regs.h"
+ #include "assets.h"
++#include "snes/ppu.h"
+ 
+ const uint16 kOverworld_OffsetBaseX[64] = {
+   0,     0, 0x400, 0x600, 0x600, 0xa00, 0xa00, 0xe00,
+@@ -2362,6 +2363,47 @@ uint16 *CheckForNewlyLoadedMapAreas_West(uint16 *dst) {  // 82f345
+   return dst;
+ }
+ 
++// The original column streaming keeps a 512-pixel window of BG2 loaded around a 256-pixel
++// view, triggered by 16-pixel scroll counters. Those counters drift with the scroll history
++// (they reset whenever the camera stops at an area edge), which the original view tolerates
++// but widescreen does not: up to 16 pixels at the outer edge can show a column from 512
++// pixels away. Before each drawn frame, rewrite the widescreen-only side areas of BG2 from
++// the map itself. The 256-pixel original view is left untouched.
++void Overworld_SyncWidescreenEdges() {
++  Ppu *ppu = g_zenv.ppu;
++  if (ppu->extraLeftCur == 0 && ppu->extraRightCur == 0)
++    return;
++  BgLayer *bg = &ppu->bgLayer[1];
++  int area = overworld_screen_index & 0x3f;
++  int size = kOverworldMapIsSmall[area] ? 32 : 64;  // in map16 tiles
++  int bx = kOverworld_OffsetBaseX[area], by = kOverworld_OffsetBaseY[area];
++  const uint16 *map8 = GetMap16toMap8Table();
++  int ranges[2][2] = {
++    { BG2HOFS_copy2 - ppu->extraLeftCur, BG2HOFS_copy2 },
++    { BG2HOFS_copy2 + 256, BG2HOFS_copy2 + 256 + ppu->extraRightCur },
++  };
++  int y0 = BG2VOFS_copy2 & ~7, y1 = BG2VOFS_copy2 + 240;
++  for (int r = 0; r < 2; r++) {
++    for (int wx = ranges[r][0] & ~7; wx < ranges[r][1]; wx += 8) {
++      int ax = (wx - bx) >> 4;
++      if (wx < bx || ax >= size)
++        continue;
++      for (int wy = y0; wy < y1; wy += 8) {
++        int ay = (wy - by) >> 4;
++        if (wy < by || ay >= size)
++          continue;
++        int sc = bg->tilemapAdr + (((wy >> 3) & 0x1f) << 5);
++        if ((wy & 0x100) && bg->tilemapHigher)
++          sc += bg->tilemapWider ? 0x800 : 0x400;
++        if ((wx & 0x100) && bg->tilemapWider)
++          sc += 0x400;
++        ppu->vram[(sc + ((wx >> 3) & 0x1f)) & 0x7fff] =
++            map8[dung_bg2[ay * 64 + ax] * 4 + ((wy >> 3) & 1) * 2 + ((wx >> 3) & 1)];
++      }
++    }
++  }
++}
++
+ uint16 *CheckForNewlyLoadedMapAreas_East(uint16 *dst) {  // 82f37f
+   uint16 pos = map16_load_src_off;
+   while (pos >= 0x80)
+diff --git a/src/overworld.h b/src/overworld.h
+index 4912366..72074d8 100644
+--- a/src/overworld.h
++++ b/src/overworld.h
+@@ -4,6 +4,7 @@
+ 
+ const uint8 *GetMap8toTileAttr();
+ const uint16 *GetMap16toMap8Table();
++void Overworld_SyncWidescreenEdges();
+ bool LookupInOwEntranceTab(uint16 r0, uint16 r2);
+ int LookupInOwEntranceTab2(uint16 pos);
+ bool CanEnterWithTagalong(int e);
+diff --git a/src/zelda_rtl.c b/src/zelda_rtl.c
+index ed184de..19e5b46 100644
+--- a/src/zelda_rtl.c
++++ b/src/zelda_rtl.c
+@@ -10,6 +10,7 @@
+ #include "spc_player.h"
+ #include "util.h"
+ #include "audio.h"
++#include "overworld.h"
+ #include "assets.h"
+ ZeldaEnv g_zenv;
+ uint8 g_ram[131072];
+@@ -196,6 +197,9 @@ void ZeldaDrawPpuFrame(uint8 *pixel_buffer, size_t pitch, uint32 render_flags) {
+ 
+   if (g_zenv.ppu->extraLeftRight != 0 || render_flags & kPpuRenderFlags_Height240)
+     ConfigurePpuSideSpace();
++  // Outdoors, while walking around an area (not during area transitions).
++  if (main_module_index == 9 && submodule_index == 0)
++    Overworld_SyncWidescreenEdges();
+ 
+   int height = render_flags & kPpuRenderFlags_Height240 ? 240 : 224;
+ 
