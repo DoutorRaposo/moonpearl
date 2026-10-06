@@ -1,0 +1,28 @@
+diff --git a/src/main.c b/src/main.c
+index 2b42744..e31c5f9 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -56,6 +56,12 @@ static uint32 g_win_flags = SDL_WINDOW_RESIZABLE;
+ static SDL_Window *g_window;
+ 
+ static uint8 g_paused, g_turbo, g_replay_turbo = true, g_cursor = true;
++// Game frames run per displayed frame; set by the host for fixed-rate fast-forward.
++static volatile int g_speed = 1;
++
++void ZeldaSetSpeed(int speed) {
++  g_speed = speed < 1 ? 1 : speed;
++}
+ static uint8 g_current_window_scale;
+ static uint8 g_gamepad_buttons;
+ static int g_input1_state;
+@@ -466,6 +472,10 @@ int main(int argc, char** argv) {
+     if ((g_turbo ^ (is_replay & g_replay_turbo)) && (frameCtr & (g_turbo ? 0xf : 0x7f)) != 0) {
+       continue;
+     }
++    // Like turbo, but at a fixed rate: draw (and pace) only every g_speed-th frame.
++    if (g_speed > 1 && frameCtr % g_speed != 0) {
++      continue;
++    }
+ 
+     DrawPpuFrameWithPerf();
+ 

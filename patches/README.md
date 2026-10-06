@@ -1,0 +1,11 @@
+# Patches to upstream zelda3
+
+`external/zelda3` stays a pristine checkout of snesrev/zelda3. The build copies its `src/`
+and `snes/` folders and applies these patches to the copy, in name order
+(`app/src/main/cpp/CMakeLists.txt`). A patch that no longer applies fails the build.
+
+| Patch | Why |
+|---|---|
+| `0001-fixed-rate-fast-forward.patch` | Upstream turbo is all or nothing (up to 16x). This adds `ZeldaSetSpeed(n)`, which runs *n* game frames per displayed frame with normal pacing, for 2x/3x fast-forward. |
+
+Keep them small and in upstream's style, so they can be offered upstream as is.

@@ -52,13 +52,31 @@
     <string name="feature_cancel_bird_travel">Cancel bird travel with X</string>
 
 
+    <string name="enhancements_hint">Optional changes from the zelda3 project. All are off by default, which plays exactly like the original game.</string>
+    <string name="feature_item_switch_lr_desc">L and R cycle through items. Y + direction reorders items in the inventory; hold X, L or R on the item screen to assign an item to that button. If X gets an item, Select opens the map.</string>
+    <string name="feature_turn_while_dashing_desc">Change direction while running with the Pegasus Boots.</string>
+    <string name="feature_mirror_to_darkworld_desc">The Magic Mirror also takes you from the Light World to the Dark World.</string>
+    <string name="feature_collect_items_with_sword_desc">Hearts, rupees and other drops can be picked up by hitting them with the sword.</string>
+    <string name="feature_break_pots_with_sword_desc">With the level 2 sword or better, pots break with a slash.</string>
+    <string name="feature_disable_low_health_beep_desc">Silences the alarm that plays while health is low.</string>
+    <string name="feature_skip_intro_desc">Pressing a button skips the opening sequence.</string>
+    <string name="feature_show_max_items_in_yellow_desc">Rupee, bomb and arrow counts turn yellow when full.</string>
+    <string name="feature_more_active_bombs_desc">Up to four bombs on screen at once instead of two.</string>
+    <string name="feature_carry_more_rupees_desc">The wallet holds up to 9999 rupees instead of 999.</string>
+    <string name="feature_misc_bug_fixes_desc">Fixes about 40 bugs of the original, such as walking on water, crossing pits by dashing, magic going below zero or being refunded by the Cane of Somaria, and the exploration glitch. Leave it off if you rely on these glitches, for example in speedruns.</string>
+    <string name="feature_game_changing_bug_fixes_desc">Currently a single fix: the Zoras in Misery Mire placed in shallow water can now appear, as intended. It makes that area slightly harder.</string>
+    <string name="feature_cancel_bird_travel_desc">Press X on the bird travel map to cancel the trip.</string>
+    <string name="dim_flashes_desc">Softens flashing effects, like the Virtual Console releases.</string>
+    <string name="no_sprite_limits_desc">Draws every sprite on each line, so crowded scenes no longer flicker.</string>
+
     <string name="menu_button">Menu button (⋯) on screen</string>
     <string name="double_tap_menu">Double-tap the screen to open the menu</string>
     <string name="menu_hint">The back button and, on a controller, Select+Start or the right stick button also open the menu.</string>
 
     <string name="menu_title">Paused</string>
     <string name="menu_resume">Resume</string>
-    <string name="menu_fast_forward">Fast-forward</string>
+    <string name="menu_speed">Speed</string>
+    <string name="menu_speed_max">Max</string>
     <string name="menu_reset">Reset</string>
     <string name="menu_reset_confirm">Reset the game? Progress since your last save will be lost.</string>
     <string name="menu_quit">Quit</string>

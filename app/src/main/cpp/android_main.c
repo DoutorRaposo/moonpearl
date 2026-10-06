@@ -1,4 +1,4 @@
-// Android entry point for the unmodified zelda3 sources.
+// Android entry point for the zelda3 sources (upstream plus patches/zelda3).
 //
 // SDLActivity calls SDL_main() on its own thread. zelda3 expects to run from a
 // directory holding zelda3.ini, zelda3_assets.dat and saves/, so we move into
@@ -6,6 +6,7 @@
 // upstream main().
 #include <SDL.h>
 #include <android/log.h>
+#include <jni.h>
 #include <errno.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -14,6 +15,7 @@
 
 #undef main
 int main(int argc, char **argv);  // src/main.c
+void ZeldaSetSpeed(int speed);    // patches/zelda3/0001-fixed-rate-fast-forward.patch
 
 static const char kTag[] = "zelda3";
 
@@ -60,9 +62,41 @@ static void RedirectStdioToLogcat(void) {
     pthread_detach(thread);
 }
 
+JNIEXPORT void JNICALL
+Java_io_github_doutorraposo_z3_GameActivity_nativeSetSpeed(JNIEnv *env, jclass cls, jint speed) {
+  ZeldaSetSpeed(speed);
+}
+
+#ifndef NDEBUG
+extern unsigned char g_ram[];  // src/zelda_rtl.c; 0x1A is the game's frame counter
+
+// Debug builds log how many game frames run per second, to check fast-forward rates.
+static void *LogGameSpeed(void *arg) {
+  (void)arg;
+  unsigned char last = g_ram[0x1A];
+  int frames = 0;
+  for (int tick = 1;; tick++) {
+    usleep(100 * 1000);
+    unsigned char now = g_ram[0x1A];
+    frames += (unsigned char)(now - last);
+    last = now;
+    if (tick % 10 == 0) {
+      __android_log_print(ANDROID_LOG_DEBUG, kTag, "game frames/s: %d", frames);
+      frames = 0;
+    }
+  }
+  return NULL;
+}
+#endif
+
 __attribute__((visibility("default")))
 int SDL_main(int argc, char *argv[]) {
   RedirectStdioToLogcat();
+#ifndef NDEBUG
+  pthread_t speed_thread;
+  if (pthread_create(&speed_thread, NULL, LogGameSpeed, NULL) == 0)
+    pthread_detach(speed_thread);
+#endif
 
   const char *dir = SDL_AndroidGetInternalStoragePath();
   if (dir == NULL || chdir(dir) != 0) {

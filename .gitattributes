@@ -3,3 +3,4 @@ gradlew text eol=lf
 *.bat text eol=crlf
 *.bps binary
 *.jar binary
+*.patch -text

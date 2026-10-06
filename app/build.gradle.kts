@@ -8,6 +8,7 @@ plugins {
 
 val upstreamDir = rootProject.layout.projectDirectory.dir("external/zelda3")
 val sdlDir = rootProject.layout.projectDirectory.dir("external/SDL")
+val patchesDir = rootProject.layout.projectDirectory.dir("patches/zelda3")
 
 // The 48-byte signature that LoadAssets() expects at the start of zelda3_assets.dat.
 // Read from the pinned upstream so an imported .dat is checked against the code we ship.
@@ -47,6 +48,7 @@ android {
                 arguments += listOf(
                     "-DZELDA3_DIR=${upstreamDir.asFile.absolutePath.replace('\\', '/')}",
                     "-DSDL_DIR=${sdlDir.asFile.absolutePath.replace('\\', '/')}",
+                    "-DZELDA3_PATCHES_DIR=${patchesDir.asFile.absolutePath.replace('\\', '/')}",
                 )
             }
         }

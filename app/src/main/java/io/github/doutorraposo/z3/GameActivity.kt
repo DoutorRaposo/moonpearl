@@ -27,7 +27,8 @@ class GameActivity : SDLActivity() {
     private var touch: TouchControlsView? = null
     private var menuButton: MenuButtonView? = null
     private var autosave = false
-    private var turbo = false
+    /** See [GameKeys.speeds]. */
+    private var speed = 1
     private var menuOpen = false
     private var selectHeld = false
     /** Set from the menu; unlike hiding for a controller, a touch does not bring the pad back. */
@@ -98,7 +99,7 @@ class GameActivity : SDLActivity() {
         super.onResume()
         // SDL releases every key when the window loses focus (e.g. while the menu is open),
         // so hold the fast-forward key again.
-        if (turbo && !mBrokenLibraries) onNativeKeyDown(GameKeys.TURBO)
+        if (speed == GameKeys.SPEED_MAX && !mBrokenLibraries) onNativeKeyDown(GameKeys.TURBO)
     }
 
     override fun onPause() {
@@ -141,7 +142,7 @@ class GameActivity : SDLActivity() {
             @Suppress("DEPRECATION")
             startActivityForResult(
                 Intent(this, GameMenuActivity::class.java)
-                    .putExtra(GameMenuActivity.EXTRA_TURBO, turbo)
+                    .putExtra(GameMenuActivity.EXTRA_SPEED, speed)
                     .putExtra(GameMenuActivity.EXTRA_HAS_TOUCH, touch != null)
                     .putExtra(GameMenuActivity.EXTRA_TOUCH_VISIBLE, !touchHiddenByUser),
                 REQUEST_MENU,
@@ -179,8 +180,7 @@ class GameActivity : SDLActivity() {
         menuOpen = false
         if (data == null) return
 
-        turbo = data.getBooleanExtra(GameMenuActivity.EXTRA_TURBO, turbo)
-        if (!turbo) onNativeKeyUp(GameKeys.TURBO)
+        setSpeed(data.getIntExtra(GameMenuActivity.EXTRA_SPEED, speed))
         touch?.let {
             val visible = data.getBooleanExtra(GameMenuActivity.EXTRA_TOUCH_VISIBLE, true)
             // Only act on a change: a pad hidden because a controller is in use stays hidden.
@@ -200,6 +200,18 @@ class GameActivity : SDLActivity() {
             GameMenuActivity.Action.RESET -> pressWith(GameKeys.CTRL, GameKeys.RESET)
             GameMenuActivity.Action.QUIT -> finish()
             null -> Unit
+        }
+    }
+
+    /** Fixed rates go through the patched frame loop; "max" holds upstream's turbo key. */
+    private fun setSpeed(value: Int) {
+        speed = value
+        nativeSetSpeed(if (value == GameKeys.SPEED_MAX) 1 else value)
+        if (value == GameKeys.SPEED_MAX) onNativeKeyDown(GameKeys.TURBO) else onNativeKeyUp(GameKeys.TURBO)
+        menuButton?.badge = when (value) {
+            1 -> null
+            GameKeys.SPEED_MAX -> "»"
+            else -> "$value×"
         }
     }
 
@@ -267,5 +279,9 @@ class GameActivity : SDLActivity() {
 
     private companion object {
         const val REQUEST_MENU = 1
+
+        /** android_main.c, backed by patches/zelda3/0001-fixed-rate-fast-forward.patch. */
+        @JvmStatic
+        external fun nativeSetSpeed(speed: Int)
     }
 }

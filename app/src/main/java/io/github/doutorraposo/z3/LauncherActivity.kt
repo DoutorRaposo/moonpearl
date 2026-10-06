@@ -71,21 +71,26 @@ class LauncherActivity : ComponentActivity() {
     }
 }
 
-/** Upstream [Features] switches, in the order they appear in zelda3.ini. */
+private class Feature(val key: String, @StringRes val label: Int, @StringRes val description: Int)
+
+/**
+ * Upstream [Features] switches, in the order they appear in zelda3.ini. The descriptions follow
+ * the comments there and, for the two bug fix groups, what the flags change in the source.
+ */
 private val features = listOf(
-    "ItemSwitchLR" to R.string.feature_item_switch_lr,
-    "TurnWhileDashing" to R.string.feature_turn_while_dashing,
-    "MirrorToDarkworld" to R.string.feature_mirror_to_darkworld,
-    "CollectItemsWithSword" to R.string.feature_collect_items_with_sword,
-    "BreakPotsWithSword" to R.string.feature_break_pots_with_sword,
-    "DisableLowHealthBeep" to R.string.feature_disable_low_health_beep,
-    "SkipIntroOnKeypress" to R.string.feature_skip_intro,
-    "ShowMaxItemsInYellow" to R.string.feature_show_max_items_in_yellow,
-    "MoreActiveBombs" to R.string.feature_more_active_bombs,
-    "CarryMoreRupees" to R.string.feature_carry_more_rupees,
-    "MiscBugFixes" to R.string.feature_misc_bug_fixes,
-    "GameChangingBugFixes" to R.string.feature_game_changing_bug_fixes,
-    "CancelBirdTravel" to R.string.feature_cancel_bird_travel,
+    Feature("ItemSwitchLR", R.string.feature_item_switch_lr, R.string.feature_item_switch_lr_desc),
+    Feature("TurnWhileDashing", R.string.feature_turn_while_dashing, R.string.feature_turn_while_dashing_desc),
+    Feature("MirrorToDarkworld", R.string.feature_mirror_to_darkworld, R.string.feature_mirror_to_darkworld_desc),
+    Feature("CollectItemsWithSword", R.string.feature_collect_items_with_sword, R.string.feature_collect_items_with_sword_desc),
+    Feature("BreakPotsWithSword", R.string.feature_break_pots_with_sword, R.string.feature_break_pots_with_sword_desc),
+    Feature("DisableLowHealthBeep", R.string.feature_disable_low_health_beep, R.string.feature_disable_low_health_beep_desc),
+    Feature("SkipIntroOnKeypress", R.string.feature_skip_intro, R.string.feature_skip_intro_desc),
+    Feature("ShowMaxItemsInYellow", R.string.feature_show_max_items_in_yellow, R.string.feature_show_max_items_in_yellow_desc),
+    Feature("MoreActiveBombs", R.string.feature_more_active_bombs, R.string.feature_more_active_bombs_desc),
+    Feature("CarryMoreRupees", R.string.feature_carry_more_rupees, R.string.feature_carry_more_rupees_desc),
+    Feature("MiscBugFixes", R.string.feature_misc_bug_fixes, R.string.feature_misc_bug_fixes_desc),
+    Feature("GameChangingBugFixes", R.string.feature_game_changing_bug_fixes, R.string.feature_game_changing_bug_fixes_desc),
+    Feature("CancelBirdTravel", R.string.feature_cancel_bird_travel, R.string.feature_cancel_bird_travel_desc),
 )
 
 @Composable
@@ -212,7 +217,7 @@ private fun LauncherScreen(data: GameData, prefs: AppPrefs, onPlay: () -> Unit) 
                 }
                 IniSwitch(ini, "Graphics", "EnhancedMode7", R.string.enhanced_mode7, ::editIni)
                 IniSwitch(ini, "Graphics", "LinearFiltering", R.string.linear_filtering, ::editIni)
-                IniSwitch(ini, "Graphics", "DimFlashes", R.string.dim_flashes, ::editIni)
+                IniSwitch(ini, "Graphics", "DimFlashes", R.string.dim_flashes, ::editIni, R.string.dim_flashes_desc)
             }
 
             Section(R.string.section_controls) {
@@ -255,11 +260,17 @@ private fun LauncherScreen(data: GameData, prefs: AppPrefs, onPlay: () -> Unit) 
 
             Section(R.string.section_game) {
                 IniSwitch(ini, "General", "Autosave", R.string.autosave, ::editIni)
-                IniSwitch(ini, "Graphics", "NoSpriteLimits", R.string.no_sprite_limits, ::editIni)
+                IniSwitch(ini, "Graphics", "NoSpriteLimits", R.string.no_sprite_limits, ::editIni, R.string.no_sprite_limits_desc)
             }
 
             Section(R.string.section_enhancements) {
-                for ((key, label) in features) IniSwitch(ini, "Features", key, label, ::editIni)
+                Text(
+                    stringResource(R.string.enhancements_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
+                )
+                for (f in features) IniSwitch(ini, "Features", f.key, f.label, ::editIni, f.description)
             }
 
             Text(
@@ -291,14 +302,24 @@ private fun Section(@StringRes title: Int, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun IniSwitch(ini: Ini, section: String, key: String, @StringRes label: Int, edit: (Ini.() -> Unit) -> Unit) {
-    SwitchRow(stringResource(label), ini.getBool(section, key)) { checked -> edit { setBool(section, key, checked) } }
+private fun IniSwitch(
+    ini: Ini,
+    section: String,
+    key: String,
+    @StringRes label: Int,
+    edit: (Ini.() -> Unit) -> Unit,
+    @StringRes description: Int? = null,
+) {
+    SwitchRow(stringResource(label), ini.getBool(section, key), description?.let { stringResource(it) }) { checked ->
+        edit { setBool(section, key, checked) }
+    }
 }
 
 @Composable
-private fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+private fun SwitchRow(label: String, checked: Boolean, description: String? = null, onChange: (Boolean) -> Unit) {
     ListItem(
         headlineContent = { Text(label) },
+        supportingContent = description?.let { { Text(it) } },
         trailingContent = { Switch(checked = checked, onCheckedChange = onChange) },
         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = Modifier.fillMaxWidth(),

@@ -95,19 +95,19 @@ class GameMenuActivity : ComponentActivity() {
         }
 
         val states = SaveStates(filesDir)
-        var turbo = intent.getBooleanExtra(EXTRA_TURBO, false)
+        var speed = intent.getIntExtra(EXTRA_SPEED, 1)
         var touch = intent.getBooleanExtra(EXTRA_TOUCH_VISIBLE, true)
         val hasTouch = intent.getBooleanExtra(EXTRA_HAS_TOUCH, false)
-        publish(turbo, touch)
+        publish(speed, touch)
 
         setContent {
             AppTheme {
                 GameMenu(
                     states = states,
-                    turbo = turbo,
-                    onTurbo = { turbo = it; publish(turbo, touch) },
+                    speed = speed,
+                    onSpeed = { speed = it; publish(speed, touch) },
                     touchVisible = touch.takeIf { hasTouch },
-                    onTouchVisible = { touch = it; publish(turbo, touch) },
+                    onTouchVisible = { touch = it; publish(speed, touch) },
                     onResume = ::finish,
                     onAction = { action, arg ->
                         result.putExtra(EXTRA_ACTION, action.name).putExtra(EXTRA_ARG, arg)
@@ -119,8 +119,8 @@ class GameMenuActivity : ComponentActivity() {
         }
     }
 
-    private fun publish(turbo: Boolean, touch: Boolean) {
-        result.putExtra(EXTRA_TURBO, turbo).putExtra(EXTRA_TOUCH_VISIBLE, touch)
+    private fun publish(speed: Int, touch: Boolean) {
+        result.putExtra(EXTRA_SPEED, speed).putExtra(EXTRA_TOUCH_VISIBLE, touch)
         setResult(RESULT_OK, result)
     }
 
@@ -140,7 +140,7 @@ class GameMenuActivity : ComponentActivity() {
     }
 
     companion object {
-        const val EXTRA_TURBO = "turbo"
+        const val EXTRA_SPEED = "speed"
         const val EXTRA_TOUCH_VISIBLE = "touch_visible"
         const val EXTRA_HAS_TOUCH = "has_touch"
         const val EXTRA_ACTION = "action"
@@ -153,8 +153,8 @@ private enum class MenuTab(@StringRes val label: Int) { STATES(R.string.menu_tab
 @Composable
 private fun GameMenu(
     states: SaveStates,
-    turbo: Boolean,
-    onTurbo: (Boolean) -> Unit,
+    speed: Int,
+    onSpeed: (Int) -> Unit,
     touchVisible: Boolean?,
     onTouchVisible: (Boolean) -> Unit,
     onResume: () -> Unit,
@@ -169,7 +169,7 @@ private fun GameMenu(
         }
     }
     var tab by remember { mutableStateOf(MenuTab.STATES) }
-    var turboOn by remember { mutableStateOf(turbo) }
+    var speedOn by remember { mutableIntStateOf(speed) }
     var touchOn by remember { mutableStateOf(touchVisible) }
     var confirmReset by remember { mutableStateOf(false) }
     var confirmChapter by remember { mutableIntStateOf(0) }
@@ -192,7 +192,24 @@ private fun GameMenu(
                 Button(onClick = onResume, modifier = Modifier.focusRing().fillMaxWidth().focusRequester(resumeFocus)) {
                     Text(stringResource(R.string.menu_resume))
                 }
-                MenuSwitch(stringResource(R.string.menu_fast_forward), turboOn) { turboOn = it; onTurbo(it) }
+                Text(
+                    stringResource(R.string.menu_speed),
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                    GameKeys.speeds.forEachIndexed { i, s ->
+                        SegmentedButton(
+                            selected = speedOn == s,
+                            onClick = { speedOn = s; onSpeed(s) },
+                            shape = SegmentedButtonDefaults.itemShape(i, GameKeys.speeds.size),
+                            modifier = Modifier.focusRing(),
+                            icon = {},
+                        ) {
+                            Text(if (s == GameKeys.SPEED_MAX) stringResource(R.string.menu_speed_max) else "$s×", maxLines = 1)
+                        }
+                    }
+                }
                 touchOn?.let { on ->
                     MenuSwitch(stringResource(R.string.touch_controls), on) { touchOn = it; onTouchVisible(it) }
                 }

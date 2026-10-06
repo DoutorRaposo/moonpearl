@@ -33,6 +33,11 @@ object GameKeys {
     }
 
     const val TURBO = KeyEvent.KEYCODE_TAB
+
+    /** Fast-forward choices: game frames per displayed frame, or [SPEED_MAX] for upstream turbo. */
+    val speeds = intArrayOf(1, 2, 3, SPEED_MAX)
+    const val SPEED_MAX = 0
+
     const val SHIFT = KeyEvent.KEYCODE_SHIFT_LEFT
     const val CTRL = KeyEvent.KEYCODE_CTRL_LEFT
     const val RESET = KeyEvent.KEYCODE_R

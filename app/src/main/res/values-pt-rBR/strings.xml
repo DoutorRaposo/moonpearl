@@ -52,13 +52,31 @@
     <string name="feature_cancel_bird_travel">Cancelar a viagem de pássaro com X</string>
 
 
+    <string name="enhancements_hint">Mudanças opcionais do projeto zelda3. Todas vêm desligadas, o que joga exatamente como o original.</string>
+    <string name="feature_item_switch_lr_desc">L e R alternam entre os itens. Y + direção reordena os itens no inventário; segure X, L ou R na tela de itens para atribuir um item a esse botão. Se o X receber um item, o Select abre o mapa.</string>
+    <string name="feature_turn_while_dashing_desc">Muda de direção durante a corrida com as Pegasus Boots.</string>
+    <string name="feature_mirror_to_darkworld_desc">O Magic Mirror também leva do Light World para o Dark World.</string>
+    <string name="feature_collect_items_with_sword_desc">Corações, rupias e outros itens podem ser pegos acertando-os com a espada.</string>
+    <string name="feature_break_pots_with_sword_desc">Com a espada nível 2 ou melhor, potes quebram com um golpe.</string>
+    <string name="feature_disable_low_health_beep_desc">Silencia o alarme que toca enquanto a vida está baixa.</string>
+    <string name="feature_skip_intro_desc">Apertar um botão pula a abertura.</string>
+    <string name="feature_show_max_items_in_yellow_desc">Os contadores de rupias, bombas e flechas ficam amarelos quando estão no máximo.</string>
+    <string name="feature_more_active_bombs_desc">Até quatro bombas na tela ao mesmo tempo, em vez de duas.</string>
+    <string name="feature_carry_more_rupees_desc">A carteira guarda até 9999 rupias em vez de 999.</string>
+    <string name="feature_misc_bug_fixes_desc">Corrige cerca de 40 bugs do original, como andar sobre a água, atravessar buracos com a corrida, a magia ficar negativa ou ser devolvida pelo Cane of Somaria, e o exploration glitch. Deixe desligado se você usa esses glitches, por exemplo em speedruns.</string>
+    <string name="feature_game_changing_bug_fixes_desc">Hoje é uma única correção: os Zoras de Misery Mire colocados em água rasa passam a aparecer, como era a intenção. Deixa aquela área um pouco mais difícil.</string>
+    <string name="feature_cancel_bird_travel_desc">Aperte X no mapa da viagem de pássaro para cancelar.</string>
+    <string name="dim_flashes_desc">Suaviza os efeitos de flash, como nas versões do Virtual Console.</string>
+    <string name="no_sprite_limits_desc">Desenha todos os sprites em cada linha, então cenas cheias não piscam mais.</string>
+
     <string name="menu_button">Botão de menu (⋯) na tela</string>
     <string name="double_tap_menu">Toque duplo na tela abre o menu</string>
     <string name="menu_hint">O botão voltar e, no controle, Select+Start ou o clique do analógico direito também abrem o menu.</string>
 
     <string name="menu_title">Pausado</string>
     <string name="menu_resume">Continuar</string>
-    <string name="menu_fast_forward">Avanço rápido</string>
+    <string name="menu_speed">Velocidade</string>
+    <string name="menu_speed_max">Máx</string>
     <string name="menu_reset">Reiniciar</string>
     <string name="menu_reset_confirm">Reiniciar o jogo? O progresso desde o último save será perdido.</string>
     <string name="menu_quit">Sair</string>

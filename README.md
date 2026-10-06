@@ -3,9 +3,10 @@
 A native Android port of [snesrev/zelda3](https://github.com/snesrev/zelda3), the C
 reimplementation of *A Link to the Past*.
 
-The upstream sources are used **unmodified** (pinned as a git submodule). Everything
-Android-specific lives in this repository: a small native entry point, the launcher, the
-on-screen controls and the build.
+Upstream is pinned as a git submodule and left untouched. Android-specific code lives in
+this repository: a small native entry point, the launcher, the menu, the on-screen controls
+and the build. The few changes the game code needs are kept as small patches in
+`patches/zelda3` and applied at build time (see [patches/README.md](patches/README.md)).
 
 ## Features
 
@@ -19,10 +20,12 @@ on-screen controls and the build.
 - **Touch controls** with multi-touch, 8-way d-pad, sliding between face buttons, haptic
   feedback and adjustable opacity. They hide while a controller is in use.
 - **In-game menu** with save states (9 slots plus the resume point, each with a screenshot
-  and time), fast-forward, jump to any chapter (upstream's reference saves), reset and quit.
+  and time), fast-forward at 2x, 3x or maximum speed, jump to any chapter (upstream's reference saves), reset and quit.
   It opens from an on-screen "⋯" button, an optional double tap, the back button, or
   Select+Start / the right stick button on a controller, and is fully usable with a
   controller. Under the hood it drives upstream's own save state and turbo shortcuts.
+- **Enhancements** from upstream (item switching on L/R, turning while dashing, bug fixes and
+  more), each with a short explanation of what it changes.
 - **Save management**: see the three game files (name and hearts) and every save state,
   export or restore everything as a `.zip`, and import or export the game files as an `.srm`.
   The save RAM uses the cartridge layout, so files move both ways between this app and SNES
@@ -75,7 +78,7 @@ the repository secrets `ZELDA3_KEYSTORE_BASE64`, `ZELDA3_KEYSTORE_PASSWORD`,
 
 | Piece | Where |
 |---|---|
-| Game code (unmodified) | `external/zelda3` (submodule) |
+| Game code | `external/zelda3` (submodule) plus `patches/zelda3` |
 | SDL 2.32 (native and Java) | `external/SDL` (submodule) |
 | Native entry point: moves into the app's data folder, sends stdio to logcat, locks landscape | `app/src/main/cpp/android_main.c` |
 | ROM import and BPS patching | `GameData.kt`, `Bps.kt` |

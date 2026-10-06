@@ -26,8 +26,16 @@ class MenuButtonView(context: Context, private val onClick: () -> Unit) : View(c
     private var safeRight = 0
     private var pressed = false
 
+    /** Short status shown instead of the dots, e.g. the fast-forward rate. */
+    var badge: String? = null
+        set(value) { field = value; invalidate() }
+
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
     private val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
+    private val label = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textAlign = Paint.Align.CENTER
+        typeface = android.graphics.Typeface.DEFAULT_BOLD
+    }
 
     override fun onApplyWindowInsets(insets: WindowInsets): WindowInsets {
         safeRight = insets.displayCutout?.safeInsetRight ?: 0
@@ -80,6 +88,13 @@ class MenuButtonView(context: Context, private val onClick: () -> Unit) : View(c
         stroke.color = Color.argb((opacity * 200).toInt().coerceAtMost(255), 255, 255, 255)
         canvas.drawCircle(cx, cy, radius, stroke)
         fill.color = Color.argb((opacity * 255).toInt().coerceAtMost(255), 255, 255, 255)
+        val text = badge
+        if (text != null) {
+            label.color = fill.color
+            label.textSize = radius * 0.8f
+            canvas.drawText(text, cx, cy - (label.descent() + label.ascent()) / 2, label)
+            return
+        }
         val dot = radius * 0.13f
         for (i in -1..1) canvas.drawCircle(cx + i * radius * 0.42f, cy, dot, fill)
     }
