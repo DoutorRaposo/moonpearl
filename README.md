@@ -5,7 +5,12 @@ reimplementation of ALttP, with widescreen, save states, rewind, fast-forward, i
 cheats and controller support. Bring your own ROM; the app sets everything up on the device.
 
 <p align="center">
-  <img src="docs/screenshots/game.webp" alt="Gameplay in widescreen with the on-screen controls" width="720">
+  <img src="docs/screenshots/game.webp" alt="Gameplay in widescreen, with the HUD at the screen edges and the on-screen controls" width="720">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/demo.webp" alt="Rewinding by dragging the bar, then switching to the CRT filter from the in-game menu" width="600"><br>
+  <sub>Rewind by dragging the bar, then a CRT filter switched on from the in-game menu.</sub>
 </p>
 
 <p align="center">
@@ -64,6 +69,8 @@ cheats and controller support. Bring your own ROM; the app sets everything up on
    first time.
 2. Open **Moon Pearl**, tap **Select ROM** and pick your copy of the game.
 3. Tap **Play**.
+
+The app has no internet permission: nothing you do in it leaves your device.
 
 Updates install over the previous version and keep your data. To get them automatically,
 add this repository to [Obtainium](https://github.com/ImranR98/Obtainium).
