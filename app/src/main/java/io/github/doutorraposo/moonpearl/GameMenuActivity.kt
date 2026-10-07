@@ -262,6 +262,7 @@ private fun GameMenu(
                         }
                     }
                 }
+                HoldSpeedSettings(prefs)
                 touchOn?.let { on ->
                     MenuSwitch(stringResource(R.string.touch_controls), on) { touchOn = it; onTouchVisible(it) }
                 }
@@ -456,6 +457,34 @@ private fun ImageTab() {
         for (b in Shaders.Builtin.entries) row(stringResource(b.label), Shaders.Choice.Shader(b.path))
         for (path in imported) row(Shaders.displayName(path), Shaders.Choice.Shader(path))
     }
+}
+
+/**
+ * The fast-forward hold settings, also in Settings > Controls: the rate while holding (touch
+ * button, L3 in hold mode) and what L3 does. GameActivity reads them again when the menu closes.
+ */
+@Composable
+private fun HoldSpeedSettings(prefs: AppPrefs) {
+    var holdSpeed by remember { mutableIntStateOf(prefs.holdSpeed) }
+    var l3Hold by remember { mutableStateOf(prefs.l3Hold) }
+    Text(
+        stringResource(R.string.hold_speed),
+        style = MaterialTheme.typography.labelLarge,
+        modifier = Modifier.padding(top = 8.dp),
+    )
+    val choices = GameKeys.speeds.filter { it != 1 }
+    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+        choices.forEachIndexed { i, s ->
+            SegmentedButton(
+                selected = holdSpeed == s,
+                onClick = { holdSpeed = s; prefs.holdSpeed = s },
+                shape = SegmentedButtonDefaults.itemShape(i, choices.size),
+                modifier = Modifier.focusRing(),
+                icon = {},
+            ) { Text(if (s == GameKeys.SPEED_MAX) stringResource(R.string.menu_speed_max) else "$s×", maxLines = 1) }
+        }
+    }
+    MenuSwitch(stringResource(R.string.l3_hold), l3Hold) { l3Hold = it; prefs.l3Hold = it }
 }
 
 @Composable

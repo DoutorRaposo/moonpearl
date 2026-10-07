@@ -264,6 +264,11 @@ class GameActivity : SDLActivity() {
     }
 
     private fun applyMenuResult(data: Intent) {
+        // The menu can change these (same process, so the preferences are current).
+        AppPrefs(this).let {
+            holdSpeed = it.holdSpeed
+            l3Hold = it.l3Hold
+        }
         setSpeed(data.getIntExtra(GameMenuActivity.EXTRA_SPEED, speed))
         applyCheats()
         touch?.let {
