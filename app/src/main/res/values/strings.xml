@@ -40,7 +40,7 @@
     <string name="touch_layout">Customize layout</string>
     <string name="touch_layout_desc">Move and resize the on-screen buttons</string>
     <string name="turbo_button">Fast-forward button</string>
-    <string name="turbo_button_desc">Runs the game at top speed while you hold it</string>
+    <string name="turbo_button_desc">Fast-forwards while you hold it</string>
     <string name="layout_title">Customize layout</string>
     <string name="layout_hint">Drag a control to move it. Tap one to change its size.</string>
     <string name="layout_panel_hint">Drag this panel by its top to move it out of the way. Tap an empty area to hide or show it.</string>
@@ -94,7 +94,7 @@
 
     <string name="menu_button">Menu button (⋯) on screen</string>
     <string name="double_tap_menu">Double-tap the screen to open the menu</string>
-    <string name="menu_hint">The back button and, on a controller, the guide button or the right stick button also open the menu. L3 cycles the game speed.</string>
+    <string name="menu_hint">The back button and, on a controller, the guide button or the right stick button also open the menu.</string>
 
     <string name="menu_title">Paused</string>
     <string name="menu_resume">Resume</string>
@@ -247,9 +247,9 @@
     <string name="opengl_failed_message">The game did not get going with its OpenGL output on this device: it froze or closed right after starting. It now uses the SDL output; you can switch back in Settings > Display > Image filter.</string>
     <string name="remap_title">Remap buttons</string>
     <string name="remap_desc">Choose which controller button does what</string>
-    <string name="remap_hint">Tap a SNES button, then press the controller button you want for it. A button already in use swaps places. The d-pad and left stick move Link; the guide button and R3 open the menu; L3 changes the speed; LT+RT rewind.</string>
-    <string name="remap_snes">SNES %1$s</string>
-    <string name="remap_by_position">SNES layout (default)</string>
+    <string name="remap_hint">Tap an original button, then press the controller button you want for it. A button already in use swaps places. The d-pad and left stick move Link; the guide button and R3 open the menu; L3 is for fast-forward; LT+RT rewind.</string>
+    <string name="remap_snes">Original %1$s</string>
+    <string name="remap_by_position">Original layout (default)</string>
     <string name="remap_by_letter">By letter</string>
     <string name="remap_press">Press a button…</string>
     <string name="remap_press_hint">Press the controller button for it, or tap here to cancel. Buttons are named by position, as on an Xbox controller: A is the bottom one.</string>
@@ -273,7 +273,7 @@
     <string name="rewind_button">Rewind button</string>
     <string name="rewind_button_desc">Goes back in time while you hold it</string>
     <string name="trigger_speed">Triggers change the speed</string>
-    <string name="trigger_speed_desc">RT speeds up and LT slows down, one step each press. Either way, L3 cycles the speed and LT+RT together rewind.</string>
+    <string name="trigger_speed_desc">RT speeds up and LT slows down, one step each press. Either way, LT+RT together rewind.</string>
     <string name="rewind_empty">Nothing to rewind yet</string>
     <string name="welcome_title">Welcome to Moon Pearl</string>
     <string name="launcher_continue">Continue</string>
@@ -286,4 +286,9 @@
     <string name="widescreen_hud">HUD at the screen edges</string>
     <string name="widescreen_hud_desc">Moves the magic meter, item and counters to the left edge and the hearts to the right, as in a game made for wide screens. With touch controls you may want to move L and R (Controls > Customize layout).</string>
     <string name="widescreen_hud_needs_wide">Needs a widescreen aspect ratio (or Fill the screen on a wide display).</string>
+    <string name="settings_fast_forward">Fast-forward</string>
+    <string name="hold_speed">Speed while holding</string>
+    <string name="hold_speed_desc">For the on-screen fast-forward button and, if chosen below, L3. The menu sets the speed that stays.</string>
+    <string name="l3_hold">L3 fast-forwards while held</string>
+    <string name="l3_hold_desc">Off: each L3 press cycles the speed (1×, 2×, 3×, max).</string>
 </resources>

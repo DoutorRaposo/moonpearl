@@ -93,7 +93,7 @@ expected one. A ready-made `zelda3_assets.dat` from the PC version also works.
 | Start, Select | Start, Back/View | As on the original |
 | ⋯ button (or double tap, if enabled) | Guide button or R3 | Open the menu |
 | Rewind button (optional) | LT+RT | Rewind |
-| Fast-forward button (optional, hold) | L3 | Fast-forward (L3 cycles 1×, 2×, 3×, max) |
+| Fast-forward button (optional, hold) | L3 | Fast-forward: hold at the speed you choose (2×, 3× or max); L3 cycles the speed, or holds if you prefer |
 | Back button | | Open the menu |
 
 In the menu, use the d-pad and A with a controller; B or the guide button closes it. The original

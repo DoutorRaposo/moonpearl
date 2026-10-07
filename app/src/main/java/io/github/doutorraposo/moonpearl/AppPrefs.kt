@@ -60,6 +60,16 @@ class AppPrefs(context: Context) {
         get() = prefs.getBoolean("rewind", true)
         set(value) { prefs.edit().putBoolean("rewind", value).commit() }
 
+    /** Rate for holding fast-forward (touch button, or L3 in hold mode): 2, 3 or GameKeys.SPEED_MAX. */
+    var holdSpeed: Int
+        get() = prefs.getInt("hold_speed", GameKeys.SPEED_MAX).takeIf { it in GameKeys.speeds && it != 1 } ?: GameKeys.SPEED_MAX
+        set(value) { prefs.edit().putInt("hold_speed", value).commit() }
+
+    /** L3 fast-forwards while held instead of cycling the speed. */
+    var l3Hold: Boolean
+        get() = prefs.getBoolean("l3_hold", false)
+        set(value) { prefs.edit().putBoolean("l3_hold", value).commit() }
+
     /** Hold-to-rewind button on the touch pad. */
     var rewindButton: Boolean
         get() = prefs.getBoolean("rewind_button", false)

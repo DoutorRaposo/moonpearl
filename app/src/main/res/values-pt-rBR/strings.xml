@@ -40,7 +40,7 @@
     <string name="touch_layout">Personalizar layout</string>
     <string name="touch_layout_desc">Mova e redimensione os botões na tela</string>
     <string name="turbo_button">Botão de avanço rápido</string>
-    <string name="turbo_button_desc">Acelera o jogo ao máximo enquanto estiver pressionado</string>
+    <string name="turbo_button_desc">Acelera o jogo enquanto estiver pressionado</string>
     <string name="layout_title">Personalizar layout</string>
     <string name="layout_hint">Arraste um controle para movê-lo. Toque num deles para mudar o tamanho.</string>
     <string name="layout_panel_hint">Arraste este painel pelo topo para tirá-lo da frente. Toque numa área vazia para esconder ou mostrar.</string>
@@ -94,7 +94,7 @@
 
     <string name="menu_button">Botão de menu (⋯) na tela</string>
     <string name="double_tap_menu">Toque duplo na tela abre o menu</string>
-    <string name="menu_hint">O botão voltar e, no controle, o botão Guia ou o clique do analógico direito também abrem o menu. O L3 cicla a velocidade do jogo.</string>
+    <string name="menu_hint">O botão voltar e, no controle, o botão Guia ou o clique do analógico direito também abrem o menu.</string>
 
     <string name="menu_title">Pausado</string>
     <string name="menu_resume">Continuar</string>
@@ -247,9 +247,9 @@
     <string name="opengl_failed_message">O jogo não conseguiu rodar com a saída OpenGL neste aparelho: travou ou fechou logo depois de abrir. Agora ele usa a saída SDL; dá para voltar em Configurações > Tela > Filtro de imagem.</string>
     <string name="remap_title">Remapear botões</string>
     <string name="remap_desc">Escolha qual botão do controle faz o quê</string>
-    <string name="remap_hint">Toque num botão do SNES e aperte o botão do controle que você quer usar para ele. Se esse botão já estiver em uso, os dois trocam de lugar. O direcional e o analógico esquerdo movem o Link; o botão Guia e o R3 abrem o menu; o L3 muda a velocidade; LT+RT rebobinam.</string>
-    <string name="remap_snes">%1$s do SNES</string>
-    <string name="remap_by_position">Posição do SNES (padrão)</string>
+    <string name="remap_hint">Toque num botão original e aperte o botão do controle que você quer usar para ele. Se esse botão já estiver em uso, os dois trocam de lugar. O direcional e o analógico esquerdo movem o Link; o botão Guia e o R3 abrem o menu; o L3 é do avanço rápido; LT+RT rebobinam.</string>
+    <string name="remap_snes">%1$s original</string>
+    <string name="remap_by_position">Layout original (padrão)</string>
     <string name="remap_by_letter">Pelas letras</string>
     <string name="remap_press">Aperte um botão…</string>
     <string name="remap_press_hint">Aperte o botão do controle para ele, ou toque aqui para cancelar. Os botões são nomeados pela posição, como num controle de Xbox: o A é o de baixo.</string>
@@ -273,7 +273,7 @@
     <string name="rewind_button">Botão de rebobinar</string>
     <string name="rewind_button_desc">Volta no tempo enquanto estiver pressionado</string>
     <string name="trigger_speed">Gatilhos mudam a velocidade</string>
-    <string name="trigger_speed_desc">RT acelera e LT desacelera, um passo por toque. De qualquer jeito, o L3 cicla a velocidade e LT+RT juntos rebobinam.</string>
+    <string name="trigger_speed_desc">RT acelera e LT desacelera, um passo por toque. De qualquer jeito, LT+RT juntos rebobinam.</string>
     <string name="rewind_empty">Nada para voltar ainda</string>
     <string name="welcome_title">Bem-vindo ao Moon Pearl</string>
     <string name="launcher_continue">Continuar</string>
@@ -286,4 +286,9 @@
     <string name="widescreen_hud">HUD nas bordas da tela</string>
     <string name="widescreen_hud_desc">Leva o medidor de magia, o item e os contadores para a borda esquerda e os corações para a direita, como num jogo feito para tela larga. Com os controles de toque, talvez você queira mover L e R (Controles > Personalizar layout).</string>
     <string name="widescreen_hud_needs_wide">Precisa de uma proporção widescreen (ou Preencher a tela num aparelho de tela larga).</string>
+    <string name="settings_fast_forward">Avanço rápido</string>
+    <string name="hold_speed">Velocidade ao segurar</string>
+    <string name="hold_speed_desc">Vale para o botão de avanço rápido na tela e, se escolhido abaixo, para o L3. O menu define a velocidade que fica.</string>
+    <string name="l3_hold">L3 acelera enquanto estiver pressionado</string>
+    <string name="l3_hold_desc">Desligado: cada toque no L3 alterna a velocidade (1×, 2×, 3×, máx).</string>
 </resources>

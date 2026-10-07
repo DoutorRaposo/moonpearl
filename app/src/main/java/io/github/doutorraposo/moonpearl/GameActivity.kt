@@ -43,6 +43,10 @@ class GameActivity : SDLActivity() {
     /** The speed before a trigger press that turned out to be the start of LT+RT. */
     private var speedBeforeTrigger = 1
     private var triggerSpeed = false
+    private var holdSpeed = GameKeys.SPEED_MAX
+    private var l3Hold = false
+    /** Fast-forward holds in progress (touch button, L3); the set speed comes back when all end. */
+    private var holds = 0
     private var rewindEnabled = false
     private var rewind: RewindOverlayView? = null
     /** Whether the touch pad showed before rewinding; it hides while the panel is up. */
@@ -114,6 +118,8 @@ class GameActivity : SDLActivity() {
 
         applyCheats()
         triggerSpeed = prefs.triggerSpeed
+        holdSpeed = prefs.holdSpeed
+        l3Hold = prefs.l3Hold
         rewindEnabled = prefs.rewind
         nativeRewindEnable(rewindEnabled)
         nativeSetWidescreenHud(prefs.widescreenHud)
@@ -130,7 +136,7 @@ class GameActivity : SDLActivity() {
                 onMenu = ::openMenu,
                 onHold = { element, down ->
                     when (element) {
-                        TouchLayout.Element.TURBO -> holdTurbo(down)
+                        TouchLayout.Element.TURBO -> holdFastForward(down)
                         TouchLayout.Element.REWIND -> holdRewindButton(down)
                         else -> Unit
                     }
@@ -162,6 +168,11 @@ class GameActivity : SDLActivity() {
 
     override fun onPause() {
         touch?.releaseAll()
+        // A hold whose release never comes (the app left) must not keep fast-forwarding.
+        if (holds > 0) {
+            holds = 1
+            holdFastForward(false)
+        }
         // Going to the background continues from the point shown, like pressing Continue.
         if (rewind != null) leaveRewind(cancel = false)
         if (autosave && !mBrokenLibraries) {
@@ -281,8 +292,7 @@ class GameActivity : SDLActivity() {
     /** Fixed rates go through the patched frame loop; "max" holds upstream's turbo key. */
     private fun setSpeed(value: Int) {
         speed = value
-        nativeSetSpeed(if (value == GameKeys.SPEED_MAX) 1 else value)
-        if (value == GameKeys.SPEED_MAX) onNativeKeyDown(GameKeys.TURBO) else onNativeKeyUp(GameKeys.TURBO)
+        applyRate(if (holds > 0) fasterOf(holdSpeed, value) else value)
         touch?.menuBadge = when (value) {
             1 -> null
             GameKeys.SPEED_MAX -> "»"
@@ -290,9 +300,26 @@ class GameActivity : SDLActivity() {
         }
     }
 
-    /** The touch fast-forward button holds upstream's turbo key, unless "max" already holds it. */
-    private fun holdTurbo(down: Boolean) {
-        if (down) onNativeKeyDown(GameKeys.TURBO) else if (speed != GameKeys.SPEED_MAX) onNativeKeyUp(GameKeys.TURBO)
+    /**
+     * Fast-forward while held (touch button, or L3 in hold mode) at the chosen rate, then back to
+     * the set speed. A held rate never slows the game down from a faster set speed.
+     */
+    private fun holdFastForward(down: Boolean) {
+        holds = (holds + if (down) 1 else -1).coerceAtLeast(0)
+        val holding = holds > 0
+        if (holding && down && holds > 1) return
+        applyRate(if (holding) fasterOf(holdSpeed, speed) else speed)
+    }
+
+    private fun fasterOf(a: Int, b: Int) = when {
+        a == GameKeys.SPEED_MAX || b == GameKeys.SPEED_MAX -> GameKeys.SPEED_MAX
+        else -> maxOf(a, b)
+    }
+
+    /** Runs the game at [rate] without changing the set speed (see [setSpeed]). */
+    private fun applyRate(rate: Int) {
+        nativeSetSpeed(if (rate == GameKeys.SPEED_MAX) 1 else rate)
+        if (rate == GameKeys.SPEED_MAX) onNativeKeyDown(GameKeys.TURBO) else onNativeKeyUp(GameKeys.TURBO)
     }
 
     // --- Rewind (rewind.c) ----------------------------------------------------------
@@ -393,9 +420,13 @@ class GameActivity : SDLActivity() {
         return true
     }
 
-    /** L3 cycles the speed (1×, 2×, 3×, max). The game does not use it. */
+    /** L3 cycles the speed (1×, 2×, 3×, max), or fast-forwards while held. The game does not use it. */
     private fun handleSpeedCycle(event: KeyEvent): Boolean {
         if (event.keyCode != KeyEvent.KEYCODE_BUTTON_THUMBL) return false
+        if (l3Hold) {
+            if (event.repeatCount == 0) holdFastForward(event.action == KeyEvent.ACTION_DOWN)
+            return true
+        }
         if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
             val speeds = GameKeys.speeds
             stepSpeed(if (speed == speeds.last()) -speeds.lastIndex else 1)

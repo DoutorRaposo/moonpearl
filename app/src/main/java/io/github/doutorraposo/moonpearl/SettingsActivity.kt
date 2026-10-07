@@ -41,6 +41,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -341,6 +342,8 @@ private fun ControlSettings(prefs: AppPrefs, onRemap: () -> Unit) {
     var turboButton by remember { mutableStateOf(prefs.turboButton) }
     var rewindButton by remember { mutableStateOf(prefs.rewindButton) }
     var triggerSpeed by remember { mutableStateOf(prefs.triggerSpeed) }
+    var holdSpeed by remember { mutableIntStateOf(prefs.holdSpeed) }
+    var l3Hold by remember { mutableStateOf(prefs.l3Hold) }
     var menuButton by remember { mutableStateOf(prefs.menuButton) }
     var doubleTapMenu by remember { mutableStateOf(prefs.doubleTapMenu) }
     Section(R.string.settings_touch) {
@@ -369,6 +372,26 @@ private fun ControlSettings(prefs: AppPrefs, onRemap: () -> Unit) {
                 context.startActivity(Intent(context, TouchLayoutActivity::class.java))
             },
         )
+    }
+    Section(R.string.settings_fast_forward) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(R.string.hold_speed), style = MaterialTheme.typography.bodyMedium)
+            val choices = GameKeys.speeds.filter { it != 1 }
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                choices.forEachIndexed { i, s ->
+                    SegmentedButton(
+                        selected = holdSpeed == s,
+                        onClick = { holdSpeed = s; prefs.holdSpeed = s },
+                        shape = SegmentedButtonDefaults.itemShape(i, choices.size),
+                    ) { Text(if (s == GameKeys.SPEED_MAX) stringResource(R.string.menu_speed_max) else "$s×") }
+                }
+            }
+            Hint(stringResource(R.string.hold_speed_desc), Modifier)
+        }
+        SwitchRow(stringResource(R.string.l3_hold), l3Hold, stringResource(R.string.l3_hold_desc)) {
+            l3Hold = it
+            prefs.l3Hold = it
+        }
     }
     Section(R.string.settings_menu) {
         SwitchRow(stringResource(R.string.menu_button), menuButton) {
