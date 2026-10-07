@@ -1,24 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A crescent moon cradling a pearl, inside the 66dp adaptive icon safe zone. -->
+<!--
+  "Moon" by Lorc (https://game-icons.net/1x1/lorc/moon.html), CC BY 3.0, rotated and
+  recolored, with a pearl badge added in the game-icons.net editor. Scaled and centered here to
+  fit the 66dp adaptive icon safe zone. See THIRD_PARTY_NOTICES.txt.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <!-- Shapes span x 27-72 and y 33-79; shift them to the icon's center (54, 54). -->
+    android:viewportWidth="512"
+    android:viewportHeight="512">
     <group
-        android:translateX="4.5"
-        android:translateY="-2">
-        <!-- Moon: a disc (center 50,56, r 23) with a bite (center 60,47, r 20) taken out. -->
-        <path
-            android:fillColor="@color/icon_moon"
-            android:pathData="M45.25,33.5 A23,23 0 1,0 71.88,63.09 A20,20 0 0,1 45.25,33.5 Z" />
-        <!-- Pearl resting in the bite. -->
+        android:scaleX="0.7906"
+        android:scaleY="0.7906"
+        android:translateX="60.91"
+        android:translateY="54.39">
+        <group
+            android:translateX="22"
+            android:translateY="-15">
+            <group
+                android:pivotX="256"
+                android:pivotY="256"
+                android:rotation="-30">
+                <path
+                    android:fillColor="@color/icon_moon"
+                    android:pathData="M229.187 70.656C269.704 70.656 307.175 83.56 337.719 105.469C332.053 104.83 326.357 104.506 320.655 104.499C236.498 104.499 168.28 172.749 168.28 256.905C168.28 341.062 236.5 409.28 320.656 409.28C326.418 409.28 332.123 408.967 337.719 408.344C307.174 430.254 269.703 443.156 229.186 443.156C126.206 443.156 42.906 359.884 42.906 256.906C42.906 153.929 126.206 70.656 229.186 70.656Z" />
+            </group>
+        </group>
         <path
             android:fillColor="@color/icon_pearl"
-            android:pathData="M62,52 m-8.5,0 a8.5,8.5 0 1,0 17,0 a8.5,8.5 0 1,0 -17,0 Z" />
-        <path
-            android:fillColor="@color/icon_pearl_highlight"
-            android:pathData="M59.3,49.2 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0 Z" />
+            android:pathData="M330.6,207.6 m-76.8,0 a76.8,76.8 0 1,0 153.6,0 a76.8,76.8 0 1,0 -153.6,0 Z" />
     </group>
 </vector>
