@@ -1,9 +1,8 @@
 # Moon Pearl
 
-*A Link to the Past* running natively on Android: a port of
-[snesrev/zelda3](https://github.com/snesrev/zelda3), the complete C reimplementation of the
-game, with widescreen, save states, fast-forward, cheats and controller support. Bring your
-own ROM; the app sets everything up on the device.
+A native Android port of [zelda3](https://github.com/snesrev/zelda3), the complete C
+reimplementation of ALttP, with widescreen, save states, rewind, fast-forward, image filters,
+cheats and controller support. Bring your own ROM; the app sets everything up on the device.
 
 <p align="center">
   <img src="docs/screenshots/game.webp" alt="Gameplay in widescreen with the on-screen controls" width="720">
@@ -33,7 +32,7 @@ own ROM; the app sets everything up on the device.
   feedback and adjustable opacity. Every button can be moved and resized, and an optional
   hold-to-fast-forward button can be added.
 - **Controllers** (Xbox, PlayStation, Switch Pro and most others) are detected
-  automatically; the touch controls hide while one is in use. The SNES buttons can be remapped
+  automatically; the touch controls hide while one is in use. The original buttons can be remapped
   to any controller button.
 - **Link's look**: replace Link with any of the hundreds of community sprites (`.zspr` files
   from the [sprite gallery](https://snesrev.github.io/sprites-gfx/snes/zelda3/link/)), with a
@@ -46,13 +45,13 @@ own ROM; the app sets everything up on the device.
 - **Image filters**: sharp or smooth pixels, CRT scanlines, an LCD grid and pixel art
   smoothing (xBR, OmniScale), or your own RetroArch GLSL shaders. Switch them from the in-game
   menu and see the result right away.
-- **Rewind**, like on Nintendo Switch Online: hold LT+RT on a controller (or use the touch
+- **Rewind**: hold LT+RT on a controller (or use the touch
   button or the in-game menu) and watch the last minute of play go back, then continue from any
   point. Loading a save state or a chapter starts the history over.
 - **Cheats**: infinite health, magic, bombs, arrows and small keys, a full wallet, walking
   through walls, and Pro Action Replay codes.
 - **Save management**: see your three game files, erase them, export or restore a backup,
-  and move saves to and from SNES emulators as `.srm` files.
+  and move saves to and from emulators as `.srm` files.
 - **Enhancements** from the zelda3 project (switch items with L/R, turn while dashing, bug
   fixes and more), each explained in the app. All off by default.
 - English and Brazilian Portuguese.
@@ -74,8 +73,8 @@ on).
 
 ### The ROM
 
-You need the **US release** of *A Link to the Past* for the SNES, dumped from a cartridge you
-own:
+You need the **US release** of *The Legend of Zelda: A Link to the Past*, dumped from a
+cartridge you own:
 
 | | |
 |---|---|
@@ -89,15 +88,15 @@ expected one. A ready-made `zelda3_assets.dat` from the PC version also works.
 
 | On screen | Controller | What it does |
 |---|---|---|
-| D-pad, L, R | D-pad, LB, RB | As on the SNES |
-| A, B, X, Y | Face buttons by position, as on the SNES: right, bottom, top, left (B, A, Y, X on an Xbox pad) | As on the SNES |
-| Start, Select | Start, Back/View | As on the SNES |
+| D-pad, L, R | D-pad, LB, RB | As on the original |
+| A, B, X, Y | Face buttons by position, as on the original: right, bottom, top, left (B, A, Y, X on an Xbox pad) | As on the original |
+| Start, Select | Start, Back/View | As on the original |
 | ⋯ button (or double tap, if enabled) | Guide button or R3 | Open the menu |
 | Rewind button (optional) | LT+RT | Rewind |
 | Fast-forward button (optional, hold) | L3 | Fast-forward (L3 cycles 1×, 2×, 3×, max) |
 | Back button | | Open the menu |
 
-In the menu, use the d-pad and A with a controller; B or the guide button closes it. The SNES
+In the menu, use the d-pad and A with a controller; B or the guide button closes it. The original
 buttons can be remapped to any controller button (*Settings → Controls*), and the on-screen
 buttons moved and resized (*Customize layout*).
 
@@ -117,12 +116,9 @@ reimplementation does not run. Pro Action Replay codes that change RAM (`7Exxxx:
 **The picture is cut at the top and bottom.** That is *Fill the screen* on a phone wider
 than 2:1. Turn it off in *Settings → Display* to see the whole picture with bars at the sides.
 
-**I moved from the old "Z3" app.** Moon Pearl is a separate app. In the old one, use
-*Manage saves → Export backup*; in Moon Pearl, select your ROM and then *Restore backup*.
-
 **My MSU-1 pack is not found.** Pick the folder that holds the tracks themselves
-(`name-1.pcm`, `name-2.pcm`… or `.opuz`), in *Settings → Audio*. Packs for the US version of
-*A Link to the Past* work; MSU Deluxe tracks (37 and up) are used when *MSU Deluxe* is on.
+(`name-1.pcm`, `name-2.pcm`… or `.opuz`), in *Settings → Audio*. Packs made for the US version
+of the game work; MSU Deluxe tracks (37 and up) are used when *MSU Deluxe* is on.
 
 **The game slows down or the screen goes black with a filter.** Shaders run on the GPU and
 some are heavy for a phone. Pick a lighter one in the menu's *Image* tab or in *Settings →
@@ -196,7 +192,7 @@ in `[KeyMap] Controls`.
 ## Legal
 
 This project contains no game data. You must supply a ROM dumped from a cartridge you own.
-*The Legend of Zelda* is a trademark of Nintendo; this project is not affiliated with or
-endorsed by Nintendo.
+It is an independent fan project, not affiliated with or endorsed by the owners of the game.
+All trademarks belong to their respective owners.
 
 The Android code in this repository is MIT licensed (see [LICENSE](LICENSE)).

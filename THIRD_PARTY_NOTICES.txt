@@ -5,7 +5,7 @@ Moon Pearl itself is MIT licensed; see LICENSE.
 zelda3
 https://github.com/snesrev/zelda3
 
-The game code: a C reimplementation of A Link to the Past.
+The game code: a C reimplementation of the game.
 
 MIT License
 
